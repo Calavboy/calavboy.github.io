@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Louie's Tools — Welcome</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1: linear-gradient(120deg,#0f1724 0%, #12263a 45%, #0b1020 100%);
+      --card: rgba(255,255,255,0.06);
+      --glass: rgba(255,255,255,0.04);
+      --accent: linear-gradient(90deg,#6ee7b7,#60a5fa 60%,#a78bfa);
+      --muted: rgba(255,255,255,0.65);
+      --glass-border: rgba(255,255,255,0.08);
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      background: var(--bg1);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow: auto;
+    }
+
+    /* Top nav */
+    .nav {
+      position:fixed;
+      top:18px;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:12px;
+      z-index:60;
+      backdrop-filter: blur(8px) saturate(120%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border:1px solid var(--glass-border);
+      padding:8px;
+      border-radius:999px;
+      box-shadow: 0 6px 20px rgba(3,7,18,0.5);
+    }
+    .nav button{
+      background:transparent;
+      border:0;
+      color:var(--muted);
+      padding:10px 18px;
+      font-weight:600;
+      border-radius:999px;
+      cursor:pointer;
+      transition: all .25s ease;
+      font-size:15px;
+    }
+    .nav button:hover{ transform:translateY(-3px); color:#fff; box-shadow: 0 6px 22px rgba(7,12,30,0.5); }
+    .nav button.active{ color:#000; background:var(--accent); box-shadow: none; }
+
+    /* Layout: full-screen sections stacked vertically */
+    .page {
+      min-height:100vh;
+      padding:96px 44px 64px;
+      display:flex;
+      flex-direction:column;
+      gap:28px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+
+    /* Hero / Welcome */
+    .hero {
+      width:100%;
+      max-width:1200px;
+      margin:auto;
+      display:grid;
+      grid-template-columns: 1fr 480px;
+      gap:36px;
+      align-items:center;
+    }
+
+    .card {
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:32px;
+      border:1px solid var(--glass-border);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+
+    .title {
+      font-size:56px;
+      line-height:1.02;
+      font-weight:700;
+      letter-spacing:-1px;
+      margin-bottom:14px;
+      background: linear-gradient(90deg,#fff, #dbeafe 40%, #c7a2ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .subtitle { font-size:18px; color:var(--muted); margin-bottom:20px; max-width:680px; }
+
+    .cta-row{ display:flex; gap:14px; align-items:center; margin-top:18px; }
+    .cta {
+      padding:12px 18px;
+      border-radius:12px;
+      background:linear-gradient(90deg,#6ee7b7,#60a5fa);
+      color:#06202a;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      box-shadow: 0 8px 30px rgba(45,125,255,0.08);
+    }
+    .secondary {
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid var(--glass-border);
+      background:transparent;
+      color:var(--muted);
+      cursor:pointer;
+    }
+
+    /* Right card - visual */
+    .visual {
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .visual .image {
+      width:100%;
+      height:340px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 20px 40px rgba(2,6,23,0.6);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    }
+    .visual img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .stat-row {
+      display:flex;
+      gap:12px;
+      margin-top:6px;
+      justify-content:space-between;
+    }
+    .stat {
+      flex:1;
+      background:var(--glass);
+      border-radius:10px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,0.03);
+      text-align:center;
+    }
+    .stat .n{ font-weight:700; font-size:20px; color:#fff; }
+    .stat .l{ font-size:13px; color:var(--muted); margin-top:6px; }
+
+    /* About page layout */
+    .about-wrap{
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:28px;
+      align-items:start;
+    }
+    .about-photo{
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.06);
+      height:520px;
+      box-shadow:var(--shadow);
+    }
+    .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .about-text{
+      background:var(--card);
+      padding:26px;
+      border-radius:14px;
+      border:1px solid var(--glass-border);
+      line-height:1.7;
+      color: #eaeef8;
+      font-size:16px;
+    }
+    .about-text h2{ font-size:26px; margin-bottom:12px; color:#fff; }
+    .about-text p{ margin-bottom:14px; color: #dbe7ff; }
+
+    /* Google mini-browser style */
+    .mini-browser {
+      width:100%;
+      max-width:1100px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .browser-bar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      background:var(--glass);
+      border-radius:12px;
+      padding:10px;
+      border:1px solid var(--glass-border);
+    }
+    .browser-bar input{
+      flex:1;
+      padding:10px 14px;
+      border-radius:10px;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:#fff;
+    }
+    .browser-frame{
+      width:100%;
+      height:72vh;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.04);
+    }
+    .browser-frame iframe{ width:100%; height:100%; border:0; }
+
+    /* Footer */
+    footer.app-footer{
+      width:100%;
+      max-width:1200px;
+      margin:42px auto 80px;
+      color:rgba(255,255,255,0.55);
+      font-size:13px;
+      text-align:center;
+    }
+
+    /* small screens */
+    @media (max-width:980px){
+      .hero{ grid-template-columns: 1fr; padding-top:40px }
+      .about-wrap{ grid-template-columns: 1fr; }
+      .visual .image{ height:260px; }
+    }
+
+    /* subtle reveal animation */
+    .reveal{ opacity:0; transform:translateY(18px); transition: all 700ms cubic-bezier(.2,.9,.3,1); }
+    .reveal.show{ opacity:1; transform:none; }
+  </style>
+</head>
+<body>
+
+  <!-- navigation -->
+  <div class="nav" role="navigation" aria-label="Main">
+    <button id="nav-home" class="active" onclick="navigate('home')">Home</button>
+    <button id="nav-google" onclick="navigate('google')">Google</button>
+    <button id="nav-about" onclick="navigate('about')">About Me</button>
+    <button id="nav-terms" onclick="navigate('terms')">Terms</button>
+  </div>
+
+  <!-- HOME PAGE -->
+  <main id="home" class="page" aria-live="polite">
+    <div class="hero">
+      <div class="card reveal" id="hero-left">
+        <div class="title">Louie's Tools</div>
+        <div class="subtitle">I spent years building this — every tool, animation and tiny detail is crafted with purpose. Scroll down to read the story of the journey, the grind, and the vision.</div>
+
+        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
+          <button class="cta" onclick="navigate('google')">Open Google</button>
+          <button class="secondary" onclick="navigate('about')">Read About Me</button>
+          <button class="secondary" onclick="navigate('terms')">Terms & Conditions</button>
+        </div>
+
+        <div style="margin-top:24px">
+          <div style="font-size:13px;color:var(--muted);">Quick stats</div>
+          <div style="display:flex;gap:12px;margin-top:10px;">
+            <div class="stat">
+              <div class="n">1,000+</div>
+              <div class="l">Hours coding</div>
+            </div>
+            <div class="stat">
+              <div class="n">120</div>
+              <div class="l">Iterations</div>
+            </div>
+            <div class="stat">
+              <div class="n">42</div>
+              <div class="l">Tools built</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="visual reveal" id="hero-right">
+        <div class="image card" aria-hidden="true">
+          <!-- stock image placeholder (unsplash) -->
+          <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5b3f8a3d2b5ef0e8a7e3f5c7fb6b7c9a" alt="Louie portrait (stock)" />
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <div class="stat">
+            <div class="n">Global</div>
+            <div class="l">Available tools</div>
+          </div>
+          <div class="stat">
+            <div class="n">Premium</div>
+            <div class="l">Pro features</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section style="max-width:1100px;margin-top:46px" class="reveal" id="story-intro">
+      <h2 style="font-size:28px;margin-bottom:14px">Hard Work & Dedication</h2>
+      <p style="color:var(--muted);font-size:16px;line-height:1.8">
+        This project is the result of relentless late nights, countless experiments, and a stubborn refusal to ship anything that felt “almost right.” What you see here is the distilled result — a curated set of tools and experiences designed to be fast, clear, and joyful to use.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- GOOGLE SEARCH PAGE -->
+  <main id="google" class="page" style="display:none;">
+    <div style="width:100%;max-width:1200px;margin:auto" class="reveal">
+      <div class="mini-browser">
+        <div class="browser-bar">
+          <input id="mini-query" type="text" placeholder="Type a search and press Enter — results will load inside this box" aria-label="Search">
+          <button onclick="miniSearch()" title="Search">Search</button>
+          <button onclick="navigate('home')">Home</button>
+        </div>
+
+        <div class="browser-frame card" id="browserframe" style="padding:0;">
+          <!-- Google may block embedding in some browsers. This uses the &igu=1 param which sometimes helps.
+               If it does not work your browser may refuse it because of X-Frame-Options on Google. -->
+          <iframe id="google-iframe" src="https://www.google.com/webhp?igu=1" title="Google search results"></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ABOUT PAGE -->
+  <main id="about" class="page" style="display:none;">
+    <div class="about-wrap reveal">
+      <div class="about-photo card" aria-hidden="false">
+        <!-- Random stock image representing "you" -->
+        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=3f8d6f6a3c4f9b8f6b1b2f4c5a9b7e1a" alt="Portrait (stock)" />
+      </div>
+
+      <div class="about-text">
+        <h2>From Nothing to Everything — Louie's Story</h2>
+
+        <!-- Long inspirational story: ~1000+ words -->
+        <p>
+          I was born in a small weathered house where the heating came from a kettle on the stove and the lights sometimes flickered out for days. My childhood smelled of wet concrete and cheap instant coffee. We couldn't afford much, but we had time, curiosity, and stubbornness — the raw materials that later became the backbone of everything I built.
+        </p>
+
+        <p>
+          School didn't teach me how to ship elegant software or design a smooth animation, but it taught me to show up. I learned to take apart old gadgets and glue them back together. I read every library manual I could get from the library’s thin, battered shelf. At fifteen I taught myself the basics of coding using a second-hand laptop and free tutorials. Some nights I slept with the laptop on my knees because the spare blanket we borrowed was thin and the room was cold; still, I kept typing.
+        </p>
+
+        <p>
+          The first year I made money online, I remember feeling like the floor moved beneath me. I sold a simple utility I made to automate a repetitive task and it paid for a small but meaningful thing — a new hard drive and a toaster for the kitchen. Those tiny victories fueled a belief: whatever I built had to do one thing very well. Every small success made me bolder. I started freelancing in evenings, building tiny tools for people who needed things fixed quickly. That’s where I learned to ship robust, useful tools under pressure.
+        </p>
+
+        <p>
+          When I turned twenty, I borrowed a few hundred dollars and rented a cramped desk beside a bakery that smelled divine and stayed open late. There I met a handful of other creators — coders, designers, makers — who were also relentless. We traded code, ideas, and brutally honest reviews. We launched things and failed sometimes, and celebrated even the smallest improvements. Failure taught me faster than success ever could. I learned how to rewrite an entire product in a weekend, learning to do more with less and to make the experience feel premium even when the budget was not.
+        </p>
+
+        <p>
+          The breakthrough came quietly. One morning a small product I had built for a friend was used by a company twice the size of my apartment. One company turned into dozens. I'd optimized the product for speed and clarity — two qualities that business users needed desperately. I started getting emails from teams asking about licenses and bespoke versions. With that first contract I hired my first team member, a designer who made things beautiful, and a backend engineer who kept the servers purring.
+        </p>
+
+        <p>
+          Growth accelerated — not because I chased virality, but because I obsessively removed friction. We iterated obsessively on onboarding, cut needless clicks, and made hard decisions about what to keep and what to drop. The tools I built were not flashy; they were loyal: they worked even when the internet was shaky, and they respected users' time. That approach earned us a reputation and the kind of customers who stick around.
+        </p>
+
+        <p>
+          We scaled thoughtfully. I learned to hire people who were kinder and smarter than me. I learned to say no. I learned that being too eager can wreck product focus. With every hire and every small acquisition, the company’s culture deepened. It became a place where ideas were treated like fragile things — to be handled with respect. We invested in our engineers, designers, and support staff, and that investment returned tenfold in quality and goodwill.
+        </p>
+
+        <p>
+          Money came, but it never became the measure of success for me. It was a tool — not an end. I used it to build better infrastructure, to support creators, and to fund public projects that mattered. I spent on R&D so the next product could be better than the first. I invested in mentoring programs so other people with the same spark could find a path out of nowhere.
+        </p>
+
+        <p>
+          The journey from poor to wealthy is messy and nonlinear. There were late nights, betrayals, and deals that fell apart at the last minute. There were times when scaling too fast taught us costly lessons about governance and sustainability. We navigated regulatory thickets, learned to respect privacy, and built systems that were resilient to failure. Each setback shaped the company into something more honest and durable.
+        </p>
+
+        <p>
+          Looking back, the parts I am proudest of are not the buildings or the balance sheet but the people we helped: creators who built careers on small earnings transformed into stable livelihoods, engineers who learned leadership, and charities we supported with tools and funding. The success that once felt like an impossible dream became a daily responsibility to steward well.
+        </p>
+
+        <p>
+          Today the company funds educational scholarships, invests in green infrastructure, and supports open-source projects that anyone can use. We’ve seeded dozens of startups and mentored hundreds of makers. The ethos remains: build tools that respect people's time, avoid gimmicks, and make something useful first.
+        </p>
+
+        <p>
+          If there is a single lesson from this journey, it is this: relentless, patient craftsmanship beats haste. Start small, learn fast, and protect the user’s experience like it’s your most important asset. Turn the grind into a practice. Carve out a little space in the world where beautiful, useful things can exist — and then keep refining them, even after they are “good enough.”
+        </p>
+
+        <p>
+          That is the story behind Louie’s Tools. It began in a small cold house and grew into an idea that scales: serve people well, keep your standards high, and make sure the work you ship honors the time someone else spends using it.
+        </p>
+
+        <p style="font-weight:700;margin-top:20px;color:#fff">— Louie</p>
+      </div>
+    </div>
+
+    <!-- optional more story sections could follow -->
+  </main>
+
+  <!-- TERMS SECTION (single-page) -->
+  <main id="terms" class="page" style="display:none;">
+    <div style="width:100%;max-width:900px;margin:auto" class="card reveal">
+      <h2 style="color:#fff">Terms & Conditions</h2>
+      <p style="color:var(--muted);line-height:1.7">
+        By using Louie's Tools you agree to the following conditions. This is a fictional example for demonstration; treat it as a placeholder for your real legal content.
+      </p>
+      <ol style="color:#dbe7ff;line-height:1.7;margin-top:12px">
+        <li>Use this site responsibly. Do not attempt illegal activities.</li>
+        <li>Content is provided "as is"; no warranties are made.</li>
+        <li>Do not impersonate others or provide false information.</li>
+        <li>We are not liable for damages from misuse of the site.</li>
+      </ol>
+
+      <p style="margin-top:18px;color:var(--muted)">White House address (example): 1600 Pennsylvania Avenue NW, Washington, DC 20500</p>
+      <div style="margin-top:20px;display:flex;gap:12px;">
+        <button class="secondary" onclick="navigate('home')">Back</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- footer -->
+  <footer class="app-footer">
+    © 2025 Louie's Tools — All rights reserved.
+  </footer>
+
+  <script>
+    // navigation helpers (single file, show/hide sections)
+    const sections = ['home','google','about','terms'];
+    function navigate(id){
+      // hide all main pages
+      sections.forEach(s=>{
+        const el = document.getElementById(s);
+        if(!el) return;
+        el.style.display = (s===id) ? 'flex' : 'none';
+        el.classList.remove('active');
+      });
+      // set active class for nav buttons
+      document.querySelectorAll('.nav button').forEach(btn=>btn.classList.remove('active'));
+      const map = {home:'nav-home', google:'nav-google', about:'nav-about', terms:'nav-terms'};
+      const btn = document.getElementById(map[id]);
+      if(btn) btn.classList.add('active');
+
+      // small reveal on navigation
+      requestAnimationFrame(()=> {
+        document.querySelectorAll('.reveal').forEach(el=> el.classList.remove('show'));
+        setTimeout(()=> document.querySelectorAll('.reveal').forEach(el=> el.classList.add('show')), 60);
+      });
+
+      // reset scroll to top of viewport
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // initial reveal
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.querySelectorAll('.reveal').forEach((el,i)=>{
+        setTimeout(()=>el.classList.add('show'), 120 + i*60);
+      });
+    });
+
+    // Google mini-browser search
+    function miniSearch(){
+      const q = document.getElementById('mini-query').value.trim();
+      if(!q) return;
+      // Note: Google may block embedding in an iframe on some browsers (X-Frame-Options).
+      // We attempt to help by using &igu=1, but it's not guaranteed to work.
+      document.getElementById('google-iframe').src = "https://www.google.com/search?q=" + encodeURIComponent(q) + "&igu=1";
+    }
+
+    // Enter key mapping for search
+    document.addEventListener('keydown', (e)=>{
+      const active = document.querySelector('.nav button.active')?.id;
+      if(e.key === 'Enter' && active === 'nav-google'){
+        // If Enter pressed and user on Google page, trigger miniSearch if focus is inside the search input
+        const activeEl = document.activeElement;
+        if(activeEl && activeEl.id === 'mini-query') miniSearch();
+      }
+    });
+  </script>
+  <!-- Father Page -->
+<main id="father" class="page" style="display:none;">
+  <div class="about-wrap reveal">
+    <div class="about-photo card">
+      <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=600&auto=format&fit=crop" alt="Nolan Nuns">
+    </div>
+    <div class="about-text">
+      <h2>Nolan Nuns — From Middle Class to Hacker of the Year</h2>
+      <p>
+        Nolan Nuns grew up in a modest middle-class family, where ambition met persistence. From early childhood, he demonstrated an uncanny knack for understanding technology and coding. Despite financial constraints, he taught himself programming by reading books and exploring computers whenever he had access. By his teenage years, Nolan had developed small programs for local businesses, earning him recognition in his community.
+      </p>
+      <p>
+        As he matured, his skills evolved into advanced cybersecurity knowledge. Nolan was driven by a strong sense of curiosity and a desire to test limits. During his college years, he began ethical hacking, uncovering vulnerabilities in major systems and helping organizations secure their networks. His reputation grew, and soon he was recognized nationally as a cybersecurity expert.
+      </p>
+      <p>
+        Nolan’s breakthrough came when he won “Hacker of the Year,” a prestigious award that acknowledged his innovation and ethical responsibility. His expertise attracted lucrative contracts, allowing him to accumulate significant wealth. Nolan’s story is one of relentless determination, innovation, and smart risk-taking — turning humble beginnings into remarkable achievements.
+      </p>
+      <p>
+        <!-- Add more paragraphs to make it ~2000 words -->
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce imperdiet diam ac nulla tincidunt, nec dignissim justo suscipit. Curabitur sodales, eros ac ullamcorper faucibus, purus ligula consequat purus, sed lacinia quam elit at velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Praesent consequat neque nec nisl pharetra, nec vehicula erat facilisis. Morbi finibus justo sit amet sem dignissim, vel luctus purus tincidunt. Sed luctus mi et ex bibendum, a fermentum mauris viverra. Integer gravida vehicula ligula, ac eleifend sapien finibus sit amet. Curabitur varius risus vel justo tristique, at blandit leo eleifend. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+      </p>
+      <div class="cta-row" style="margin-top:24px;">
+        <button class="cta" onclick="navigate('home')">Back to Home</button>
+      </div>
+      <h3>Stats & Wealth Counter</h3>
+      <p>Money Earned: $<span id="money-counter">10000000</span></p>
+    </div>
+  </div>
+</main>
+
+<script>
+// Money counter increment for Father page
+let counter = 10000000;
+const counterEl = document.getElementById('money-counter');
+function incrementCounter() {
+  if (counter < 50000000) { // stop at 50 million
+    counter += Math.floor(Math.random() * 50000 + 10000); // add 10k–60k
+    counterEl.innerText = counter.toLocaleString();
+    setTimeout(incrementCounter, 100); // adjust speed
+  }
+}
+incrementCounter();
+
+// Add Father button to nav
+const nav = document.querySelector('.nav');
+const fatherBtn = document.createElement('button');
+fatherBtn.id = 'nav-father';
+fatherBtn.innerText = 'Father';
+fatherBtn.onclick = () => navigate('father');
+nav.appendChild(fatherBtn);
+
+// Add Father page to sections array for navigation
+sections.push('father');
+</script>
+
+
+</body>
+</html>
