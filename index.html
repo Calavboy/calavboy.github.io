@@ -508,16 +508,12 @@
   </footer>
 
   <script>
-    // Generate a unique session ID for each user session
-    const sessionId = Math.random().toString(36).substring(2, 15) + '-' + Date.now();
-    console.log(`[${new Date().toLocaleTimeString()}] New session started: SessionID=${sessionId}`);
-
     // Cookie management functions
     function setCookie(name, value, days) {
       const expires = new Date();
       expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
       document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Set cookie: ${name}=${value} (expires in ${days} days)`);
+      console.log(`[${new Date().toLocaleTimeString()}] Set cookie: ${name}=${value} (expires in ${days} days)`);
     }
 
     function getCookie(name) {
@@ -525,16 +521,16 @@
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) {
         const cookieValue = parts.pop().split(';').shift();
-        console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Retrieved cookie: ${name}=${cookieValue}`);
+        console.log(`[${new Date().toLocaleTimeString()}] Retrieved cookie: ${name}=${cookieValue}`);
         return decodeURIComponent(cookieValue);
       }
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Cookie not found: ${name}`);
+      console.log(`[${new Date().toLocaleTimeString()}] Cookie not found: ${name}`);
       return null;
     }
 
     function deleteCookie(name) {
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Strict`;
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Deleted cookie: ${name}`);
+      console.log(`[${new Date().toLocaleTimeString()}] Deleted cookie: ${name}`);
     }
 
     // Collect and log device information
@@ -551,7 +547,7 @@
         deviceMemory: navigator.deviceMemory || 'N/A',
         hardwareConcurrency: navigator.hardwareConcurrency || 'N/A'
       };
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Device Info:`, deviceInfo);
+      console.log(`[${new Date().toLocaleTimeString()}] Device Info:`, deviceInfo);
       return deviceInfo;
     }
 
@@ -560,7 +556,7 @@
       try {
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] IP Info:`, {
+        console.log(`[${new Date().toLocaleTimeString()}] IP Info:`, {
           ip: data.ip,
           city: data.city,
           region: data.region,
@@ -571,7 +567,7 @@
         });
         return data.ip;
       } catch (error) {
-        console.error(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Error fetching IP address:`, error.message);
+        console.error(`[${new Date().toLocaleTimeString()}] Error fetching IP address:`, error.message);
         return null;
       }
     }
@@ -582,7 +578,7 @@
       const marketing = document.getElementById('marketing-cookies').checked;
       const tracking = document.getElementById('tracking-cookies').checked;
       setCookie('cookie_consent', JSON.stringify({ analytics, marketing, tracking }), 365);
-      setCookie('user_id', sessionId, 365);
+      setCookie('user_id', Math.random().toString(36).substring(2, 15), 365);
       if (analytics) setCookie('analytics_enabled', 'true', 365);
       if (marketing) setCookie('marketing_enabled', 'true', 365);
       if (tracking) {
@@ -593,7 +589,7 @@
         if (ip) setCookie('user_ip', ip, 365);
       }
       document.getElementById('cookie-consent').classList.remove('show');
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] User accepted cookies: Analytics=${analytics}, Marketing=${marketing}, Tracking=${tracking}`);
+      console.log(`[${new Date().toLocaleTimeString()}] User accepted cookies: Analytics=${analytics}, Marketing=${marketing}, Tracking=${tracking}`);
     }
 
     function rejectCookies() {
@@ -606,24 +602,18 @@
       deleteCookie('user_ip');
       deleteCookie('last_search');
       document.getElementById('cookie-consent').classList.remove('show');
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] User rejected all cookies`);
+      console.log(`[${new Date().toLocaleTimeString()}] User rejected all cookies`);
     }
 
     // Show cookie consent on page load if not already set
     document.addEventListener('DOMContentLoaded', () => {
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Page loaded, tracking enabled for this session`);
       if (!getCookie('cookie_consent')) {
         setTimeout(() => {
           document.getElementById('cookie-consent').classList.add('show');
-          console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Displayed cookie consent popup`);
+          console.log(`[${new Date().toLocaleTimeString()}] Displayed cookie consent popup`);
         }, 1000);
       } else {
-        console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Cookie consent already set, skipping popup`);
-        const consent = getCookie('cookie_consent');
-        if (consent && JSON.parse(consent).tracking) {
-          logDeviceInfo();
-          fetchIpAddress();
-        }
+        console.log(`[${new Date().toLocaleTimeString()}] Cookie consent already set, skipping popup`);
       }
     });
 
@@ -647,7 +637,7 @@
       });
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Navigated to page: ${id}`);
+      console.log(`[${new Date().toLocaleTimeString()}] Navigated to page: ${id}`);
     }
 
     // initial reveal
@@ -661,11 +651,11 @@
     function miniSearch() {
       const q = document.getElementById('mini-query').value.trim();
       if (!q) {
-        console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Search query empty, no action taken`);
+        console.log(`[${new Date().toLocaleTimeString()}] Search query empty, no action taken`);
         return;
       }
       const searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(q) + "&igu=1";
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Initiated search: query="${q}", URL="${searchUrl}"`);
+      console.log(`[${new Date().toLocaleTimeString()}] Initiated search: query="${q}", URL="${searchUrl}"`);
       document.getElementById('google-iframe').src = searchUrl;
       // Store search query in a cookie if analytics are enabled
       const consent = getCookie('cookie_consent');
@@ -684,7 +674,7 @@
     function openGoogleInNewTab() {
       const q = document.getElementById('mini-query').value.trim();
       const searchUrl = q ? `https://www.google.com/search?q=${encodeURIComponent(q)}` : 'https://www.google.com';
-      console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Opened Google in new tab: query="${q || 'none'}", URL="${searchUrl}"`);
+      console.log(`[${new Date().toLocaleTimeString()}] Opened Google in new tab: query="${q || 'none'}", URL="${searchUrl}"`);
       window.open(searchUrl, '_blank');
       // Store search query in a cookie if analytics are enabled
       const consent = getCookie('cookie_consent');
@@ -705,7 +695,7 @@
       searchInput.addEventListener('keyup', (e) => {
         const query = e.target.value.trim();
         if (query) {
-          console.log(`[${new Date().toLocaleTimeString()}] [SessionID=${sessionId}] Search input updated: "${query}"`);
+          console.log(`[${new Date().toLocaleTimeString()}] Search input updated: "${query}"`);
         }
       });
     });
