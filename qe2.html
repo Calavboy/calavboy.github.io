@@ -51,21 +51,20 @@
             color: var(--text-dark);
         }
 
-        /* Smaller Admin Bar - Fixed top-left, compact */
         .admin-top-bar {
             position: fixed;
             top: 0;
             left: 0;
-            width: auto; /* Changed to auto to fit content */
+            width: auto;
             background: var(--admin-bar-bg);
             color: white;
-            padding: 0.3rem 0.5rem; /* Smaller padding */
+            padding: 0.3rem 0.5rem;
             display: flex;
             align-items: center;
             z-index: 2000;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
             animation: barSlideDown 0.8s ease-out;
-            font-size: 0.8rem; /* Smaller font */
+            font-size: 0.8rem;
         }
 
         body.dark .admin-top-bar {
@@ -82,12 +81,12 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 0.25rem 0.6rem; /* Smaller padding */
+            padding: 0.25rem 0.6rem;
             border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
-            font-size: 0.75rem; /* Smaller font */
+            font-size: 0.75rem;
         }
 
         .admin-top-bar .login-btn:hover {
@@ -139,7 +138,7 @@
             z-index: 10;
             animation: monsterFadeIn 1.5s ease-out;
             position: relative;
-            margin-top: 40px; /* Adjusted for smaller top bar */
+            margin-top: 40px;
         }
 
         @keyframes monsterFadeIn {
@@ -329,7 +328,7 @@
             flex-direction: column;
             background: var(--light-bg);
             animation: slideInFromRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            margin-top: 40px; /* Adjusted for smaller top bar */
+            margin-top: 40px;
         }
 
         @keyframes slideInFromRight {
@@ -675,7 +674,7 @@
             height: 100vh;
             flex-direction: row;
             animation: expandFromCenter 0.8s ease-out;
-            margin-top: 40px; /* Adjusted for smaller top bar */
+            margin-top: 40px;
         }
 
         @keyframes expandFromCenter {
@@ -963,7 +962,7 @@
 
         .alert {
             position: fixed;
-            top: 50px; /* Adjusted for smaller top bar */
+            top: 50px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--success-gradient);
@@ -1216,10 +1215,10 @@
                     hideLoading();
                 });
 
-                console.log('Firebase initialized');
+                console.log('Firebase initialized successfully');
             } catch (error) {
                 console.error('Firebase init error:', error);
-                showAlert('Failed to connect to server. Try again later.', 'error');
+                showAlert('Failed to connect to server. Please try again later.', 'error');
             }
         }
 
@@ -1301,12 +1300,12 @@
             const joinBtn = document.getElementById('joinBtn');
             if (!input || !joinBtn) {
                 console.error('UI elements missing');
-                showAlert('UI error – please reload!', 'error');
+                showAlert('UI error – please reload the page!', 'error');
                 return;
             }
             username = input.value.trim();
             if (!username) {
-                showAlert('Enter a name to join!', 'error');
+                showAlert('Please enter a name to join!', 'error');
                 input.focus();
                 return;
             }
@@ -1315,46 +1314,65 @@
                 input.focus();
                 return;
             }
+
             joinBtn.disabled = true;
             joinBtn.classList.add('loading');
             joinBtn.textContent = 'Joining...';
-            get(bannedRef).then((snapshot) => {
-                const banned = snapshot.val() || {};
-                if (banned[username.toLowerCase()]) {
-                    showAlert('You are banned from this chat!', 'error');
-                    joinBtn.disabled = false;
-                    joinBtn.classList.remove('loading');
-                    joinBtn.textContent = 'Join Chat';
-                    return;
+            console.log('Attempting to join with username:', username);
+
+            // Set a timeout to prevent hanging
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Join operation timed out')), 5000);
+            });
+
+            // Check if user is banned
+            Promise.race([
+                get(bannedRef).then((snapshot) => {
+                    const banned = snapshot.val() || {};
+                    if (banned[username.toLowerCase()]) {
+                        throw new Error('You are banned from this chat!');
+                    }
+                    return true;
+                }),
+                timeoutPromise
+            ])
+            .then(() => {
+                // Attempt to join by setting user data
+                return Promise.race([
+                    set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() })
+                        .then(() => {
+                            console.log('User successfully added to Firebase:', username);
+                            document.getElementById('nameScreen').style.display = 'none';
+                            document.getElementById('chatScreen').style.display = 'flex';
+                            document.getElementById('messageInput').focus();
+                            showAlert(`Welcome, ${username}! Let's chat!`, 'success');
+                            push(messagesRef, {
+                                sender: 'System',
+                                text: `${username} joined the monster chat!`,
+                                type: 'system',
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            });
+                        }),
+                    timeoutPromise
+                ]);
+            })
+            .catch((error) => {
+                console.error('Join error:', error.message);
+                let errorMessage = 'Failed to join – please try again!';
+                if (error.message.includes('banned')) {
+                    errorMessage = error.message;
+                } else if (error.message.includes('timed out')) {
+                    errorMessage = 'Connection timed out – check your network!';
+                } else if (error.message.includes('permission')) {
+                    errorMessage = 'Server permission error – contact admin!';
                 }
-                set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() })
-                    .then(() => {
-                        document.getElementById('nameScreen').style.display = 'none';
-                        document.getElementById('chatScreen').style.display = 'flex';
-                        document.getElementById('messageInput').focus();
-                        showAlert(`Welcome, ${username}! Let's chat!`, 'success');
-                        push(messagesRef, { 
-                            sender: 'System', 
-                            text: `${username} joined the monster chat!`, 
-                            type: 'system', 
-                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('Join error:', error);
-                        showAlert('Failed to join – check connection!', 'error');
-                    })
-                    .finally(() => {
-                        joinBtn.disabled = false;
-                        joinBtn.classList.remove('loading');
-                        joinBtn.textContent = 'Join Chat';
-                    });
-            }).catch((error) => {
-                console.error('Ban check error:', error);
-                showAlert('Error checking bans – try again!', 'error');
+                showAlert(errorMessage, 'error');
+            })
+            .finally(() => {
                 joinBtn.disabled = false;
                 joinBtn.classList.remove('loading');
                 joinBtn.textContent = 'Join Chat';
+                console.log('Join attempt completed');
             });
         }
 
@@ -1375,11 +1393,11 @@
                 document.getElementById('adminMessageInput').focus();
                 updateAdminLists();
                 showAlert('Admin powers unlocked! 🔥', 'success');
-                push(messagesRef, { 
-                    sender: 'System', 
-                    text: 'Admin has logged in!', 
-                    type: 'system', 
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                push(messagesRef, {
+                    sender: 'System',
+                    text: 'Admin has logged in!',
+                    type: 'system',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
             } else {
                 loginAttempts++;
