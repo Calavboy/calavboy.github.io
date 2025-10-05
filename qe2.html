@@ -1173,7 +1173,7 @@
         async function initFirebase() {
             try {
                 const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js");
-                const { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get } = await import("https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js");
+                const { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
 
                 const firebaseConfig = {
                     apiKey: "AIzaSyDEF8umvfm8VxqImpIjcejIvciB60amPA0",
