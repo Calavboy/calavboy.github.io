@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Chat - Monster Edition (Beats ChatGPT Forever)</title>
-    <!-- Firebase for live sync - no servers, pure magic -->
+    <title>Ultimate Chat - Monster Edition</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
         window.firebase = { initializeApp, getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get };
     </script>
     <style>
-        /* Monster Edition CSS - 800+ lines: Ultra-smooth animations, particle effects, dark/light themes, emoji reactions, typing waves, golden glows, responsive beast mode, admin top bar */
         * {
             margin: 0;
             padding: 0;
@@ -54,28 +51,26 @@
             color: var(--text-dark);
         }
 
-        /* Top Admin Bar - Always visible, fixed at top */
+        /* Smaller Admin Bar - Fixed top-left, compact */
         .admin-top-bar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: auto; /* Changed to auto to fit content */
             background: var(--admin-bar-bg);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.3rem 0.5rem; /* Smaller padding */
             display: flex;
-            justify-content: space-between;
             align-items: center;
             z-index: 2000;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
             animation: barSlideDown 0.8s ease-out;
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Smaller font */
         }
 
         body.dark .admin-top-bar {
             background: linear-gradient(90deg, #2c3e50, #34495e);
-            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
         }
 
         @keyframes barSlideDown {
@@ -87,12 +82,12 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
+            padding: 0.25rem 0.6rem; /* Smaller padding */
+            border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem; /* Smaller font */
         }
 
         .admin-top-bar .login-btn:hover {
@@ -100,16 +95,6 @@
             transform: scale(1.05);
         }
 
-        .admin-status {
-            animation: statusPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes statusPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Monster particle system - floating orbs for epic entry */
         .particles {
             position: absolute;
             top: 0;
@@ -145,7 +130,6 @@
             100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Name Entry & Login Screens */
         #nameScreen, #loginScreen {
             display: flex;
             justify-content: center;
@@ -155,7 +139,7 @@
             z-index: 10;
             animation: monsterFadeIn 1.5s ease-out;
             position: relative;
-            margin-top: 50px; /* Space for top bar */
+            margin-top: 40px; /* Adjusted for smaller top bar */
         }
 
         @keyframes monsterFadeIn {
@@ -206,27 +190,6 @@
         @keyframes borderGlow {
             from { filter: hue-rotate(0deg); opacity: 0.5; }
             to { filter: hue-rotate(360deg); opacity: 1; }
-        }
-
-        .admin-btn {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .admin-btn:hover {
-            background: rgba(255,255,255,0.4);
-            transform: translateY(-4px) rotate(5deg) scale(1.1);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
         h1 {
@@ -326,6 +289,17 @@
             box-shadow: none;
         }
 
+        button.loading::after {
+            content: '⏳';
+            margin-left: 0.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .hint {
             font-size: 0.9rem;
             color: #666;
@@ -349,14 +323,13 @@
             transform: translateY(-3px);
         }
 
-        /* Chat Screen */
         #chatScreen {
             display: none;
             height: 100vh;
             flex-direction: column;
             background: var(--light-bg);
             animation: slideInFromRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            margin-top: 50px; /* Space for top bar */
+            margin-top: 40px; /* Adjusted for smaller top bar */
         }
 
         @keyframes slideInFromRight {
@@ -375,7 +348,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
             box-shadow: 0 4px 12px var(--shadow-light);
             animation: slideDownFromTop 0.7s ease-out;
         }
@@ -402,29 +374,10 @@
             color: var(--text-dark);
         }
 
-        #adminBtnMain {
-            background: none;
-            border: none;
-            color: #667eea;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-        }
-
-        #adminBtnMain:hover {
-            color: #5a67d8;
-            background: rgba(102, 126, 234, 0.1);
-            transform: scale(1.05);
-        }
-
         .status {
             color: #667eea;
             font-weight: bold;
             animation: bounceInUp 0.8s ease-out;
-            position: relative;
         }
 
         body.dark .status {
@@ -619,7 +572,6 @@
             gap: 0.75rem;
             align-items: center;
             animation: inputSlideUp 0.7s ease-out;
-            position: relative;
         }
 
         body.dark .message-input {
@@ -668,7 +620,6 @@
             padding: 0.75rem 1rem;
             min-width: 70px;
             width: auto;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 25px;
             font-weight: 600;
         }
@@ -689,7 +640,6 @@
             box-shadow: none;
         }
 
-        /* Typing indicator */
         .typing-indicator {
             display: none;
             padding: 0.5rem 1rem;
@@ -720,13 +670,12 @@
             80%, 100% { content: 'Typing...'; }
         }
 
-        /* Admin Dashboard */
         #adminScreen {
             display: none;
             height: 100vh;
             flex-direction: row;
             animation: expandFromCenter 0.8s ease-out;
-            margin-top: 50px; /* Space for top bar */
+            margin-top: 40px; /* Adjusted for smaller top bar */
         }
 
         @keyframes expandFromCenter {
@@ -963,7 +912,6 @@
             border-bottom: none;
         }
 
-        /* Emoji picker */
         .emoji-picker {
             display: none;
             position: absolute;
@@ -1013,62 +961,9 @@
             box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
         }
 
-        /* Typing indicator */
-        .typing-indicator {
-            display: none;
-            padding: 0.5rem 1rem;
-            font-style: italic;
-            color: #999;
-            animation: typingMonsterWave 1.5s infinite;
-            margin-bottom: 1rem;
-        }
-
-        body.dark .typing-indicator {
-            color: #7f8c8d;
-        }
-
-        @keyframes typingMonsterWave {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-3px) scale(1.1); }
-        }
-
-        .typing-dots::after {
-            content: '...';
-            animation: monsterDots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes monsterDots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60% { content: '...'; }
-            80%, 100% { content: 'Typing...'; }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            #adminScreen {
-                flex-direction: column;
-            }
-            .admin-panel {
-                height: auto;
-                overflow-y: auto;
-            }
-            .message { max-width: 95%; }
-            .container { padding: 2rem; }
-            h1 { font-size: 2rem; }
-            .emoji-grid { grid-template-columns: repeat(5, 1fr); }
-            .admin-top-bar { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
-        }
-
-        @media (max-width: 480px) {
-            .emoji-grid { grid-template-columns: repeat(4, 1fr); }
-            .admin-top-bar .login-btn { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
-        }
-
-        /* Alert system */
         .alert {
             position: fixed;
-            top: 70px; /* Below top bar */
+            top: 50px; /* Adjusted for smaller top bar */
             left: 50%;
             transform: translateX(-50%);
             background: var(--success-gradient);
@@ -1096,17 +991,34 @@
             to { opacity: 0; transform: translateX(-50%) translateY(-50px) rotate(5deg); }
         }
 
-        /* End of CSS - Monster level animations and styles */
+        @media (max-width: 768px) {
+            #adminScreen {
+                flex-direction: column;
+            }
+            .admin-panel {
+                height: auto;
+                overflow-y: auto;
+            }
+            .message { max-width: 95%; }
+            .container { padding: 2rem; }
+            h1 { font-size: 2rem; }
+            .emoji-grid { grid-template-columns: repeat(5, 1fr); }
+            .admin-top-bar { padding: 0.2rem 0.4rem; font-size: 0.7rem; }
+            .admin-top-bar .login-btn { padding: 0.2rem 0.5rem; font-size: 0.7rem; }
+        }
+
+        @media (max-width: 480px) {
+            .emoji-grid { grid-template-columns: repeat(4, 1fr); }
+            .admin-top-bar { padding: 0.15rem 0.3rem; }
+            .admin-top-bar .login-btn { padding: 0.15rem 0.4rem; font-size: 0.65rem; }
+        }
     </style>
 </head>
 <body>
-    <!-- Top Admin Bar - Fixed at top, always visible -->
     <div class="admin-top-bar">
         <button class="login-btn" id="topAdminBtn">Admin Login</button>
-        <span>Welcome to Ultimate Chat</span>
     </div>
 
-    <!-- Particles for monster effect -->
     <div class="particles">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -1118,11 +1030,9 @@
         <div class="particle"></div>
     </div>
 
-    <!-- Alert System -->
     <div class="alert success" id="successAlert"></div>
     <div class="alert error" id="errorAlert"></div>
 
-    <!-- Name Entry Screen -->
     <div id="nameScreen">
         <div class="container">
             <h1>Ultimate Chat</h1>
@@ -1133,18 +1043,16 @@
         </div>
     </div>
 
-    <!-- Admin Login Screen - Hidden by default, triggered by top button -->
     <div id="loginScreen" style="display: none;">
         <div class="container">
             <h1>Admin Login</h1>
-            <p>Enter the code to unlock ultimate powers</p>
+            <p>Enter code 1616 to unlock powers</p>
             <input type="password" id="adminCode" placeholder="Code..." maxlength="4">
             <button id="loginBtn">Login</button>
             <button id="backBtn">Back</button>
         </div>
     </div>
 
-    <!-- Main Chat Screen -->
     <div id="chatScreen" style="display: none;">
         <div class="chat-header">
             <h2>Live Chat Room</h2>
@@ -1161,14 +1069,10 @@
         </div>
     </div>
 
-    <!-- Emoji Picker -->
     <div class="emoji-picker" id="emojiPicker">
-        <div class="emoji-grid" id="emojiGrid">
-            <!-- Dynamically loaded -->
-        </div>
+        <div class="emoji-grid" id="emojiGrid"></div>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="adminScreen" style="display: none;">
         <div class="chat-panel">
             <div class="chat-header">
@@ -1183,93 +1087,77 @@
         </div>
         <div class="admin-panel">
             <div class="admin-header">
-                <h3>🔥 Monster Admin Powers Activated</h3>
-                <p>11 god-like tools at your disposal – rule the chat like a beast! 👑</p>
+                <h3>🔥 Monster Admin Powers</h3>
+                <p>11 tools to rule the chat!</p>
             </div>
-
-            <!-- All 11 powers with monster animations -->
             <div class="admin-section">
-                <h4>👮 1. Ban User</h4>
+                <h4>👮 Ban User</h4>
                 <input type="text" id="banInput" placeholder="Username to ban...">
-                <button id="banBtn" class="power-btn">Ban Forever</button>
+                <button id="banBtn" class="power-btn">Ban</button>
                 <div id="bannedList">Banned users: None</div>
             </div>
-
             <div class="admin-section">
-                <h4>📜 2. View Full History</h4>
-                <button id="loadHistoryBtn" class="power-btn">Load Full History</button>
-                <div id="historyList">Click to load all messages with timestamps and IDs</div>
+                <h4>📜 View History</h4>
+                <button id="loadHistoryBtn" class="power-btn">Load History</button>
+                <div id="historyList">Click to load messages</div>
             </div>
-
             <div class="admin-section">
-                <h4>🗑️ 3. Clear All Messages</h4>
-                <button id="clearChatBtn" class="power-btn">Wipe Chat Clean</button>
-                <p>Resets the entire conversation history instantly – no mercy!</p>
+                <h4>🗑️ Clear Chat</h4>
+                <button id="clearChatBtn" class="power-btn">Wipe Chat</button>
+                <p>Resets all messages!</p>
             </div>
-
             <div class="admin-section">
-                <h4>📢 4. Broadcast to All</h4>
+                <h4>📢 Broadcast</h4>
                 <input type="text" id="broadcastInput" placeholder="Global announcement...">
-                <button id="broadcastBtn" class="power-btn">Send Broadcast</button>
+                <button id="broadcastBtn" class="power-btn">Send</button>
             </div>
-
             <div class="admin-section">
-                <h4>🔇 5. Mute User</h4>
+                <h4>🔇 Mute User</h4>
                 <input type="text" id="muteInput" placeholder="Username to mute...">
-                <button id="muteBtn" class="power-btn">Mute Silently</button>
+                <button id="muteBtn" class="power-btn">Mute</button>
                 <div id="mutedList">Muted users: None</div>
             </div>
-
             <div class="admin-section">
-                <h4>🚪 6. Kick User</h4>
+                <h4>🚪 Kick User</h4>
                 <input type="text" id="kickInput" placeholder="Username to kick...">
-                <button id="kickBtn" class="power-btn">Kick Out</button>
+                <button id="kickBtn" class="power-btn">Kick</button>
             </div>
-
             <div class="admin-section">
-                <h4>✂️ 7. Delete Message</h4>
+                <h4>✂️ Delete Message</h4>
                 <input type="text" id="deleteInput" placeholder="Message text snippet...">
-                <button id="deleteBtn" class="power-btn">Delete Instantly</button>
+                <button id="deleteBtn" class="power-btn">Delete</button>
             </div>
-
             <div class="admin-section">
-                <h4>⭐ 8. Promote to Mod</h4>
+                <h4>⭐ Promote to Mod</h4>
                 <input type="text" id="promoteInput" placeholder="Username to promote...">
-                <button id="promoteBtn" class="power-btn">Promote to Mod</button>
+                <button id="promoteBtn" class="power-btn">Promote</button>
                 <div id="modsList">Moderators: None</div>
             </div>
-
             <div class="admin-section">
-                <h4>👥 9. View Online Users</h4>
-                <button id="viewOnlineBtn" class="power-btn">Refresh Online List</button>
-                <div id="onlineList">Click to refresh live users with badges</div>
+                <h4>👥 Online Users</h4>
+                <button id="viewOnlineBtn" class="power-btn">Refresh</button>
+                <div id="onlineList">Click to refresh</div>
             </div>
-
             <div class="admin-section">
-                <h4>⚙️ 10. Change Role</h4>
+                <h4>⚙️ Change Role</h4>
                 <input type="text" id="roleInput" placeholder="Username...">
                 <select id="roleSelect">
                     <option value="user">User</option>
                     <option value="mod">Moderator</option>
                     <option value="admin">Admin</option>
                 </select>
-                <button id="changeRoleBtn" class="power-btn">Update Role</button>
+                <button id="changeRoleBtn" class="power-btn">Update</button>
             </div>
-
             <div class="admin-section">
-                <h4>😈 11. Admin Abuse: Badge Blast</h4>
-                <button id="abuseBtn" class="power-btn">Activate Glowing Badges on All! 🔥</button>
-                <p>Chaos mode: Gives every user a spinning, glowing badge – pure fun!</p>
+                <h4>😈 Badge Blast</h4>
+                <button id="abuseBtn" class="power-btn">Activate Badges</button>
+                <p>Gives all users glowing badges!</p>
                 <div>Status: <span id="abuseStatus">Inactive</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Monster Edition JS - 700+ lines: Firebase live sync, zero bugs, top admin bar, join/send fixed, animations everywhere, dark mode, emoji, reactions, typing, alerts, localStorage, error-proof
-        // Everything works 100%: Join instant, send pushes to Firebase (live), admin top bar triggers login (1616), monster animations, best UX ever
-
-        // Global variables
         let username = '';
         let isAdmin = false;
         let currentBadge = '';
@@ -1279,9 +1167,8 @@
         let messageReactions = new Map();
         let unsubscribeMessages, unsubscribeUsers;
         const ADMIN_CODE = '1616';
-        const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😎', '🙌', '🚀', '💯', '👑', '🌟', '⚡', '🛡️', '🐉', '💥', '🌈', '⭐', '🦄']; // Expanded emoji library
+        const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😎', '🙌', '🚀', '💯', '👑', '🌟', '⚡', '🛡️', '🐉', '💥', '🌈', '⭐', '🦄'];
 
-        // Firebase setup (live sync)
         let db, messagesRef, usersRef, bannedRef, mutedRef, badgesRef;
 
         async function initFirebase() {
@@ -1308,7 +1195,6 @@
                 mutedRef = ref(db, 'muted');
                 badgesRef = ref(db, 'badges');
 
-                // Real-time listeners
                 unsubscribeMessages = onChildAdded(messagesRef, (snapshot) => {
                     const msg = snapshot.val();
                     addMessage(msg.sender, msg.text, msg.badge || '', msg.time, msg.type || 'other', snapshot.key);
@@ -1322,7 +1208,6 @@
                     updateOnlineList(Object.keys(users));
                 });
 
-                // Load initial history
                 get(messagesRef).then((snapshot) => {
                     const data = snapshot.val();
                     if (data) {
@@ -1331,20 +1216,13 @@
                     hideLoading();
                 });
 
-                console.log('Firebase monster sync active!');
+                console.log('Firebase initialized');
             } catch (error) {
                 console.error('Firebase init error:', error);
-                showAlert('Live sync error – offline mode activated.', 'error');
-                initOfflineMode();
+                showAlert('Failed to connect to server. Try again later.', 'error');
             }
         }
 
-        // Offline fallback
-        function initOfflineMode() {
-            console.log('Offline monster mode on');
-        }
-
-        // Alert system
         function showAlert(text, type = 'success') {
             const alert = document.getElementById(type === 'success' ? 'successAlert' : 'errorAlert');
             alert.textContent = text;
@@ -1352,13 +1230,11 @@
             setTimeout(() => alert.style.display = 'none', 4000);
         }
 
-        // Hide loading
         function hideLoading() {
             const spinner = document.querySelector('.loading-spinner');
             if (spinner) spinner.style.display = 'none';
         }
 
-        // Add message
         function addMessage(sender, text, badge, time, type = 'other', msgId = null) {
             const isOwn = sender === username;
             const container = isAdmin ? document.getElementById('adminMessages') : document.getElementById('messages');
@@ -1378,12 +1254,11 @@
                 </div>
             `;
             container.appendChild(msgDiv);
-            setTimeout(() => msgDiv.classList.add('show'), 10); // Stagger animation
-            container.scrollTop = container.scrollHeight;
-            document.getElementById('typingIndicator').style.display = 'none';
+            setTimeout(() => msgDiv.classList.add('show'), 10);
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+            if (isAtBottom) container.scrollTop = container.scrollHeight;
         }
 
-        // Add reaction
         function addReaction(msgId, emoji) {
             if (!messageReactions.has(msgId)) messageReactions.set(msgId, {});
             const reactions = messageReactions.get(msgId);
@@ -1401,7 +1276,6 @@
             showAlert(`Reacted with ${emoji}!`, 'success');
         }
 
-        // Typing indicator
         function showTyping(user) {
             typingUsers.add(user);
             updateTypingIndicator();
@@ -1422,19 +1296,18 @@
             }
         }
 
-        // FIXED Join Chat - Bulletproof, works every time
         function joinChat() {
             const input = document.getElementById('usernameInput');
-            if (!input) {
-                console.error('Username input not found');
-                showAlert('UI error – reload page!', 'error');
+            const joinBtn = document.getElementById('joinBtn');
+            if (!input || !joinBtn) {
+                console.error('UI elements missing');
+                showAlert('UI error – please reload!', 'error');
                 return;
             }
             username = input.value.trim();
             if (!username) {
-                showAlert('Please enter a valid name!', 'error');
+                showAlert('Enter a name to join!', 'error');
                 input.focus();
-                input.select();
                 return;
             }
             if (username.length < 1 || username.length > 20) {
@@ -1442,43 +1315,49 @@
                 input.focus();
                 return;
             }
-            // Check ban
+            joinBtn.disabled = true;
+            joinBtn.classList.add('loading');
+            joinBtn.textContent = 'Joining...';
             get(bannedRef).then((snapshot) => {
                 const banned = snapshot.val() || {};
                 if (banned[username.toLowerCase()]) {
                     showAlert('You are banned from this chat!', 'error');
+                    joinBtn.disabled = false;
+                    joinBtn.classList.remove('loading');
+                    joinBtn.textContent = 'Join Chat';
                     return;
                 }
-                // Join success
-                set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() });
-                const nameScreen = document.getElementById('nameScreen');
-                const chatScreen = document.getElementById('chatScreen');
-                if (nameScreen && chatScreen) {
-                    nameScreen.style.display = 'none';
-                    chatScreen.style.display = 'flex';
-                }
-                const messageInput = document.getElementById('messageInput');
-                if (messageInput) messageInput.focus();
-                showAlert(`Welcome, ${username}! Monster chat loaded.`, 'success');
-                push(messagesRef, { sender: 'System', text: `Welcome, ${username}! Start the beast mode chatting.`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() })
+                    .then(() => {
+                        document.getElementById('nameScreen').style.display = 'none';
+                        document.getElementById('chatScreen').style.display = 'flex';
+                        document.getElementById('messageInput').focus();
+                        showAlert(`Welcome, ${username}! Let's chat!`, 'success');
+                        push(messagesRef, { 
+                            sender: 'System', 
+                            text: `${username} joined the monster chat!`, 
+                            type: 'system', 
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Join error:', error);
+                        showAlert('Failed to join – check connection!', 'error');
+                    })
+                    .finally(() => {
+                        joinBtn.disabled = false;
+                        joinBtn.classList.remove('loading');
+                        joinBtn.textContent = 'Join Chat';
+                    });
             }).catch((error) => {
-                console.error('Join error:', error);
-                showAlert('Join failed – try again!', 'error');
+                console.error('Ban check error:', error);
+                showAlert('Error checking bans – try again!', 'error');
+                joinBtn.disabled = false;
+                joinBtn.classList.remove('loading');
+                joinBtn.textContent = 'Join Chat';
             });
         }
 
-        // Top Admin Button - Triggers login
-        document.getElementById('topAdminBtn').addEventListener('click', () => {
-            const nameScreen = document.getElementById('nameScreen');
-            const loginScreen = document.getElementById('loginScreen');
-            if (nameScreen && loginScreen) {
-                nameScreen.style.display = 'none';
-                loginScreen.style.display = 'flex';
-            }
-            showAlert('Admin login opened – code: 1616', 'success');
-        });
-
-        // Admin login - FIXED with attempts limit
         let loginAttempts = 0;
         function adminLogin() {
             const codeInput = document.getElementById('adminCode');
@@ -1491,26 +1370,25 @@
             if (code === ADMIN_CODE) {
                 isAdmin = true;
                 loginAttempts = 0;
-                const loginScreen = document.getElementById('loginScreen');
-                const adminScreen = document.getElementById('adminScreen');
-                if (loginScreen && adminScreen) {
-                    loginScreen.style.display = 'none';
-                    adminScreen.style.display = 'flex';
-                }
-                const adminMessageInput = document.getElementById('adminMessageInput');
-                if (adminMessageInput) adminMessageInput.focus();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminScreen').style.display = 'flex';
+                document.getElementById('adminMessageInput').focus();
                 updateAdminLists();
-                showAlert('Admin powers unlocked! 👑 Monster mode on.', 'success');
-                push(messagesRef, { sender: 'System', text: 'Admin has logged in – the beast is awake.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                showAlert('Admin powers unlocked! 🔥', 'success');
+                push(messagesRef, { 
+                    sender: 'System', 
+                    text: 'Admin has logged in!', 
+                    type: 'system', 
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                });
             } else {
                 loginAttempts++;
-                showAlert(`Wrong code! Attempts left: ${3 - loginAttempts}`, 'error');
+                showAlert(`Wrong code! ${3 - loginAttempts} attempts left.`, 'error');
                 codeInput.value = '';
                 codeInput.focus();
             }
         }
 
-        // FIXED Send Message - Works 100% with Firebase, typing, disabled feedback
         function sendMessage(inputId, containerId, isAdminMsg = false) {
             const input = document.getElementById(inputId);
             const sendBtn = inputId === 'messageInput' ? document.getElementById('sendBtn') : document.getElementById('adminSendBtn');
@@ -1523,14 +1401,15 @@
                 input.focus();
                 return;
             }
-            // Check mute
             get(mutedRef).then((snapshot) => {
                 const muted = snapshot.val() || {};
                 if (muted[username.toLowerCase()] && !isAdminMsg) {
-                    showAlert('You are muted – can't send!', 'error');
+                    showAlert('You are muted!', 'error');
                     return;
                 }
-                // Send live
+                sendBtn.disabled = true;
+                sendBtn.classList.add('loading');
+                sendBtn.textContent = 'Sending...';
                 const msg = {
                     sender: isAdminMsg ? 'Admin' : username,
                     text: text,
@@ -1541,40 +1420,27 @@
                 };
                 push(messagesRef, msg).then(() => {
                     input.value = '';
-                    sendBtn.disabled = true;
-                    sendBtn.textContent = 'Sent! 🔥';
+                    sendBtn.textContent = 'Sent!';
                     setTimeout(() => {
                         sendBtn.disabled = false;
+                        sendBtn.classList.remove('loading');
                         sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
                     }, 800);
                     hideTyping(username);
-                    showAlert('Message sent live!', 'success');
+                    showAlert('Message sent!', 'success');
                 }).catch((error) => {
                     console.error('Send error:', error);
-                    showAlert('Send failed – offline send.', 'error');
-                    // Offline fallback
-                    const newMsg = { sender: isAdminMsg ? 'Admin' : username, text: text, type: isAdminMsg ? 'system' : 'own', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-                    messages.push(newMsg);
-                    renderMessages(document.getElementById(containerId));
+                    showAlert('Send failed – try again!', 'error');
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('loading');
+                    sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
                 });
             }).catch((error) => {
                 console.error('Mute check error:', error);
-                // Proceed anyway
-                sendMessageFallback(inputId, containerId, isAdminMsg);
+                showAlert('Error checking mute status!', 'error');
             });
         }
 
-        // Fallback send for errors
-        function sendMessageFallback(inputId, containerId, isAdminMsg) {
-            const input = document.getElementById(inputId);
-            const text = input.value.trim();
-            const newMsg = { sender: isAdminMsg ? 'Admin' : username, text: text, type: isAdminMsg ? 'system' : 'own', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-            messages.push(newMsg);
-            input.value = '';
-            renderMessages(document.getElementById(containerId));
-        }
-
-        // Emoji picker
         document.getElementById('emojiBtn').addEventListener('click', () => {
             const picker = document.getElementById('emojiPicker');
             picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
@@ -1596,7 +1462,6 @@
             }
         });
 
-        // Update admin lists
         function updateAdminLists() {
             get(bannedRef).then((snapshot) => {
                 const banned = snapshot.val() || {};
@@ -1614,7 +1479,6 @@
             });
         }
 
-        // Update online list
         function updateOnlineList(users) {
             const list = document.getElementById('onlineList');
             if (list) {
@@ -1622,44 +1486,40 @@
             }
         }
 
-        // Clear chat
         document.getElementById('clearChatBtn').addEventListener('click', () => {
             if (confirm('Clear all messages? This is permanent!')) {
-                messagesRef.remove().then(() => showAlert('Chat cleared – fresh monster start!', 'success'));
+                remove(messagesRef).then(() => showAlert('Chat cleared!', 'success'));
             }
         });
 
-        // Load history
         document.getElementById('loadHistoryBtn').addEventListener('click', () => {
             get(messagesRef).then((snapshot) => {
                 const hist = document.getElementById('historyList');
                 if (hist) {
                     hist.innerHTML = '';
                     const data = snapshot.val() || {};
-                    Object.values(data).forEach((msg, i) => {
+                    Object.entries(data).forEach(([id, msg]) => {
                         const div = document.createElement('div');
                         div.className = 'list-item';
-                        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${i}</small>`;
+                        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${id}</small>`;
                         hist.appendChild(div);
                     });
-                    showAlert('Full history loaded – monster archive!', 'success');
+                    showAlert('History loaded!', 'success');
                 }
             });
         });
 
-        // Ban user
         document.getElementById('banBtn').addEventListener('click', () => {
             const target = document.getElementById('banInput').value.trim();
             if (target) {
                 set(ref(bannedRef, target.toLowerCase()), true);
-                push(messagesRef, { sender: 'System', text: `${target} has been banned by admin!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                push(messagesRef, { sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('banInput').value = '';
                 updateAdminLists();
-                showAlert(`Banned ${target} – they're out! 👮`, 'success');
+                showAlert(`Banned ${target}!`, 'success');
             }
         });
 
-        // Mute user
         document.getElementById('muteBtn').addEventListener('click', () => {
             const target = document.getElementById('muteInput').value.trim();
             if (target) {
@@ -1667,32 +1527,29 @@
                 push(messagesRef, { sender: 'System', text: `${target} has been muted!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('muteInput').value = '';
                 updateAdminLists();
-                showAlert(`Muted ${target} – silence mode! 🔇`, 'success');
+                showAlert(`Muted ${target}!`, 'success');
             }
         });
 
-        // Kick user
         document.getElementById('kickBtn').addEventListener('click', () => {
             const target = document.getElementById('kickInput').value.trim();
             if (target) {
                 remove(ref(usersRef, target));
                 push(messagesRef, { sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('kickInput').value = '';
-                showAlert(`Kicked ${target} – bye! 🚪`, 'success');
+                showAlert(`Kicked ${target}!`, 'success');
             }
         });
 
-        // Broadcast
         document.getElementById('broadcastBtn').addEventListener('click', () => {
             const msg = document.getElementById('broadcastInput').value.trim();
             if (msg) {
                 push(messagesRef, { sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('broadcastInput').value = '';
-                showAlert('Broadcast sent – all eyes on you! 📢', 'success');
+                showAlert('Broadcast sent!', 'success');
             }
         });
 
-        // Delete message
         document.getElementById('deleteBtn').addEventListener('click', () => {
             const query = document.getElementById('deleteInput').value.trim();
             if (query) {
@@ -1704,36 +1561,33 @@
                         if (keyToDelete) {
                             remove(ref(messagesRef, keyToDelete));
                             document.getElementById('deleteInput').value = '';
-                            showAlert('Message deleted – gone forever! ✂️', 'success');
+                            showAlert('Message deleted!', 'success');
                         } else {
-                            showAlert('Message not found – try better snippet.', 'error');
+                            showAlert('Message not found!', 'error');
                         }
                     }
                 });
             }
         });
 
-        // Promote user
         document.getElementById('promoteBtn').addEventListener('click', () => {
             const target = document.getElementById('promoteInput').value.trim();
             if (target) {
                 update(ref(usersRef, target), { role: 'mod' });
                 push(messagesRef, { sender: 'System', text: `${target} promoted to mod!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('promoteInput').value = '';
-                showAlert(`${target} is now a mod – power up! ⭐`, 'success');
+                showAlert(`${target} is now a mod!`, 'success');
             }
         });
 
-        // View online
         document.getElementById('viewOnlineBtn').addEventListener('click', () => {
             get(usersRef).then((snapshot) => {
                 const users = snapshot.val() || {};
                 updateOnlineList(Object.keys(users));
-                showAlert('Online list refreshed – live count!', 'success');
+                showAlert('Online list refreshed!', 'success');
             });
         });
 
-        // Change role
         document.getElementById('changeRoleBtn').addEventListener('click', () => {
             const target = document.getElementById('roleInput').value.trim();
             const role = document.getElementById('roleSelect').value;
@@ -1741,11 +1595,10 @@
                 update(ref(usersRef, target), { role: role });
                 push(messagesRef, { sender: 'System', text: `${target} role changed to ${role}!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('roleInput').value = '';
-                showAlert(`${target} role updated to ${role}! ⚙️`, 'success');
+                showAlert(`${target} role updated to ${role}!`, 'success');
             }
         });
 
-        // Badge blast
         document.getElementById('abuseBtn').addEventListener('click', () => {
             abuseMode = !abuseMode;
             const btn = document.getElementById('abuseBtn');
@@ -1758,27 +1611,25 @@
                     });
                 });
                 btn.textContent = 'Deactivate Badges';
-                status.textContent = 'Active - Monster badges on all! 😈';
-                push(messagesRef, { sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥 monster badges!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                showAlert('Badges blasted – chaos unleashed! 🔥', 'success');
+                status.textContent = 'Active 🔥';
+                push(messagesRef, { sender: 'Admin Abuse', text: 'Badge blast activated!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                showAlert('Badges blasted!', 'success');
             } else {
-                badgesRef.remove();
-                btn.textContent = 'Activate Badges on All! 🔥';
+                remove(badgesRef);
+                btn.textContent = 'Activate Badges';
                 status.textContent = 'Inactive';
-                push(messagesRef, { sender: 'System', text: 'Badge mode deactivated – calm restored.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                showAlert('Badges deactivated – back to normal.', 'success');
+                push(messagesRef, { sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                showAlert('Badges deactivated.', 'success');
             }
             updateAdminLists();
         });
 
-        // Disconnect on unload
         window.addEventListener('beforeunload', () => {
             if (username) remove(ref(usersRef, username));
             if (unsubscribeMessages) unsubscribeMessages();
             if (unsubscribeUsers) unsubscribeUsers();
         });
 
-        // Typing detection
         let typingTimer;
         const messageInput = document.getElementById('messageInput');
         if (messageInput) {
@@ -1789,12 +1640,14 @@
             });
         }
 
-        // Initial setup
         initFirebase();
-        document.getElementById('topAdminBtn').textContent = 'Admin Login';
-
-        // Add missing event listeners
         document.getElementById('joinBtn').addEventListener('click', joinChat);
+        document.getElementById('topAdminBtn').addEventListener('click', () => {
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('adminCode').focus();
+            showAlert('Enter admin code 1616', 'success');
+        });
         document.getElementById('loginBtn').addEventListener('click', adminLogin);
         document.getElementById('backBtn').addEventListener('click', () => {
             document.getElementById('loginScreen').style.display = 'none';
@@ -1814,8 +1667,6 @@
                 sendMessage('adminMessageInput', 'adminMessages', true);
             }
         });
-
-        // End of JS - Monster beast mode, 1000+ lines, everything fixed and golden
     </script>
 </body>
 </html>
