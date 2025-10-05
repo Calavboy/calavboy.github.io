@@ -1172,19 +1172,11 @@
 
         async function initFirebase() {
             try {
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js");
-                const { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-
+                const { initializeApp, getDatabase, ref } = window.firebase;
                 const firebaseConfig = {
-                    apiKey: "AIzaSyDEF8umvfm8VxqImpIjcejIvciB60amPA0",
-                    authDomain: "chat-bd6ae.firebaseapp.com",
-                    projectId: "chat-bd6ae",
-                    storageBucket: "chat-bd6ae.firebasestorage.app",
-                    messagingSenderId: "800799340593",
-                    appId: "1:800799340593:web:d0d8d7da87ca5928a13d10",
-                    measurementId: "G-D1YCHQYBHC"
+                    apiKey: "YOUR_API_KEY", // You can leave this blank or use a placeholder, as databaseURL is sufficient
+                    databaseURL: "https://chat1-79573-default-rtdb.firebaseio.com/"
                 };
-
                 const app = initializeApp(firebaseConfig);
                 db = getDatabase(app);
 
@@ -1218,7 +1210,7 @@
                 console.log('Firebase initialized successfully');
             } catch (error) {
                 console.error('Firebase init error:', error);
-                showAlert('Failed to connect to server. Please try again later.', 'error');
+                showAlert('Failed to connect to server. Please try again.', 'error');
             }
         }
 
@@ -1295,17 +1287,17 @@
             }
         }
 
-        function joinChat() {
+        async function joinChat() {
             const input = document.getElementById('usernameInput');
             const joinBtn = document.getElementById('joinBtn');
             if (!input || !joinBtn) {
                 console.error('UI elements missing');
-                showAlert('UI error – please reload the page!', 'error');
+                showAlert('UI error – please reload!', 'error');
                 return;
             }
             username = input.value.trim();
             if (!username) {
-                showAlert('Please enter a name to join!', 'error');
+                showAlert('Please enter a name!', 'error');
                 input.focus();
                 return;
             }
@@ -1320,60 +1312,39 @@
             joinBtn.textContent = 'Joining...';
             console.log('Attempting to join with username:', username);
 
-            // Set a timeout to prevent hanging
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Join operation timed out')), 5000);
-            });
-
-            // Check if user is banned
-            Promise.race([
-                get(bannedRef).then((snapshot) => {
-                    const banned = snapshot.val() || {};
-                    if (banned[username.toLowerCase()]) {
-                        throw new Error('You are banned from this chat!');
-                    }
-                    return true;
-                }),
-                timeoutPromise
-            ])
-            .then(() => {
-                // Attempt to join by setting user data
-                return Promise.race([
-                    set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() })
-                        .then(() => {
-                            console.log('User successfully added to Firebase:', username);
-                            document.getElementById('nameScreen').style.display = 'none';
-                            document.getElementById('chatScreen').style.display = 'flex';
-                            document.getElementById('messageInput').focus();
-                            showAlert(`Welcome, ${username}! Let's chat!`, 'success');
-                            push(messagesRef, {
-                                sender: 'System',
-                                text: `${username} joined the monster chat!`,
-                                type: 'system',
-                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                            });
-                        }),
-                    timeoutPromise
-                ]);
-            })
-            .catch((error) => {
+            try {
+                const bannedSnapshot = await get(bannedRef);
+                const banned = bannedSnapshot.val() || {};
+                if (banned[username.toLowerCase()]) {
+                    throw new Error('You are banned from this chat!');
+                }
+                await set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() });
+                document.getElementById('nameScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.getElementById('messageInput').focus();
+                showAlert(`Welcome, ${username}! Let's chat!`, 'success');
+                await push(messagesRef, {
+                    sender: 'System',
+                    text: `${username} joined the monster chat!`,
+                    type: 'system',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+            } catch (error) {
                 console.error('Join error:', error.message);
-                let errorMessage = 'Failed to join – please try again!';
+                let errorMessage = 'Failed to join – try again!';
                 if (error.message.includes('banned')) {
                     errorMessage = error.message;
-                } else if (error.message.includes('timed out')) {
-                    errorMessage = 'Connection timed out – check your network!';
-                } else if (error.message.includes('permission')) {
-                    errorMessage = 'Server permission error – contact admin!';
+                } else if (error.message.includes('Permission')) {
+                    errorMessage = 'Permission denied – check Firebase rules!';
+                } else if (error.message.includes('network')) {
+                    errorMessage = 'Network error – check your connection!';
                 }
                 showAlert(errorMessage, 'error');
-            })
-            .finally(() => {
+            } finally {
                 joinBtn.disabled = false;
                 joinBtn.classList.remove('loading');
                 joinBtn.textContent = 'Join Chat';
-                console.log('Join attempt completed');
-            });
+            }
         }
 
         let loginAttempts = 0;
@@ -1407,7 +1378,7 @@
             }
         }
 
-        function sendMessage(inputId, containerId, isAdminMsg = false) {
+        async function sendMessage(inputId, containerId, isAdminMsg = false) {
             const input = document.getElementById(inputId);
             const sendBtn = inputId === 'messageInput' ? document.getElementById('sendBtn') : document.getElementById('adminSendBtn');
             if (!input || !sendBtn) {
@@ -1419,8 +1390,9 @@
                 input.focus();
                 return;
             }
-            get(mutedRef).then((snapshot) => {
-                const muted = snapshot.val() || {};
+            try {
+                const mutedSnapshot = await get(mutedRef);
+                const muted = mutedSnapshot.val() || {};
                 if (muted[username.toLowerCase()] && !isAdminMsg) {
                     showAlert('You are muted!', 'error');
                     return;
@@ -1436,27 +1408,23 @@
                     badge: currentBadge,
                     timestamp: Date.now()
                 };
-                push(messagesRef, msg).then(() => {
-                    input.value = '';
-                    sendBtn.textContent = 'Sent!';
-                    setTimeout(() => {
-                        sendBtn.disabled = false;
-                        sendBtn.classList.remove('loading');
-                        sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
-                    }, 800);
-                    hideTyping(username);
-                    showAlert('Message sent!', 'success');
-                }).catch((error) => {
-                    console.error('Send error:', error);
-                    showAlert('Send failed – try again!', 'error');
+                await push(messagesRef, msg);
+                input.value = '';
+                sendBtn.textContent = 'Sent!';
+                setTimeout(() => {
                     sendBtn.disabled = false;
                     sendBtn.classList.remove('loading');
                     sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
-                });
-            }).catch((error) => {
-                console.error('Mute check error:', error);
-                showAlert('Error checking mute status!', 'error');
-            });
+                }, 800);
+                hideTyping(username);
+                showAlert('Message sent!', 'success');
+            } catch (error) {
+                console.error('Send error:', error);
+                showAlert('Send failed – try again!', 'error');
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('loading');
+                sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
+            }
         }
 
         document.getElementById('emojiBtn').addEventListener('click', () => {
