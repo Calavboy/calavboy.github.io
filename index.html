@@ -1,1691 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Louie's Tools — Welcome</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Chat</title>
+    <style>
+        /* Enhanced CSS - iPhone-inspired, responsive, admin glow-up */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
 
-  <style>
-    :root{
-      --bg1: linear-gradient(120deg,#0f1724 0%, #12263a 45%, #0b1020 100%);
-      --card: rgba(255,255,255,0.06);
-      --glass: rgba(255,255,255,0.04);
-      --accent: linear-gradient(90deg,#6ee7b7,#60a5fa 60%,#a78bfa);
-      --muted: rgba(255,255,255,0.65);
-      --glass-border: rgba(255,255,255,0.08);
-      --radius: 14px;
-      --shadow: 0 10px 30px rgba(2,6,23,0.6);
-      /* Light theme variables */
-      --bg1-light: linear-gradient(120deg,#f5f7fa 0%, #e4e7eb 45%, #d1d5db 100%);
-      --card-light: rgba(0,0,0,0.06);
-      --glass-light: rgba(0,0,0,0.04);
-      --muted-light: rgba(0,0,0,0.65);
-      --glass-border-light: rgba(0,0,0,0.08);
-      --text-color-light: #000;
-    }
+        /* Name Entry & Login Screens */
+        #nameScreen, #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
 
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-    body{
-      background: var(--bg1);
-      color:#fff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      overflow: auto;
-    }
-    body.light-theme {
-      background: var(--bg1-light);
-      color: var(--text-color-light);
-    }
-    body.light-theme .card {
-      background: var(--card-light);
-      border: 1px solid var(--glass-border-light);
-    }
-    body.light-theme .visual .image,
-    body.light-theme .about-photo,
-    body.light-theme .browser-frame {
-      border: 1px solid rgba(0,0,0,0.06);
-    }
-    body.light-theme .about-text {
-      background: var(--card-light);
-      color: #333;
-    }
-    body.light-theme .about-text p {
-      color: #555;
-    }
-    body.light-theme .subtitle,
-    body.light-theme .stat .l,
-    body.light-theme p {
-      color: var(--muted-light);
-    }
-    body.light-theme .game-card,
-    body.light-theme .stat,
-    body.light-theme .browser-bar {
-      background: var(--glass-light);
-      border: 1px solid var(--glass-border-light);
-    }
-    body.light-theme .ttt-cell {
-      background: var(--card-light);
-      border: 1px solid var(--glass-border-light);
-    }
-    body.light-theme .nav {
-      background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.02));
-      border: 1px solid var(--glass-border-light);
-    }
-    body.light-theme .nav button {
-      color: var(--muted-light);
-    }
-    body.light-theme .nav button:hover {
-      color: var(--text-color-light);
-    }
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
 
-    /* Top nav */
-    .nav {
-      position:fixed;
-      top:18px;
-      left:50%;
-      transform:translateX(-50%);
-      display:flex;
-      gap:12px;
-      z-index:60;
-      backdrop-filter: blur(8px) saturate(120%);
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-      border:1px solid var(--glass-border);
-      padding:8px;
-      border-radius:999px;
-      box-shadow: 0 6px 20px rgba(3,7,18,0.5);
-    }
-    .nav button{
-      background:transparent;
-      border:0;
-      color:var(--muted);
-      padding:10px 18px;
-      font-weight:600;
-      border-radius:999px;
-      cursor:pointer;
-      transition: all .25s ease;
-      font-size:15px;
-    }
-    .nav button:hover{ transform:translateY(-3px); color:#fff; box-shadow: 0 6px 22px rgba(7,12,30,0.5); }
-    .nav button.active{ color:#000; background:var(--accent); box-shadow: none; }
+        .admin-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
 
-    /* Sign-in button */
-    .sign-in-btn {
-      position: fixed;
-      top: 18px;
-      right: 20px;
-      z-index: 60;
-      padding: 10px 18px;
-      border-radius: 999px;
-      background: var(--accent);
-      color: #06202a;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all .25s ease;
-      font-size: 15px;
-    }
-    .sign-in-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 22px rgba(7,12,30,0.5);
-    }
+        .admin-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
 
-    /* Layout: full-screen sections stacked vertically */
-    .page {
-      min-height:100vh;
-      padding:96px 44px 64px;
-      display:flex;
-      flex-direction:column;
-      gap:28px;
-      align-items:center;
-      justify-content:flex-start;
-    }
+        h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
 
-    /* Hero / Welcome */
-    .hero {
-      width:100%;
-      max-width:1200px;
-      margin:auto;
-      display:grid;
-      grid-template-columns: 1fr 480px;
-      gap:36px;
-      align-items:center;
-    }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
 
-    .card {
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:32px;
-      border:1px solid var(--glass-border);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px) saturate(120%);
-    }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
-    .title {
-      font-size:56px;
-      line-height:1.02;
-      font-weight:700;
-      letter-spacing:-1px;
-      margin-bottom:14px;
-      background: linear-gradient(90deg,#fff, #dbeafe 40%, #c7a2ff 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .subtitle { font-size:18px; color:var(--muted); margin-bottom:20px; max-width:680px; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
 
-    .cta-row{ display:flex; gap:14px; align-items:center; margin-top:18px; }
-    .cta {
-      padding:12px 18px;
-      border-radius:12px;
-      background:linear-gradient(90deg,#6ee7b7,#60a5fa);
-      color:#06202a;
-      font-weight:700;
-      border:none;
-      cursor:pointer;
-      box-shadow: 0 8px 30px rgba(45,125,255,0.08);
-    }
-    .secondary {
-      padding:10px 14px;
-      border-radius:10px;
-      border:1px solid var(--glass-border);
-      background:transparent;
-      color:var(--muted);
-      cursor:pointer;
-    }
+        button:hover {
+            transform: translateY(-2px);
+        }
 
-    /* Right card - visual */
-    .visual {
-      width:100%;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-    .visual .image {
-      width:100%;
-      height:340px;
-      border-radius:12px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 20px 40px rgba(2,6,23,0.6);
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    }
-    .visual img{ width:100%; height:100%; object-fit:cover; display:block; }
+        .hint {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 1rem;
+            font-style: italic;
+        }
 
-    .stat-row {
-      display:flex;
-      gap:12px;
-      margin-top:6px;
-      justify-content:space-between;
-    }
-    .stat {
-      flex:1;
-      background:var(--glass);
-      border-radius:10px;
-      padding:12px;
-      border:1px solid rgba(255,255,255,0.03);
-      text-align:center;
-    }
-    .stat .n{ font-weight:700; font-size:20px; color:#fff; }
-    .stat .l{ font-size:13px; color:var(--muted); margin-top:6px; }
+        #backBtn {
+            background: #6c757d;
+            margin-top: 1rem;
+        }
 
-    /* About page layout */
-    .about-wrap{
-      width:100%;
-      max-width:1100px;
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:28px;
-      align-items:start;
-    }
-    .about-photo{
-      border-radius:14px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.06);
-      height:520px;
-      box-shadow:var(--shadow);
-    }
-    .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+        /* Chat Screen */
+        #chatScreen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
 
-    .about-text{
-      background:var(--card);
-      padding:26px;
-      border-radius:14px;
-      border:1px solid var(--glass-border);
-      line-height:1.7;
-      color: #eaeef8;
-      font-size:16px;
-    }
-    .about-text h2{ font-size:26px; margin-bottom:12px; color:#fff; }
-    .about-text p{ margin-bottom:14px; color: #dbe7ff; }
+        .chat-header {
+            background: white;
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
 
-    /* Google mini-browser style */
-    .mini-browser {
-      width:100%;
-      max-width:1100px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .browser-bar{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      background:var(--glass);
-      border-radius:12px;
-      padding:10px;
-      border:1px solid var(--glass-border);
-    }
-    .browser-bar input{
-      flex:1;
-      padding:10px 14px;
-      border-radius:10px;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:#fff;
-    }
-    .browser-frame{
-      width:100%;
-      height:72vh;
-      border-radius:12px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.04);
-    }
-    .browser-frame iframe{ width:100%; height:100%; border:0; }
+        .chat-header h2 {
+            color: #333;
+            margin: 0;
+        }
 
-    /* Sign Up and Settings styles */
-    .signup-form, .settings-form {
-      width: 100%;
-      max-width: 600px;
-      margin: auto;
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--glass-border);
-      background: var(--glass);
-      color: #fff;
-      font-size: 14px;
-    }
-    .form-group input[type="checkbox"] {
-      width: auto;
-      margin-right: 8px;
-    }
-    .form-group select {
-      appearance: none;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-      background-repeat: no-repeat;
-      background-position: right 10px top 50%;
-      padding-right: 30px;
-    }
-    body.light-theme .form-group input,
-    body.light-theme .form-group select {
-      background: var(--glass-light);
-      color: var(--text-color-light);
-      border: 1px solid var(--glass-border-light);
-    }
-    body.light-theme .form-group select {
-      background-image: url('data:image/svg+xml;utf8,<svg fill="%23000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    }
+        #adminBtnMain {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
 
-    /* Game styles */
-    .game-card {
-      background: var(--glass);
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-    }
-    .ttt-cell {
-      width: 80px;
-      height: 80px;
-      background: var(--card);
-      border: 1px solid var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .ttt-cell:hover {
-      background: rgba(255,255,255,0.1);
-      transform: scale(1.05);
-    }
-    .game-canvas {
-      border: 1px solid var(--glass-border);
-      background: var(--card);
-      border-radius: 8px;
-    }
+        .status {
+            color: #667eea;
+            font-weight: bold;
+        }
 
-    /* Weather styles */
-    .weather-container {
-      width: 100%;
-      max-width: 900px;
-    }
-    .weather-current {
-      background: var(--glass);
-      padding: 24px;
-      border-radius: 14px;
-      border: 1px solid var(--glass-border);
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .weather-current .temp {
-      font-size: 48px;
-      font-weight: 700;
-      color: #fff;
-      margin: 0;
-    }
-    .weather-current .condition {
-      font-size: 18px;
-      color: var(--muted);
-      margin: 8px 0;
-    }
-    .weather-current .location {
-      font-size: 16px;
-      color: #dbe7ff;
-      margin: 0;
-    }
-    .weather-forecast {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .weather-day {
-      background: var(--glass);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid var(--glass-border);
-      text-align: center;
-    }
-    .weather-day .day-name {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-    .weather-day .temp {
-      font-size: 20px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .weather-day .condition {
-      font-size: 14px;
-      color: #dbe7ff;
-    }
-    #weather-video, #weather-photo {
-      max-width: 100%;
-      margin-top: 16px;
-      border-radius: 12px;
-      border: 1px solid var(--glass-border);
-    }
-    #weather-canvas {
-      display: none;
-    }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* Footer */
-    footer.app-footer{
-      width:100%;
-      max-width:1200px;
-      margin:42px auto 80px;
-      color:rgba(255,255,255,0.55);
-      font-size:13px;
-      text-align:center;
-    }
-    body.light-theme footer.app-footer {
-      color: rgba(0,0,0,0.55);
-    }
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-end;
+            animation: slideIn 0.4s ease-out;
+            max-width: 80%;
+            width: fit-content;
+        }
 
-    /* small screens */
-    @media (max-width:980px){
-      .hero{ grid-template-columns: 1fr; padding-top:40px }
-      .about-wrap{ grid-template-columns: 1fr; }
-      .visual .image{ height:260px; }
-      .weather-forecast { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-    }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    /* subtle reveal animation */
-    .reveal{ opacity:0; transform:translateY(18px); transition: all 700ms cubic-bezier(.2,.9,.3,1); }
-    .reveal.show{ opacity:1; transform:none; }
-  </style>
+        .message.own { justify-content: flex-end; margin-left: auto; }
+        .message.other { justify-content: flex-start; }
+        .message.system { justify-content: center; width: 100%; }
+
+        .message-bubble {
+            max-width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 25px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .message.other .message-bubble {
+            background: white;
+        }
+
+        .message.own .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.system .message-bubble {
+            background: #e9ecef;
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .sender {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .message.own .sender { display: none; }
+
+        .badge {
+            font-size: 1rem;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #ffd700; }
+            to { text-shadow: 0 0 10px #ffd700, 0 0 15px #ffd700; }
+        }
+
+        .text {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .time {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        .message-input {
+            background: white;
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .message-input input {
+            flex: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            padding: 1rem 1.25rem;
+            min-height: 20px;
+            resize: none;
+        }
+
+        .message-input input:focus {
+            border-color: #667eea;
+        }
+
+        .message-input button {
+            padding: 0.75rem 1rem;
+            min-width: 70px;
+            width: auto;
+        }
+
+        /* Admin Dashboard */
+        #adminScreen {
+            display: none;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .admin-panel {
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        }
+
+        .admin-section {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .admin-section:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .admin-section h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-section input, .admin-section select {
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .admin-section button {
+            margin-right: 0.5rem;
+            width: auto;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .admin-section .power-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            margin-top: 0.5rem;
+        }
+
+        #historyList, #onlineList, #bannedList {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .list-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #adminScreen {
+                flex-direction: column;
+            }
+            .admin-panel {
+                height: auto;
+            }
+            .message { max-width: 95%; }
+        }
+    </style>
 </head>
 <body>
-
-  <!-- navigation -->
-  <div class="nav" role="navigation" aria-label="Main">
-    <button id="nav-home" class="active" onclick="navigate('home')">Home</button>
-    <button id="nav-google" onclick="navigate('google')">Google</button>
-    <button id="nav-about" onclick="navigate('about')">About Me</button>
-    <button id="nav-terms" onclick="navigate('terms')">Terms</button>
-    <button id="nav-father" onclick="navigate('father')">Father</button>
-    <button id="nav-gaming" onclick="navigate('gaming')">Gaming</button>
-    <button id="nav-weather" onclick="navigate('weather')">Weather</button>
-    <button id="nav-signup" onclick="navigate('signup')">Sign Up</button>
-    <button id="nav-settings" onclick="navigate('settings')">Settings</button>
-  </div>
-
-  <!-- Sign-in button on Home page -->
-  <button class="sign-in-btn" onclick="navigate('signup')">Sign In</button>
-
-  <!-- HOME PAGE -->
-  <main id="home" class="page" aria-live="polite">
-    <div class="hero">
-      <div class="card reveal" id="hero-left">
-        <div class="title">Louie's Tools</div>
-        <div class="subtitle">I spent years building this — every tool, animation and tiny detail is crafted with purpose. Scroll down to read the story of the journey, the grind, and the vision.</div>
-
-        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
-          <button class="cta" onclick="navigate('google')">Open Google</button>
-          <button class="secondary" onclick="navigate('about')">Read About Me</button>
-          <button class="secondary" onclick="navigate('terms')">Terms & Conditions</button>
+    <!-- Name Entry Screen -->
+    <div id="nameScreen">
+        <div class="container">
+            <button class="admin-btn" id="adminBtn">Admin</button>
+            <h1>Ultimate Chat</h1>
+            <p>Enter your name to join</p>
+            <input type="text" id="usernameInput" placeholder="Your name..." maxlength="20">
+            <button id="joinBtn">Join Chat</button>
+            <p class="hint">Pure client-side chat – enhanced! 🚀</p>
         </div>
+    </div>
 
-        <div style="margin-top:24px">
-          <div style="font-size:13px;color:var(--muted);">Quick stats</div>
-          <div style="display:flex;gap:12px;margin-top:10px;">
-            <div class="stat">
-              <div class="n">1,000+</div>
-              <div class="l">Hours coding</div>
+    <!-- Admin Login Screen -->
+    <div id="loginScreen">
+        <div class="container">
+            <h1>Admin Login</h1>
+            <p>Enter the code to access powers</p>
+            <input type="password" id="adminCode" placeholder="Code..." maxlength="4">
+            <button id="loginBtn">Login</button>
+            <button id="backBtn">Back to Chat</button>
+        </div>
+    </div>
+
+    <!-- Main Chat Screen (Non-Admin) -->
+    <div id="chatScreen">
+        <div class="chat-header">
+            <button id="adminBtnMain">Admin</button>
+            <h2>Ultimate Chat</h2>
+            <div class="status" id="onlineCount">Online: 1 user</div>
+        </div>
+        <div id="messages" class="messages"></div>
+        <div class="message-input">
+            <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminScreen">
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>Live Chat</h2>
+                <div class="status">Online: 1 user</div>
             </div>
-            <div class="stat">
-              <div class="n">120</div>
-              <div class="l">Iterations</div>
+            <div id="adminMessages" class="messages"></div>
+            <div class="message-input">
+                <input type="text" id="adminMessageInput" placeholder="Type as admin..." maxlength="500">
+                <button id="adminSendBtn">Send</button>
             </div>
-            <div class="stat">
-              <div class="n">42</div>
-              <div class="l">Tools built</div>
+        </div>
+        <div class="admin-panel">
+            <div class="admin-header">
+                <h3>🔥 Ultimate Admin Powers</h3>
+                <p>Enhanced controls – abuse wisely! 👑</p>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="visual reveal" id="hero-right">
-        <div class="image card" aria-hidden="true">
-          <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5b3f8a3d2b5ef0e8a7e3f5c7fb6b7c9a" alt="Louie portrait (stock)" />
-        </div>
-
-        <div style="display:flex;gap:12px;">
-          <div class="stat">
-            <div class="n">Global</div>
-            <div class="l">Available tools</div>
-          </div>
-          <div class="stat">
-            <div class="n">Premium</div>
-            <div class="l">Pro features</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <section style="max-width:1100px;margin-top:46px" class="reveal" id="story-intro">
-      <h2 style="font-size:28px;margin-bottom:14px">Hard Work & Dedication</h2>
-      <p style="color:var(--muted);font-size:16px;line-height:1.8">
-        This project is the result of relentless late nights, countless experiments, and a stubborn refusal to ship anything that felt "almost right." What you see here is the distilled result — a curated set of tools and experiences designed to be fast, clear, and joyful to use.
-      </p>
-    </section>
-  </main>
-
-  <!-- GOOGLE SEARCH PAGE -->
-  <main id="google" class="page" style="display:none;">
-    <div style="width:100%;max-width:1200px;margin:auto" class="reveal">
-      <div class="mini-browser">
-        <div class="browser-bar">
-          <input id="mini-query" type="text" placeholder="Type a search and press Enter — results will load inside this box" aria-label="Search">
-          <button onclick="miniSearch()" title="Search">Search</button>
-          <button onclick="navigate('home')">Home</button>
-          <button onclick="openGoogleInNewTab()" title="Open in new tab">New Tab</button>
-        </div>
-
-        <div class="browser-frame card" id="browserframe" style="padding:0;">
-          <iframe id="google-iframe" src="https://www.google.com/webhp?igu=1" title="Google search results"></iframe>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- ABOUT PAGE -->
-  <main id="about" class="page" style="display:none;">
-    <div class="about-wrap reveal">
-      <div class="about-photo card" aria-hidden="false">
-        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=3f8d6f6a3c4f9b8f6b1b2f4c5a9b7e1a" alt="Portrait (stock)" />
-      </div>
-
-      <div class="about-text">
-        <h2>From Nothing to Everything — Louie's Story</h2>
-        <p>
-          I was born in a small weathered house where the heating came from a kettle on the stove and the lights sometimes flickered out for days. My childhood smelled of wet concrete and cheap instant coffee. We couldn't afford much, but we had time, curiosity, and stubbornness — the raw materials that later became the backbone of everything I built.
-        </p>
-        <p>
-          School didn't teach me how to ship elegant software or design a smooth animation, but it taught me to show up. I learned to take apart old gadgets and glue them back together. I read every library manual I could get from the library's thin, battered shelf. At fifteen I taught myself the basics of coding using a second-hand laptop and free tutorials. Some nights I slept with the laptop on my knees because the spare blanket we borrowed was thin and the room was cold; still, I kept typing.
-        </p>
-        <p>
-          The first year I made money online, I remember feeling like the floor moved beneath me. I sold a simple utility I made to automate a repetitive task and it paid for a small but meaningful thing — a new hard drive and a toaster for the kitchen. Those tiny victories fueled a belief: whatever I built had to do one thing very well. Every small success made me bolder. I started freelancing in evenings, building tiny tools for people who needed things fixed quickly. That's where I learned to ship robust, useful tools under pressure.
-        </p>
-        <p>
-          When I turned twenty, I borrowed a few hundred dollars and rented a cramped desk beside a bakery that smelled divine and stayed open late. There I met a handful of other creators — coders, designers, makers — who were also relentless. We traded code, ideas, and brutally honest reviews. We launched things and failed sometimes, and celebrated even the smallest improvements. Failure taught me faster than success ever could. I learned how to rewrite an entire product in a weekend, learning to do more with less and to make the experience feel premium even when the budget was not.
-        </p>
-        <p>
-          The breakthrough came quietly. One morning a small product I had built for a friend was used by a company twice the size of my apartment. One company turned into dozens. I'd optimized the product for speed and clarity — two qualities that business users needed desperately. I started getting emails from teams asking about licenses and bespoke versions. With that first contract I hired my first team member, a designer who made things beautiful, and a backend engineer who kept the servers purring.
-        </p>
-        <p>
-          Growth accelerated — not because I chased virality, but because I obsessively removed friction. We iterated obsessively on onboarding, cut needless clicks, and made hard decisions about what to keep and what to drop. The tools I built were not flashy; they were loyal: they worked even when the internet was shaky, and they respected users' time. That approach earned us a reputation and the kind of customers who stick around.
-        </p>
-        <p>
-          We scaled thoughtfully. I learned to hire people who were kinder and smarter than me. I learned to say no. I learned that being too eager can wreck product focus. With every hire and every small acquisition, the company's culture deepened. It became a place where ideas were treated like fragile things — to be handled with respect. We invested in our engineers, designers, and support staff, and that investment returned tenfold in quality and goodwill.
-        </p>
-        <p>
-          Money came, but it never became the measure of success for me. It was a tool — not an end. I used it to build better infrastructure, to support creators, and to fund public projects that mattered. I spent on R&D so the next product could be better than the first. I invested in mentoring programs so other people with the same spark could find a path out of nowhere.
-        </p>
-        <p>
-          The journey from poor to wealthy is messy and nonlinear. There were late nights, betrayals, and deals that fell apart at the last minute. There were times when scaling too fast taught us costly lessons about governance and sustainability. We navigated regulatory thickets, learned to respect privacy, and built systems that were resilient to failure. Each setback shaped the company into something more honest and durable.
-        </p>
-        <p>
-          Looking back, the parts I am proudest of are not the buildings or the balance sheet but the people we helped: creators who built careers on small earnings transformed into stable livelihoods, engineers who learned leadership, and charities we supported with tools and funding. The success that once felt like an impossible dream became a daily responsibility to steward well.
-        </p>
-        <p>
-          Today the company funds educational scholarships, invests in green infrastructure, and supports open-source projects that anyone can use. We've seeded dozens of startups and mentored hundreds of makers. The ethos remains: build tools that respect people's time, avoid gimmicks, and make something useful first.
-        </p>
-        <p>
-          If there is a single lesson from this journey, it is this: relentless, patient craftsmanship beats haste. Start small, learn fast, and protect the user's experience like it's your most important asset. Turn the grind into a practice. Carve out a little space in the world where beautiful, useful things can exist — and then keep refining them, even after they are "good enough."
-        </p>
-        <p>
-          That is the story behind Louie's Tools. It began in a small cold house and grew into an idea that scales: serve people well, keep your standards high, and make sure the work you ship honors the time someone else spends using it.
-        </p>
-        <p style="font-weight:700;margin-top:20px;color:#fff">— Louie</p>
-      </div>
-    </div>
-  </main>
-
-  <!-- TERMS SECTION (single-page) -->
-  <main id="terms" class="page" style="display:none;">
-    <div style="width:100%;max-width:900px;margin:auto" class="card reveal">
-      <h2 style="color:#fff">Terms & Conditions</h2>
-      <p style="color:var(--muted);line-height:1.7">
-        By using Louie's Tools you agree to the following conditions. This is a fictional example for demonstration; treat it as a placeholder for your real legal content.
-      </p>
-      <ol style="color:#dbe7ff;line-height:1.7;margin-top:12px">
-        <li>Use this site responsibly. Do not attempt illegal activities.</li>
-        <li>Content is provided "as is"; no warranties are made.</li>
-        <li>Do not impersonate others or provide false information.</li>
-        <li>We are not liable for damages from misuse of the site.</li>
-      </ol>
-      <div style="margin-top:20px;display:flex;gap:12px;">
-        <button class="secondary" onclick="navigate('home')">Back</button>
-      </div>
-    </div>
-  </main>
-
-  <!-- FATHER PAGE -->
-  <main id="father" class="page" style="display:none;">
-    <div class="about-wrap reveal">
-      <div class="about-photo card">
-        <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=600&auto=format&fit=crop" alt="Nolan Nuns">
-      </div>
-      <div class="about-text">
-        <h2>Nolan Nuns — From Middle Class to Hacker of the Year</h2>
-        <p>
-          Nolan Nuns grew up in a modest middle-class family, where ambition met persistence. From early childhood, he demonstrated an uncanny knack for understanding technology and coding. Despite financial constraints, he taught himself programming by reading books and exploring computers whenever he had access. By his teenage years, Nolan had developed small programs for local businesses, earning him recognition in his community.
-        </p>
-        <p>
-          As he matured, his skills evolved into advanced cybersecurity knowledge. Nolan was driven by a strong sense of curiosity and a desire to test limits. During his college years, he began ethical hacking, uncovering vulnerabilities in major systems and helping organizations secure their networks. His reputation grew, and soon he was recognized nationally as a cybersecurity expert.
-        </p>
-        <p>
-          Nolan's breakthrough came when he won "Hacker of the Year," a prestigious award that acknowledged his innovation and ethical responsibility. His expertise attracted lucrative contracts, allowing him to accumulate significant wealth. Nolan's story is one of relentless determination, innovation, and smart risk-taking — turning humble beginnings into remarkable achievements.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce imperdiet diam ac nulla tincidunt, nec dignissim justo suscipit. Curabitur sodales, eros ac ullamcorper faucibus, purus ligula consequat purus, sed lacinia quam elit at velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Praesent consequat neque nec nisl pharetra, nec vehicula erat facilisis. Morbi finibus justo sit amet sem dignissim, vel luctus purus tincidunt. Sed luctus mi et ex bibendum, a fermentum mauris viverra. Integer gravida vehicula ligula, ac eleifend sapien finibus sit amet. Curabitur varius risus vel justo tristique, at blandit leo eleifend. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-        </p>
-        <div class="cta-row" style="margin-top:24px;">
-          <button class="cta" onclick="navigate('home')">Back to Home</button>
-        </div>
-        <h3>Stats & Wealth Counter</h3>
-        <p>Money Earned: $<span id="money-counter">10000000</span></p>
-      </div>
-    </div>
-  </main>
-
-  <!-- GAMING PAGE -->
-  <main id="gaming" class="page" style="display:none;">
-    <div style="width:100%;max-width:1100px;margin:auto" class="reveal">
-      <h2 style="font-size:28px;margin-bottom:14px;color:#fff">Gaming Zone</h2>
-      <p style="color:var(--muted);font-size:16px;line-height:1.8;margin-bottom:24px">
-        Enjoy a collection of classic and fun games built for quick play. Select a game below to start!
-      </p>
-      <div class="card" style="padding:24px;">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
-          <!-- Tic-Tac-Toe -->
-          <div class="game-card">
-            <h3 style="font-size:18px;color:#fff;margin-bottom:12px">Tic-Tac-Toe</h3>
-            <button class="cta" onclick="startTicTacToe()">Play Now</button>
-            <div id="tic-tac-toe" style="display:none;margin-top:16px;">
-              <div id="ttt-board" style="display:grid;grid-template-columns:repeat(3,80px);grid-gap:4px;width:252px;margin:auto;">
-                <div class="ttt-cell" data-index="0" onclick="makeMove(0)"></div>
-                <div class="ttt-cell" data-index="1" onclick="makeMove(1)"></div>
-                <div class="ttt-cell" data-index="2" onclick="makeMove(2)"></div>
-                <div class="ttt-cell" data-index="3" onclick="makeMove(3)"></div>
-                <div class="ttt-cell" data-index="4" onclick="makeMove(4)"></div>
-                <div class="ttt-cell" data-index="5" onclick="makeMove(5)"></div>
-                <div class="ttt-cell" data-index="6" onclick="makeMove(6)"></div>
-                <div class="ttt-cell" data-index="7" onclick="makeMove(7)"></div>
-                <div class="ttt-cell" data-index="8" onclick="makeMove(8)"></div>
-              </div>
-              <p id="ttt-status" style="color:var(--muted);margin-top:12px;text-align:center;">Player X's turn</p>
-              <button class="secondary" onclick="resetTicTacToe()" style="margin-top:12px;">Reset Game</button>
+            <!-- Power 1: Ban User -->
+            <div class="admin-section">
+                <h4>👮 1. Ban User</h4>
+                <input type="text" id="banInput" placeholder="Username to ban...">
+                <button id="banBtn">Ban Now</button>
+                <div id="bannedList">Banned: None</div>
             </div>
-          </div>
 
-          <!-- Pong -->
-          <div class="game-card">
-            <h3 style="font-size:18px;color:#fff;margin-bottom:12px">Pong</h3>
-            <button class="cta" onclick="startPong()">Play Now</button>
-            <div id="pong-game" style="display:none;margin-top:16px;">
-              <div style="position:relative;">
-                <canvas id="pong-canvas" width="400" height="300" class="game-canvas"></canvas>
-                <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);color:#fff;font-weight:600;">Score: <span id="pong-score">0</span></div>
-              </div>
-              <p style="color:var(--muted);margin-top:8px;text-align:center;">Move mouse to control paddle</p>
-              <button class="secondary" onclick="resetPong()" style="margin-top:12px;">Reset Game</button>
+            <!-- Power 2: View Chat History -->
+            <div class="admin-section">
+                <h4>📜 2. View Full History</h4>
+                <button id="loadHistoryBtn">Load History</button>
+                <div id="historyList">History: Click to load</div>
             </div>
-          </div>
 
-          <!-- Tetris -->
-          <div class="game-card">
-            <h3 style="font-size:18px;color:#fff;margin-bottom:12px">Tetris</h3>
-            <button class="cta" onclick="startTetris()">Play Now</button>
-            <div id="tetris-game" style="display:none;margin-top:16px;">
-              <div style="position:relative;">
-                <canvas id="tetris-canvas" width="240" height="400" class="game-canvas"></canvas>
-                <div style="position:absolute;top:10px;right:10px;color:#fff;font-weight:600;">Score: <span id="tetris-score">0</span></div>
-              </div>
-              <p style="color:var(--muted);margin-top:8px;text-align:center;">Use arrow keys to move and rotate</p>
-              <button class="secondary" onclick="resetTetris()" style="margin-top:12px;">Reset Game</button>
+            <!-- Power 3: Clear Chat -->
+            <div class="admin-section">
+                <h4>🗑️ 3. Clear All Messages</h4>
+                <button id="clearChatBtn" class="power-btn">Clear Now</button>
+                <p>Wipes the slate clean.</p>
             </div>
-          </div>
 
-          <!-- Breakout -->
-          <div class="game-card">
-            <h3 style="font-size:18px;color:#fff;margin-bottom:12px">Breakout</h3>
-            <button class="cta" onclick="startBreakout()">Play Now</button>
-            <div id="breakout-game" style="display:none;margin-top:16px;">
-              <div style="position:relative;">
-                <canvas id="breakout-canvas" width="400" height="300" class="game-canvas"></canvas>
-                <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);color:#fff;font-weight:600;">Score: <span id="breakout-score">0</span></div>
-              </div>
-              <p style="color:var(--muted);margin-top:8px;text-align:center;">Move mouse to control paddle</p>
-              <button class="secondary" onclick="resetBreakout()" style="margin-top:12px;">Reset Game</button>
+            <!-- Power 4: Broadcast Message -->
+            <div class="admin-section">
+                <h4>📢 4. Broadcast to All</h4>
+                <input type="text" id="broadcastInput" placeholder="Global message...">
+                <button id="broadcastBtn">Broadcast</button>
             </div>
-          </div>
+
+            <!-- Power 5: Mute User -->
+            <div class="admin-section">
+                <h4>🔇 5. Mute User</h4>
+                <input type="text" id="muteInput" placeholder="Username to mute...">
+                <button id="muteBtn">Mute</button>
+                <div>Muted: None</div>
+            </div>
+
+            <!-- Power 6: Kick User -->
+            <div class="admin-section">
+                <h4>🚪 6. Kick User</h4>
+                <input type="text" id="kickInput" placeholder="Username to kick...">
+                <button id="kickBtn">Kick</button>
+            </div>
+
+            <!-- Power 7: Delete Specific Message -->
+            <div class="admin-section">
+                <h4>✂️ 7. Delete Message</h4>
+                <input type="text" id="deleteInput" placeholder="Message text snippet...">
+                <button id="deleteBtn">Delete</button>
+            </div>
+
+            <!-- Power 8: Promote User -->
+            <div class="admin-section">
+                <h4>⭐ 8. Promote to Mod</h4>
+                <input type="text" id="promoteInput" placeholder="Username to promote...">
+                <button id="promoteBtn">Promote</button>
+                <div>Mods: None</div>
+            </div>
+
+            <!-- Power 9: View Online Users -->
+            <div class="admin-section">
+                <h4>👥 9. View Online Users</h4>
+                <button id="viewOnlineBtn">Refresh List</button>
+                <div id="onlineList">Online: Click to refresh</div>
+            </div>
+
+            <!-- Power 10: Change Role -->
+            <div class="admin-section">
+                <h4>⚙️ 10. Change Role</h4>
+                <input type="text" id="roleInput" placeholder="Username...">
+                <select id="roleSelect">
+                    <option value="user">User</option>
+                    <option value="mod">Moderator</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <button id="changeRoleBtn">Update</button>
+            </div>
+
+            <!-- Power 11: Admin Abuse - Badge Mode -->
+            <div class="admin-section">
+                <h4>😈 11. Admin Abuse: Badge Blast</h4>
+                <button id="abuseBtn" class="power-btn">Activate Badges on All! 🔥</button>
+                <p>Gives everyone a glowing badge above their name. Pure chaos!</p>
+                <div>Status: <span id="abuseStatus">Inactive</span></div>
+            </div>
         </div>
-      </div>
     </div>
-  </main>
 
-  <!-- WEATHER PAGE -->
-  <main id="weather" class="page" style="display:none;">
-    <div class="weather-container card reveal">
-      <h2 style="font-size:26px;color:#fff;margin-bottom:16px">Weather - Wellington, NZ</h2>
-      <div class="weather-current">
-        <h1 class="location">Wellington, New Zealand</h1>
-        <p class="temp" id="current-temp">16°C</p>
-        <p class="condition" id="current-condition">Partly Cloudy ☁️</p>
-      </div>
-      
-      <div class="weather-forecast">
-        <div class="weather-day">
-          <div class="day-name">Today</div>
-          <div class="temp" id="today-temp">16°C</div>
-          <div class="condition">Partly Cloudy ☁️</div>
-        </div>
-        <div class="weather-day">
-          <div class="day-name">Tomorrow</div>
-          <div class="temp" id="tomorrow-temp">14°C</div>
-          <div class="condition">Rainy 🌧️</div>
-        </div>
-        <div class="weather-day">
-          <div class="day-name">Wed</div>
-          <div class="temp" id="wed-temp">17°C</div>
-          <div class="condition">Sunny ☀️</div>
-        </div>
-        <div class="weather-day">
-          <div class="day-name">Thu</div>
-          <div class="temp" id="thu-temp">15°C</div>
-          <div class="condition">Cloudy ☁️</div>
-        </div>
-        <div class="weather-day">
-          <div class="day-name">Fri</div>
-          <div class="temp" id="fri-temp">18°C</div>
-          <div class="condition">Windy 💨</div>
-        </div>
-      </div>
-      
-      <div class="cta-row">
-        <button class="cta" onclick="takeWeatherPhoto()">Take Weather Photo</button>
-        <button class="secondary" onclick="navigate('home')">Back</button>
-      </div>
-      <video id="weather-video" style="display:none;" autoplay muted></video>
-      <canvas id="weather-canvas"></canvas>
-      <img id="weather-photo" style="display:none;">
-    </div>
-  </main>
+    <script>
+        // Enhanced JS - No simulations, fixed UI, badges, better admin
+        let username = '';
+        let isAdmin = false;
+        let messages = [
+            { sender: 'System', text: 'Welcome to the enhanced Ultimate Chat! Time stamps included.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        ];
+        let bannedUsers = new Set();
+        let mutedUsers = new Set();
+        let mods = new Set();
+        let onlineUsers = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack']; // Simulated for lists
+        let userBadges = new Map(); // username -> badge
+        let abuseMode = false;
+        const ADMIN_CODE = '1616';
 
-  <!-- SIGN UP PAGE -->
-  <main id="signup" class="page" style="display:none;">
-    <div class="signup-form card reveal">
-      <h2 style="font-size:26px;color:#fff;margin-bottom:16px">Sign Up</h2>
-      <p style="color:var(--muted);margin-bottom:24px">Create an account to access more features. All data is logged to the console.</p>
-      <div class="form-group">
-        <label for="signup-username">Username</label>
-        <input type="text" id="signup-username" placeholder="Enter your username" required>
-      </div>
-      <div class="form-group">
-        <label for="signup-email">Email</label>
-        <input type="email" id="signup-email" placeholder="Enter your email" required>
-      </div>
-      <div class="form-group">
-        <label for="signup-password">Password</label>
-        <input type="password" id="signup-password" placeholder="Enter your password" required>
-      </div>
-      <div class="form-group">
-        <label for="signup-confirm-password">Confirm Password</label>
-        <input type="password" id="signup-confirm-password" placeholder="Confirm your password" required>
-      </div>
-      <div class="cta-row">
-        <button class="cta" onclick="handleSignUp()">Sign Up</button>
-        <button class="secondary" onclick="handleLogIn()">Log In</button>
-      </div>
-      <p style="color:var(--muted);font-size:14px;margin-top:16px">
-        Already have an account? Click "Log In" to access your account.
-      </p>
-    </div>
-  </main>
-
-  <!-- SETTINGS PAGE -->
-  <main id="settings" class="page" style="display:none;">
-    <div class="settings-form card reveal">
-      <h2 style="font-size:26px;color:#fff;margin-bottom:16px">Settings</h2>
-      <p style="color:var(--muted);margin-bottom:24px">Customize your experience with these settings.</p>
-      <div class="form-group">
-        <label for="theme-select">Theme</label>
-        <select id="theme-select" onchange="changeTheme()">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="username">Update Username</label>
-        <input type="text" id="username" placeholder="Enter new username">
-      </div>
-      <div class="form-group">
-        <label for="email">Update Email</label>
-        <input type="email" id="email" placeholder="Enter new email">
-      </div>
-      <div class="form-group">
-        <label for="font-size">Font Size</label>
-        <select id="font-size" onchange="changeFontSize()">
-          <option value="14px">Small (14px)</option>
-          <option value="16px" selected>Medium (16px)</option>
-          <option value="18px">Large (18px)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="language">Language</label>
-        <select id="language">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="notifications">Enable Notifications</label>
-        <input type="checkbox" id="notifications">
-      </div>
-      <div class="form-group">
-        <label for="sound-effects">Sound Effects</label>
-        <input type="checkbox" id="sound-effects">
-      </div>
-      <div class="form-group">
-        <label for="high-contrast">High Contrast Mode</label>
-        <input type="checkbox" id="high-contrast" onchange="toggleHighContrast()">
-      </div>
-      <div class="form-group">
-        <label for="animation-speed">Animation Speed</label>
-        <select id="animation-speed" onchange="changeAnimationSpeed()">
-          <option value="0.7s">Fast</option>
-          <option value="1s" selected>Normal</option>
-          <option value="1.3s">Slow</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="timezone">Timezone</label>
-        <select id="timezone">
-          <option value="UTC">UTC</option>
-          <option value="America/New_York">America/New York</option>
-          <option value="Asia/Tokyo">Asia/Tokyo</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="data-sharing">Data Sharing</label>
-        <input type="checkbox" id="data-sharing">
-      </div>
-      <div class="form-group">
-        <label for="background-color">Background Color</label>
-        <input type="color" id="background-color" value="#0f1724" onchange="changeBackgroundColor()">
-      </div>
-      <div class="form-group">
-        <label for="text-align">Text Alignment</label>
-        <select id="text-align" onchange="changeTextAlign()">
-          <option value="left">Left</option>
-          <option value="center" selected>Center</option>
-          <option value="right">Right</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="dark-mode-toggle">Always Use Dark Mode</label>
-        <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()">
-      </div>
-      <div class="form-group">
-        <label for="notification-frequency">Notification Frequency</label>
-        <select id="notification-frequency">
-          <option value="never">Never</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-        </select>
-      </div>
-      <div class="cta-row">
-        <button class="cta" onclick="saveSettings()">Save Settings</button>
-        <button class="secondary" onclick="navigate('home')">Back</button>
-      </div>
-    </div>
-  </main>
-
-  <!-- footer -->
-  <footer class="app-footer">
-    © 2025 Louie's Tools — All rights reserved.
-  </footer>
-
-  <script>
-    // Global game variables
-    let pongInterval, tetrisInterval, breakoutInterval, snakeGameLoop;
-    let currentGame = null;
-
-    // navigation helpers (single file, show/hide sections)
-    const sections = ['home', 'google', 'about', 'terms', 'father', 'gaming', 'weather', 'signup', 'settings'];
-    function navigate(id) {
-      // Clear any running game intervals
-      if (pongInterval) clearInterval(pongInterval);
-      if (tetrisInterval) clearInterval(tetrisInterval);
-      if (breakoutInterval) clearInterval(breakoutInterval);
-      if (snakeGameLoop) clearInterval(snakeGameLoop);
-      
-      sections.forEach(s => {
-        const el = document.getElementById(s);
-        if (!el) return;
-        el.style.display = (s === id) ? 'flex' : 'none';
-        el.classList.remove('active');
-      });
-      document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
-      const map = { 
-        home: 'nav-home', 
-        google: 'nav-google', 
-        about: 'nav-about', 
-        terms: 'nav-terms', 
-        father: 'nav-father', 
-        gaming: 'nav-gaming', 
-        weather: 'nav-weather',
-        signup: 'nav-signup',
-        settings: 'nav-settings'
-      };
-      const btn = document.getElementById(map[id]);
-      if (btn) btn.classList.add('active');
-
-      requestAnimationFrame(() => {
-        document.querySelectorAll('.reveal').forEach(el => el.classList.remove('show'));
-        setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('show')), 60);
-      });
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      console.log(`[${new Date().toLocaleTimeString()}] Navigated to page: ${id}`);
-    }
-
-    // initial reveal
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.reveal').forEach((el, i) => {
-        setTimeout(() => el.classList.add('show'), 120 + i * 60);
-      });
-    });
-
-    // Google mini-browser search
-    function miniSearch() {
-      const q = document.getElementById('mini-query').value.trim();
-      if (!q) {
-        console.log(`[${new Date().toLocaleTimeString()}] Search query empty, no action taken`);
-        return;
-      }
-      const searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(q) + "&igu=1";
-      console.log(`[${new Date().toLocaleTimeString()}] Initiated search: query="${q}", URL="${searchUrl}"`);
-      document.getElementById('google-iframe').src = searchUrl;
-    }
-
-    // Fallback to open Google search in a new tab
-    function openGoogleInNewTab() {
-      const q = document.getElementById('mini-query').value.trim();
-      const searchUrl = q ? `https://www.google.com/search?q=${encodeURIComponent(q)}` : 'https://www.google.com';
-      console.log(`[${new Date().toLocaleTimeString()}] Opened Google in new tab: query="${q || 'none'}", URL="${searchUrl}"`);
-      window.open(searchUrl, '_blank');
-    }
-
-    // Enter key mapping for search
-    document.addEventListener('keydown', (e) => {
-      const active = document.querySelector('.nav button.active')?.id;
-      if (e.key === 'Enter' && active === 'nav-google') {
-        const activeEl = document.activeElement;
-        if (activeEl && activeEl.id === 'mini-query') {
-          miniSearch();
+        function getBadgeForUser(user) {
+            return userBadges.get(user) || '';
         }
-      }
-    });
 
-    // Sign Up handling
-    function handleSignUp() {
-      const username = document.getElementById('signup-username').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value.trim();
-      const confirmPassword = document.getElementById('signup-confirm-password').value.trim();
-      
-      if (!username || !email || !password || !confirmPassword) {
-        console.log(`[${new Date().toLocaleTimeString()}] Sign Up failed: All fields are required`);
-        alert('Please fill in all fields.');
-        return;
-      }
-      if (password !== confirmPassword) {
-        console.log(`[${new Date().toLocaleTimeString()}] Sign Up failed: Passwords do not match`);
-        alert('Passwords do not match.');
-        return;
-      }
-      const userData = {
-        username,
-        email,
-        password,
-        signupTime: new Date().toISOString()
-      };
-      console.log(`[${new Date().toLocaleTimeString()}] Sign Up data:`, userData);
-      alert('Sign Up successful! Data logged to console.');
-      document.getElementById('signup-username').value = '';
-      document.getElementById('signup-email').value = '';
-      document.getElementById('signup-password').value = '';
-      document.getElementById('signup-confirm-password').value = '';
-    }
-
-    // Log In handling (placeholder, logs to console)
-    function handleLogIn() {
-      console.log(`[${new Date().toLocaleTimeString()}] Log In attempt: Redirect to login (not implemented)`);
-      alert('Log In functionality not implemented in this demo. Check console.');
-    }
-
-    // Settings handling
-    function changeTheme() {
-      const theme = document.getElementById('theme-select').value;
-      document.body.classList.toggle('light-theme', theme === 'light');
-      console.log(`[${new Date().toLocaleTimeString()}] Theme changed to: ${theme}`);
-    }
-
-    function changeFontSize() {
-      const fontSize = document.getElementById('font-size').value;
-      document.body.style.fontSize = fontSize;
-      console.log(`[${new Date().toLocaleTimeString()}] Font size changed to: ${fontSize}`);
-    }
-
-    function toggleHighContrast() {
-      const highContrast = document.getElementById('high-contrast').checked;
-      if (highContrast) {
-        document.body.style.filter = 'contrast(1.5)';
-      } else {
-        document.body.style.filter = 'none';
-      }
-      console.log(`[${new Date().toLocaleTimeString()}] High contrast mode: ${highContrast}`);
-    }
-
-    function changeAnimationSpeed() {
-      const speed = document.getElementById('animation-speed').value;
-      document.querySelectorAll('.reveal').forEach(el => {
-        el.style.transitionDuration = speed;
-      });
-      console.log(`[${new Date().toLocaleTimeString()}] Animation speed changed to: ${speed}`);
-    }
-
-    function changeBackgroundColor() {
-      const color = document.getElementById('background-color').value;
-      document.body.style.background = color;
-      console.log(`[${new Date().toLocaleTimeString()}] Background color changed to: ${color}`);
-    }
-
-    function changeTextAlign() {
-      const align = document.getElementById('text-align').value;
-      document.querySelectorAll('.page').forEach(page => {
-        page.style.textAlign = align;
-      });
-      console.log(`[${new Date().toLocaleTimeString()}] Text alignment changed to: ${align}`);
-    }
-
-    function toggleDarkMode() {
-      const darkMode = document.getElementById('dark-mode-toggle').checked;
-      document.body.classList.toggle('light-theme', !darkMode);
-      document.getElementById('theme-select').value = darkMode ? 'dark' : 'light';
-      console.log(`[${new Date().toLocaleTimeString()}] Dark mode toggle: ${darkMode}`);
-    }
-
-    function saveSettings() {
-      const settings = {
-        theme: document.getElementById('theme-select').value,
-        username: document.getElementById('username').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        fontSize: document.getElementById('font-size').value,
-        language: document.getElementById('language').value,
-        notifications: document.getElementById('notifications').checked,
-        soundEffects: document.getElementById('sound-effects').checked,
-        highContrast: document.getElementById('high-contrast').checked,
-        animationSpeed: document.getElementById('animation-speed').value,
-        timezone: document.getElementById('timezone').value,
-        dataSharing: document.getElementById('data-sharing').checked,
-        backgroundColor: document.getElementById('background-color').value,
-        textAlign: document.getElementById('text-align').value,
-        darkModeToggle: document.getElementById('dark-mode-toggle').checked,
-        notificationFrequency: document.getElementById('notification-frequency').value
-      };
-      console.log(`[${new Date().toLocaleTimeString()}] Settings saved:`, settings);
-      alert('Settings saved! Check console for details.');
-    }
-
-    // Tic-Tac-Toe Logic
-    let currentPlayer = 'X';
-    let tttBoard = ['', '', '', '', '', '', '', '', ''];
-    let tttGameActive = false;
-
-    function startTicTacToe() {
-      document.getElementById('tic-tac-toe').style.display = 'block';
-      resetTicTacToe();
-    }
-
-    function resetTicTacToe() {
-      currentPlayer = 'X';
-      tttBoard = ['', '', '', '', '', '', '', '', ''];
-      tttGameActive = true;
-      document.getElementById('ttt-status').textContent = "Player X's turn";
-      document.querySelectorAll('.ttt-cell').forEach(cell => {
-        cell.textContent = '';
-        cell.style.pointerEvents = 'auto';
-        cell.style.background = 'var(--card)';
-      });
-      console.log(`[${new Date().toLocaleTimeString()}] Tic-Tac-Toe reset`);
-    }
-
-    function makeMove(index) {
-      if (!tttGameActive || tttBoard[index] !== '') return;
-      
-      tttBoard[index] = currentPlayer;
-      const cell = document.querySelector(`.ttt-cell[data-index="${index}"]`);
-      cell.textContent = currentPlayer;
-      cell.style.color = currentPlayer === 'X' ? '#60a5fa' : '#6ee7b7';
-      
-      console.log(`[${new Date().toLocaleTimeString()}] Tic-Tac-Toe move: Player ${currentPlayer} at index ${index}`);
-      
-      if (checkWin()) {
-        document.getElementById('ttt-status').textContent = `Player ${currentPlayer} wins! 🎉`;
-        tttGameActive = false;
-        document.querySelectorAll('.ttt-cell').forEach(cell => cell.style.pointerEvents = 'none');
-        return;
-      }
-      
-      if (tttBoard.every(cell => cell !== '')) {
-        document.getElementById('ttt-status').textContent = "It's a tie! 🤝";
-        tttGameActive = false;
-        return;
-      }
-      
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      document.getElementById('ttt-status').textContent = `Player ${currentPlayer}'s turn`;
-    }
-
-    function checkWin() {
-      const winConditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-        [0, 4, 8], [2, 4, 6] // Diagonals
-      ];
-      return winConditions.some(condition => {
-        return condition.every(index => tttBoard[index] === currentPlayer);
-      });
-    }
-
-    // Pong Game Logic
-    let pongBall, pongPaddle, pongScore, pongGameActive = false;
-
-    function startPong() {
-      document.getElementById('pong-game').style.display = 'block';
-      resetPong();
-    }
-
-    function resetPong() {
-      const canvas = document.getElementById('pong-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Reset game state
-      pongBall = {x: 200, y: 150, dx: 4, dy: Math.random() > 0.5 ? 4 : -4, radius: 8};
-      pongPaddle = {x: 160, y: 270, width: 80, height: 12};
-      pongScore = 0;
-      pongGameActive = true;
-      
-      document.getElementById('pong-score').textContent = pongScore;
-      
-      // Clear any existing interval
-      if (pongInterval) clearInterval(pongInterval);
-      
-      // Game loop
-      pongInterval = setInterval(() => {
-        if (!pongGameActive) return;
-        
-        // Clear canvas
-        ctx.fillStyle = 'var(--card)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Update ball position
-        pongBall.x += pongBall.dx;
-        pongBall.y += pongBall.dy;
-        
-        // Wall collision
-        if (pongBall.x + pongBall.radius > canvas.width || pongBall.x - pongBall.radius < 0) {
-          pongBall.dx *= -1;
+        function renderMessages(container) {
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${msg.type}`;
+                const badge = getBadgeForUser(msg.sender);
+                const senderHtml = msg.sender === 'System' || msg.type === 'system' ? msg.sender : `<span class="sender"><span class="badge">${badge}</span>${msg.sender}</span>`;
+                msgDiv.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="sender">${senderHtml}</div>
+                        <div class="text">${msg.text}</div>
+                        <div class="time">Sent: ${msg.time}</div>
+                    </div>
+                `;
+                container.appendChild(msgDiv);
+            });
+            container.scrollTop = container.scrollHeight;
         }
-        if (pongBall.y - pongBall.radius < 0) {
-          pongBall.dy *= -1;
-        }
-        
-        // Bottom wall (game over)
-        if (pongBall.y + pongBall.radius > canvas.height) {
-          endPongGame();
-          return;
-        }
-        
-        // Paddle collision
-        if (pongBall.y + pongBall.radius > pongPaddle.y && 
-            pongBall.x > pongPaddle.x && 
-            pongBall.x < pongPaddle.x + pongPaddle.width) {
-          pongBall.dy *= -1;
-          pongScore++;
-          document.getElementById('pong-score').textContent = pongScore;
-          // Add some spin based on where it hits the paddle
-          const hitPos = (pongBall.x - pongPaddle.x) / pongPaddle.width - 0.5;
-          pongBall.dx += hitPos * 2;
-        }
-        
-        // Draw ball
-        ctx.beginPath();
-        ctx.arc(pongBall.x, pongBall.y, pongBall.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#60a5fa';
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Draw paddle
-        ctx.fillStyle = '#6ee7b7';
-        ctx.fillRect(pongPaddle.x, pongPaddle.y, pongPaddle.width, pongPaddle.height);
-        
-        // Draw center line
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.moveTo(canvas.width/2, 0);
-        ctx.lineTo(canvas.width/2, canvas.height);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }, 16);
-      
-      // Mouse movement for paddle
-      const handleMouseMove = (e) => {
-        if (!pongGameActive) return;
-        const rect = canvas.getBoundingClientRect();
-        pongPaddle.x = e.clientX - rect.left - pongPaddle.width / 2;
-        if (pongPaddle.x < 0) pongPaddle.x = 0;
-        if (pongPaddle.x + pongPaddle.width > canvas.width) pongPaddle.x = canvas.width - pongPaddle.width;
-      };
-      
-      canvas.onmousemove = handleMouseMove;
-      canvas.onmouseleave = () => { pongPaddle.x = 160; };
-      
-      console.log(`[${new Date().toLocaleTimeString()}] Pong game reset`);
-    }
 
-    function endPongGame() {
-      pongGameActive = false;
-      if (pongInterval) clearInterval(pongInterval);
-      alert(`Game Over! Final Score: ${pongScore} 🎾`);
-      console.log(`[${new Date().toLocaleTimeString()}] Pong game over: Score=${pongScore}`);
-    }
+        // Name screen - FIXED: Now switches instantly on click/Enter
+        document.getElementById('joinBtn').addEventListener('click', joinChat);
+        document.getElementById('usernameInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') joinChat(); });
 
-    // Tetris Game Logic
-    let tetrisBoard, tetrisCurrentPiece, tetrisScore = 0, tetrisGameActive = false;
-    const tetrisPieceSize = 20;
-    const tetrisBoardWidth = 12;
-    const tetrisBoardHeight = 20;
-
-    function startTetris() {
-      document.getElementById('tetris-game').style.display = 'block';
-      resetTetris();
-    }
-
-    function resetTetris() {
-      const canvas = document.getElementById('tetris-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Initialize board
-      tetrisBoard = Array(tetrisBoardHeight).fill().map(() => Array(tetrisBoardWidth).fill(0));
-      tetrisScore = 0;
-      tetrisGameActive = true;
-      
-      document.getElementById('tetris-score').textContent = tetrisScore;
-      
-      // Clear existing interval
-      if (tetrisInterval) clearInterval(tetrisInterval);
-      
-      // Create new piece
-      createNewTetrisPiece();
-      
-      // Game loop
-      let dropCounter = 0;
-      let lastTime = 0;
-      const updateTetris = (time = 0) => {
-        if (!tetrisGameActive) return;
-        
-        const deltaTime = time - lastTime;
-        lastTime = time;
-        dropCounter += deltaTime;
-        
-        if (dropCounter > 1000) { // Drop every second
-          tetrisCurrentPiece.y++;
-          if (checkTetrisCollision()) {
-            tetrisCurrentPiece.y--;
-            placeTetrisPiece();
-            clearTetrisLines();
-            createNewTetrisPiece();
-            if (checkTetrisCollision()) {
-              endTetrisGame();
-              return;
+        function joinChat() {
+            username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Enter a name!');
+                return;
             }
-          }
-          dropCounter = 0;
+            // Instant switch - no server needed
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+            renderMessages(document.getElementById('messages'));
+            console.log('Joined as:', username); // For debug
         }
-        
-        drawTetris();
-        tetrisInterval = requestAnimationFrame(updateTetris);
-      };
-      
-      updateTetris();
-      
-      // Keyboard controls
-      const handleKeyPress = (e) => {
-        if (!tetrisGameActive) return;
-        
-        switch(e.key) {
-          case 'ArrowLeft':
-            e.preventDefault();
-            if (!checkTetrisCollision(-1, 0)) tetrisCurrentPiece.x--;
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            if (!checkTetrisCollision(1, 0)) tetrisCurrentPiece.x++;
-            break;
-          case 'ArrowDown':
-            e.preventDefault();
-            tetrisCurrentPiece.y++;
-            if (checkTetrisCollision()) {
-              tetrisCurrentPiece.y--;
-              placeTetrisPiece();
-              clearTetrisLines();
-              createNewTetrisPiece();
-            }
-            break;
-          case 'ArrowUp':
-            e.preventDefault();
-            const rotated = rotateTetrisPiece(tetrisCurrentPiece.shape);
-            const oldShape = tetrisCurrentPiece.shape;
-            tetrisCurrentPiece.shape = rotated;
-            if (checkTetrisCollision()) {
-              tetrisCurrentPiece.shape = oldShape; // Revert if collision
-            }
-            break;
-        }
-        drawTetris();
-      };
-      
-      document.addEventListener('keydown', handleKeyPress);
-      document.removeEventListener('keydown', handleKeyPress); // Clean up when leaving
-      
-      console.log(`[${new Date().toLocaleTimeString()}] Tetris game reset`);
-    }
 
-    function createNewTetrisPiece() {
-      const pieces = [
-        [[1,1,1,1]], // I
-        [[1,1],[1,1]], // O
-        [[1,1,1],[0,1,0]], // T
-        [[0,1,1],[1,1,0]], // S
-        [[1,1,0],[0,1,1]], // Z
-        [[1,1,1],[1,0,0]], // J
-        [[1,1,1],[0,0,1]] // L
-      ];
-      
-      const randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
-      tetrisCurrentPiece = {
-        x: Math.floor(tetrisBoardWidth / 2) - 1,
-        y: 0,
-        shape: randomPiece,
-        color: ['#60a5fa', '#6ee7b7', '#a78bfa', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981'][Math.floor(Math.random() * 7)]
-      };
-    }
-
-    function rotateTetrisPiece(shape) {
-      const rotated = shape[0].map((_, index) =>
-        shape.map(row => row[index]).reverse()
-      );
-      return rotated;
-    }
-
-    function checkTetrisCollision(dx = 0, dy = 0) {
-      for (let y = 0; y < tetrisCurrentPiece.shape.length; y++) {
-        for (let x = 0; x < tetrisCurrentPiece.shape[y].length; x++) {
-          if (tetrisCurrentPiece.shape[y][x]) {
-            const newX = tetrisCurrentPiece.x + x + dx;
-            const newY = tetrisCurrentPiece.y + y + dy;
-            
-            if (newX < 0 || newX >= tetrisBoardWidth || newY >= tetrisBoardHeight || 
-                (newY >= 0 && tetrisBoard[newY] && tetrisBoard[newY][newX])) {
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    function placeTetrisPiece() {
-      for (let y = 0; y < tetrisCurrentPiece.shape.length; y++) {
-        for (let x = 0; x < tetrisCurrentPiece.shape[y].length; x++) {
-          if (tetrisCurrentPiece.shape[y][x]) {
-            const boardY = tetrisCurrentPiece.y + y;
-            if (boardY >= 0) {
-              tetrisBoard[boardY][tetrisCurrentPiece.x + x] = tetrisCurrentPiece.color;
-            }
-          }
-        }
-      }
-    }
-
-    function clearTetrisLines() {
-      let linesCleared = 0;
-      for (let y = tetrisBoardHeight - 1; y >= 0; y--) {
-        if (tetrisBoard[y].every(cell => cell !== 0)) {
-          tetrisBoard.splice(y, 1);
-          tetrisBoard.unshift(Array(tetrisBoardWidth).fill(0));
-          linesCleared++;
-          y++; // Check the same line again
-        }
-      }
-      if (linesCleared > 0) {
-        tetrisScore += linesCleared * 100;
-        document.getElementById('tetris-score').textContent = tetrisScore;
-      }
-    }
-
-    function drawTetris() {
-      const canvas = document.getElementById('tetris-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Clear canvas
-      ctx.fillStyle = 'var(--card)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw board
-      for (let y = 0; y < tetrisBoardHeight; y++) {
-        for (let x = 0; x < tetrisBoardWidth; x++) {
-          if (tetrisBoard[y][x]) {
-            ctx.fillStyle = tetrisBoard[y][x];
-            ctx.fillRect(x * tetrisPieceSize, y * tetrisPieceSize, tetrisPieceSize - 1, tetrisPieceSize - 1);
-          }
-        }
-      }
-      
-      // Draw current piece
-      if (tetrisCurrentPiece) {
-        ctx.fillStyle = tetrisCurrentPiece.color;
-        for (let y = 0; y < tetrisCurrentPiece.shape.length; y++) {
-          for (let x = 0; x < tetrisCurrentPiece.shape[y].length; x++) {
-            if (tetrisCurrentPiece.shape[y][x]) {
-              ctx.fillRect(
-                (tetrisCurrentPiece.x + x) * tetrisPieceSize, 
-                (tetrisCurrentPiece.y + y) * tetrisPieceSize, 
-                tetrisPieceSize - 1, 
-                tetrisPieceSize - 1
-              );
-            }
-          }
-        }
-      }
-    }
-
-    function endTetrisGame() {
-      tetrisGameActive = false;
-      if (tetrisInterval) cancelAnimationFrame(tetrisInterval);
-      alert(`Game Over! Final Score: ${tetrisScore} 🧱`);
-      console.log(`[${new Date().toLocaleTimeString()}] Tetris game over: Score=${tetrisScore}`);
-    }
-
-    // Breakout Game Logic
-    let breakoutBall, breakoutPaddle, breakoutBricks, breakoutScore = 0, breakoutGameActive = false;
-
-    function startBreakout() {
-      document.getElementById('breakout-game').style.display = 'block';
-      resetBreakout();
-    }
-
-    function resetBreakout() {
-      const canvas = document.getElementById('breakout-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Initialize game
-      breakoutBall = {x: 200, y: 150, dx: 4, dy: -4, radius: 8};
-      breakoutPaddle = {x: 160, y: 270, width: 80, height: 12};
-      breakoutScore = 0;
-      breakoutGameActive = true;
-      
-      // Create bricks
-      breakoutBricks = Array(5).fill().map(() => Array(8).fill(1));
-      
-      document.getElementById('breakout-score').textContent = breakoutScore;
-      
-      // Clear existing interval
-      if (breakoutInterval) clearInterval(breakoutInterval);
-      
-      // Game loop
-      breakoutInterval = setInterval(() => {
-        if (!breakoutGameActive) return;
-        
-        // Clear canvas
-        ctx.fillStyle = 'var(--card)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Update ball
-        breakoutBall.x += breakoutBall.dx;
-        breakoutBall.y += breakoutBall.dy;
-        
-        // Wall collisions
-        if (breakoutBall.x + breakoutBall.radius > canvas.width || breakoutBall.x - breakoutBall.radius < 0) {
-          breakoutBall.dx *= -1;
-        }
-        if (breakoutBall.y - breakoutBall.radius < 0) {
-          breakoutBall.dy *= -1;
-        }
-        
-        // Bottom wall (game over)
-        if (breakoutBall.y + breakoutBall.radius > canvas.height) {
-          endBreakoutGame();
-          return;
-        }
-        
-        // Paddle collision
-        if (breakoutBall.y + breakoutBall.radius > breakoutPaddle.y && 
-            breakoutBall.x > breakoutPaddle.x && 
-            breakoutBall.x < breakoutPaddle.x + breakoutPaddle.width) {
-          breakoutBall.dy *= -1;
-          // Add spin
-          const hitPos = (breakoutBall.x - breakoutPaddle.x) / breakoutPaddle.width - 0.5;
-          breakoutBall.dx += hitPos * 2;
-        }
-        
-        // Brick collision
-        for (let y = 0; y < 5; y++) {
-          for (let x = 0; x < 8; x++) {
-            if (breakoutBricks[y][x]) {
-              const brickX = x * 50;
-              const brickY = y * 30;
-              const brickWidth = 48;
-              const brickHeight = 28;
-              
-              if (breakoutBall.x > brickX && breakoutBall.x < brickX + brickWidth &&
-                  breakoutBall.y - breakoutBall.radius < brickY + brickHeight && 
-                  breakoutBall.y + breakoutBall.radius > brickY) {
-                breakoutBricks[y][x] = 0;
-                breakoutBall.dy *= -1;
-                breakoutScore += 10;
-                document.getElementById('breakout-score').textContent = breakoutScore;
-                
-                // Check win condition
-                const bricksLeft = breakoutBricks.flat().filter(b => b).length;
-                if (bricksLeft === 0) {
-                  endBreakoutGame(true);
-                  return;
-                }
-              }
-            }
-          }
-        }
-        
-        // Draw ball
-        ctx.beginPath();
-        ctx.arc(breakoutBall.x, breakoutBall.y, breakoutBall.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#60a5fa';
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Draw paddle
-        ctx.fillStyle = '#6ee7b7';
-        ctx.fillRect(breakoutPaddle.x, breakoutPaddle.y, breakoutPaddle.width, breakoutPaddle.height);
-        
-        // Draw bricks
-        for (let y = 0; y < 5; y++) {
-          for (let x = 0; x < 8; x++) {
-            if (breakoutBricks[y][x]) {
-              ctx.fillStyle = `hsl(${y * 40}, 70%, 60%)`;
-              ctx.fillRect(x * 50, y * 30, 48, 28);
-              ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-              ctx.lineWidth = 1;
-              ctx.strokeRect(x * 50, y * 30, 48, 28);
-            }
-          }
-        }
-      }, 16);
-      
-      // Mouse controls
-      const handleMouseMove = (e) => {
-        if (!breakoutGameActive) return;
-        const rect = canvas.getBoundingClientRect();
-        breakoutPaddle.x = e.clientX - rect.left - breakoutPaddle.width / 2;
-        if (breakoutPaddle.x < 0) breakoutPaddle.x = 0;
-        if (breakoutPaddle.x + breakoutPaddle.width > canvas.width) breakoutPaddle.x = canvas.width - breakoutPaddle.width;
-      };
-      
-      canvas.onmousemove = handleMouseMove;
-      canvas.onmouseleave = () => { breakoutPaddle.x = 160; };
-      
-      console.log(`[${new Date().toLocaleTimeString()}] Breakout game reset`);
-    }
-
-    function endBreakoutGame(won = false) {
-      breakoutGameActive = false;
-      if (breakoutInterval) clearInterval(breakoutInterval);
-      const message = won ? `You Win! Final Score: ${breakoutScore} 🏆` : `Game Over! Final Score: ${breakoutScore} 🎮`;
-      alert(message);
-      console.log(`[${new Date().toLocaleTimeString()}] Breakout game over: Score=${breakoutScore}, Won=${won}`);
-    }
-
-    // Weather Photo
-    function takeWeatherPhoto() {
-      const video = document.getElementById('weather-video');
-      const canvas = document.getElementById('weather-canvas');
-      const photo = document.getElementById('weather-photo');
-      
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-          video.srcObject = stream;
-          video.style.display = 'block';
-          video.play();
-          
-          setTimeout(() => {
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            photo.src = canvas.toDataURL('image/png');
-            photo.style.display = 'block';
-            video.style.display = 'none';
-            
-            // Stop camera
-            stream.getTracks().forEach(track => track.stop());
-            
-            console.log(`[${new Date().toLocaleTimeString()}] Weather photo captured`);
-          }, 2000); // Give camera time to focus
-        })
-        .catch(err => {
-          console.error(`[${new Date().toLocaleTimeString()}] Camera error: ${err.message}`);
-          alert('Camera access denied or unavailable. Please allow camera permissions.');
+        // Admin button on name screen
+        document.getElementById('adminBtn').addEventListener('click', () => {
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
         });
-    }
 
-    // Money counter increment for Father page
-    let counter = 10000000;
-    const counterEl = document.getElementById('money-counter');
-    function incrementCounter() {
-      if (counter < 50000000 && document.getElementById('father').style.display !== 'none') {
-        counter += Math.floor(Math.random() * 50000 + 10000);
-        counterEl.innerText = counter.toLocaleString();
-        setTimeout(incrementCounter, 100);
-      }
-    }
-    
-    // Start counter when on father page
-    setInterval(() => {
-      if (document.getElementById('father').style.display !== 'none') {
-        incrementCounter();
-      }
-    }, 100);
-  </script>
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', adminLogin);
+        document.getElementById('adminCode').addEventListener('keypress', (e) => { if (e.key === 'Enter') adminLogin(); });
+
+        function adminLogin() {
+            const code = document.getElementById('adminCode').value;
+            if (code === ADMIN_CODE) {
+                isAdmin = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminScreen').style.display = 'flex';
+                renderMessages(document.getElementById('adminMessages'));
+                document.getElementById('adminMessageInput').focus();
+                updateAdminLists();
+            } else {
+                alert('Wrong code! Try again.');
+                document.getElementById('adminCode').value = '';
+            }
+        }
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('nameScreen').style.display = 'flex';
+            document.getElementById('adminCode').value = '';
+        });
+
+        // Main chat send
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        function sendMessage(inputId = 'messageInput', containerId = 'messages', isAdminMsg = false) {
+            const input = document.getElementById(inputId);
+            const msg = input.value.trim();
+            if (!msg) return;
+            if (mutedUsers.has(username.toLowerCase()) && !isAdminMsg) return alert('You are muted!');
+            const newMsg = { 
+                sender: isAdminMsg ? 'Admin' : username, 
+                text: msg, 
+                type: isAdminMsg ? 'system' : 'own', 
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+            };
+            messages.push(newMsg);
+            input.value = '';
+            renderMessages(document.getElementById(containerId));
+        }
+
+        // Admin chat send
+        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', 'adminMessages', true));
+        document.getElementById('adminMessageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('adminMessageInput', 'adminMessages', true); });
+
+        // Admin main button
+        document.getElementById('adminBtnMain').addEventListener('click', () => {
+            if (!isAdmin) {
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+            }
+        });
+
+        // Enhanced Admin Powers
+        document.getElementById('banBtn').addEventListener('click', () => {
+            const target = document.getElementById('banInput').value.trim();
+            if (target) {
+                bannedUsers.add(target.toLowerCase());
+                messages.push({ sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                updateAdminLists();
+                document.getElementById('banInput').value = '';
+                alert(`Banned: ${target}`);
+            }
+        });
+
+        document.getElementById('loadHistoryBtn').addEventListener('click', () => {
+            const hist = document.getElementById('historyList');
+            hist.innerHTML = messages.map((msg, i) => {
+                const badge = getBadgeForUser(msg.sender);
+                return `<div class="list-item"><strong>${badge ? badge + ' ' : ''}${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${i}</small></div>`;
+            }).join('');
+        });
+
+        document.getElementById('clearChatBtn').addEventListener('click', () => {
+            if (confirm('Clear all messages?')) {
+                messages = [];
+                renderMessages(document.getElementById('adminMessages'));
+                renderMessages(document.getElementById('messages'));
+                alert('Chat cleared!');
+            }
+        });
+
+        document.getElementById('broadcastBtn').addEventListener('click', () => {
+            const msg = document.getElementById('broadcastInput').value.trim();
+            if (msg) {
+                messages.push({ sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                renderMessages(document.getElementById('messages'));
+                document.getElementById('broadcastInput').value = '';
+                alert('Broadcast sent!');
+            }
+        });
+
+        document.getElementById('muteBtn').addEventListener('click', () => {
+            const target = document.getElementById('muteInput').value.trim();
+            if (target) {
+                mutedUsers.add(target.toLowerCase());
+                alert(`Muted: ${target}`);
+                document.getElementById('muteInput').value = '';
+            }
+        });
+
+        document.getElementById('kickBtn').addEventListener('click', () => {
+            const target = document.getElementById('kickInput').value.trim();
+            if (target && onlineUsers.includes(target)) {
+                onlineUsers = onlineUsers.filter(u => u !== target);
+                messages.push({ sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                updateAdminLists();
+                document.getElementById('kickInput').value = '';
+                alert(`Kicked: ${target}`);
+            }
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            const query = document.getElementById('deleteInput').value.trim();
+            if (query) {
+                const index = messages.findIndex(msg => msg.text.toLowerCase().includes(query.toLowerCase()));
+                if (index > -1) {
+                    messages.splice(index, 1);
+                    renderMessages(document.getElementById('adminMessages'));
+                    renderMessages(document.getElementById('messages'));
+                    alert('Message deleted!');
+                } else {
+                    alert('Message not found!');
+                }
+                document.getElementById('deleteInput').value = '';
+            }
+        });
+
+        document.getElementById('promoteBtn').addEventListener('click', () => {
+            const target = document.getElementById('promoteInput').value.trim();
+            if (target) {
+                mods.add(target);
+                alert(`${target} promoted to mod!`);
+                document.getElementById('promoteInput').value = '';
+                updateAdminLists();
+            }
+        });
+
+        document.getElementById('viewOnlineBtn').addEventListener('click', () => {
+            const list = document.getElementById('onlineList');
+            list.innerHTML = onlineUsers.map(u => {
+                const badge = getBadgeForUser(u);
+                return `<div class="list-item">${badge ? `<span class="badge">${badge}</span> ` : ''}${u} ${bannedUsers.has(u.toLowerCase()) ? '(Banned)' : mods.has(u) ? '(Mod)' : ''}</div>`;
+            }).join('');
+        });
+
+        document.getElementById('changeRoleBtn').addEventListener('click', () => {
+            const target = document.getElementById('roleInput').value.trim();
+            const role = document.getElementById('roleSelect').value;
+            if (target) {
+                if (role === 'mod') mods.add(target);
+                else if (role === 'admin') isAdmin = true; // Fun self-boost
+                else { mods.delete(target); }
+                alert(`${target} role updated to ${role}!`);
+                document.getElementById('roleInput').value = '';
+                updateAdminLists();
+            }
+        });
+
+        // Admin Abuse Badge Blast
+        document.getElementById('abuseBtn').addEventListener('click', () => {
+            abuseMode = !abuseMode;
+            const btn = document.getElementById('abuseBtn');
+            const status = document.getElementById('abuseStatus');
+            if (abuseMode) {
+                // Assign cool badge to all online
+                onlineUsers.forEach(user => userBadges.set(user, '🔥'));
+                btn.textContent = 'Deactivate Badges';
+                btn.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
+                status.textContent = 'Active - All users badged! 😈';
+                messages.push({ sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            } else {
+                userBadges.clear();
+                btn.textContent = 'Activate Badges on All! 🔥';
+                btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
+                status.textContent = 'Inactive';
+                messages.push({ sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            }
+            // Re-render to show badges
+            renderMessages(document.getElementById('adminMessages'));
+            renderMessages(document.getElementById('messages'));
+            updateAdminLists();
+        });
+
+        function updateAdminLists() {
+            document.getElementById('bannedList').innerHTML = `Banned: ${Array.from(bannedUsers).join(', ') || 'None'}`;
+        }
+
+        // Initial render
+        renderMessages(document.getElementById('messages'));
+    </script>
 </body>
 </html>
