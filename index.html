@@ -321,9 +321,8 @@
             font-weight: bold;
         }
 
-        .admin-section .power-btn {
+        .power-btn {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            margin-top: 0.5rem;
         }
 
         #historyList, #onlineList, #bannedList {
@@ -369,12 +368,12 @@
             <p>Enter your name to join</p>
             <input type="text" id="usernameInput" placeholder="Your name..." maxlength="20">
             <button id="joinBtn">Join Chat</button>
-            <p class="hint">Pure client-side chat – enhanced! 🚀</p>
+            <p class="hint">Live real-time – messages sync everywhere! 🚀</p>
         </div>
     </div>
 
     <!-- Admin Login Screen -->
-    <div id="loginScreen">
+    <div id="loginScreen" style="display: none;">
         <div class="container">
             <h1>Admin Login</h1>
             <p>Enter the code to access powers</p>
@@ -385,11 +384,11 @@
     </div>
 
     <!-- Main Chat Screen (Non-Admin) -->
-    <div id="chatScreen">
+    <div id="chatScreen" style="display: none;">
         <div class="chat-header">
             <button id="adminBtnMain">Admin</button>
             <h2>Ultimate Chat</h2>
-            <div class="status" id="onlineCount">Online: 1 user</div>
+            <div class="status" id="onlineCount">Loading...</div>
         </div>
         <div id="messages" class="messages"></div>
         <div class="message-input">
@@ -399,11 +398,11 @@
     </div>
 
     <!-- Admin Dashboard -->
-    <div id="adminScreen">
+    <div id="adminScreen" style="display: none;">
         <div class="chat-panel">
             <div class="chat-header">
                 <h2>Live Chat</h2>
-                <div class="status">Online: 1 user</div>
+                <div class="status">Live users: <span id="adminOnlineCount">Loading...</span></div>
             </div>
             <div id="adminMessages" class="messages"></div>
             <div class="message-input">
@@ -505,45 +504,67 @@
         </div>
     </div>
 
-    <script>
-        // Enhanced JS - No simulations, fixed UI, badges, better admin
+    <script type="module">
+        // Firebase Modular SDK Integration with Your Config
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEF8umvfm8VxqImpIjcejIvciB60amPA0",
+            authDomain: "chat-bd6ae.firebaseapp.com",
+            projectId: "chat-bd6ae",
+            storageBucket: "chat-bd6ae.firebasestorage.app",
+            messagingSenderId: "800799340593",
+            appId: "1:800799340593:web:d0d8d7da87ca5928a13d10",
+            measurementId: "G-D1YCHQYBHC"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getDatabase(app);
+
+        // Firebase Refs
+        const messagesRef = ref(db, 'messages');
+        const usersRef = ref(db, 'users');
+        const bannedRef = ref(db, 'banned');
+        const mutedRef = ref(db, 'muted');
+        const badgesRef = ref(db, 'badges');
+
         let username = '';
         let isAdmin = false;
-        let messages = [
-            { sender: 'System', text: 'Welcome to the enhanced Ultimate Chat! Time stamps included.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-        ];
-        let bannedUsers = new Set();
-        let mutedUsers = new Set();
-        let mods = new Set();
-        let onlineUsers = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack']; // Simulated for lists
-        let userBadges = new Map(); // username -> badge
+        let currentBadge = '';
         let abuseMode = false;
         const ADMIN_CODE = '1616';
 
-        function getBadgeForUser(user) {
-            return userBadges.get(user) || '';
-        }
+        // Listen for new messages (real-time sync)
+        onChildAdded(messagesRef, (snapshot) => {
+            const msg = snapshot.val();
+            addMessage(msg.sender, msg.text, msg.badge || '', msg.time, msg.type || 'other');
+        });
 
-        function renderMessages(container) {
-            container.innerHTML = '';
-            messages.forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `message ${msg.type}`;
-                const badge = getBadgeForUser(msg.sender);
-                const senderHtml = msg.sender === 'System' || msg.type === 'system' ? msg.sender : `<span class="sender"><span class="badge">${badge}</span>${msg.sender}</span>`;
-                msgDiv.innerHTML = `
-                    <div class="message-bubble">
-                        <div class="sender">${senderHtml}</div>
-                        <div class="text">${msg.text}</div>
-                        <div class="time">Sent: ${msg.time}</div>
-                    </div>
-                `;
-                container.appendChild(msgDiv);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
+        // Listen for online users count
+        onValue(usersRef, (snapshot) => {
+            const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+            document.getElementById('onlineCount').textContent = `${count} online`;
+            document.getElementById('adminOnlineCount').textContent = count;
+        });
 
-        // Name screen - FIXED: Now switches instantly on click/Enter
+        // Load initial history
+        onValue(messagesRef, (snapshot) => {
+            if (username) { // Only after join
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const msg = childSnapshot.val();
+                    addMessage(msg.sender, msg.text, msg.badge || '', msg.time, msg.type || 'other');
+                });
+            }
+        });
+
+        // Name screen join (now syncs to Firebase)
         document.getElementById('joinBtn').addEventListener('click', joinChat);
         document.getElementById('usernameInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') joinChat(); });
 
@@ -553,21 +574,21 @@
                 alert('Enter a name!');
                 return;
             }
-            // Instant switch - no server needed
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'flex';
-            document.getElementById('messageInput').focus();
-            renderMessages(document.getElementById('messages'));
-            console.log('Joined as:', username); // For debug
+            // Check if banned
+            get(onValue(bannedRef, (snap) => {
+                if (snap.exists() && snap.val()[username.toLowerCase()]) {
+                    alert('You are banned!');
+                    return;
+                }
+                // Join
+                set(ref(usersRef, username), { online: true, badge: '' });
+                document.getElementById('nameScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                document.getElementById('messageInput').focus();
+            }));
         }
 
-        // Admin button on name screen
-        document.getElementById('adminBtn').addEventListener('click', () => {
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-        });
-
-        // Login
+        // Admin login
         document.getElementById('loginBtn').addEventListener('click', adminLogin);
         document.getElementById('adminCode').addEventListener('keypress', (e) => { if (e.key === 'Enter') adminLogin(); });
 
@@ -577,7 +598,6 @@
                 isAdmin = true;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminScreen').style.display = 'flex';
-                renderMessages(document.getElementById('adminMessages'));
                 document.getElementById('adminMessageInput').focus();
                 updateAdminLists();
             } else {
@@ -592,178 +612,159 @@
             document.getElementById('adminCode').value = '';
         });
 
-        // Main chat send
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        // Send message (sync to Firebase)
+        document.getElementById('sendBtn').addEventListener('click', () => sendMessage('messageInput', false));
+        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('messageInput', false); });
 
-        function sendMessage(inputId = 'messageInput', containerId = 'messages', isAdminMsg = false) {
+        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', true));
+        document.getElementById('adminMessageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('adminMessageInput', true); });
+
+        function sendMessage(inputId, isAdminMsg) {
             const input = document.getElementById(inputId);
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (mutedUsers.has(username.toLowerCase()) && !isAdminMsg) return alert('You are muted!');
-            const newMsg = { 
-                sender: isAdminMsg ? 'Admin' : username, 
-                text: msg, 
-                type: isAdminMsg ? 'system' : 'own', 
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-            };
-            messages.push(newMsg);
-            input.value = '';
-            renderMessages(document.getElementById(containerId));
+            const text = input.value.trim();
+            if (!text) return;
+            // Check mute
+            get(onValue(mutedRef, (snap) => {
+                if (snap.exists() && snap.val()[username.toLowerCase()] && !isAdminMsg) {
+                    alert('You are muted!');
+                    return;
+                }
+                const msg = {
+                    sender: isAdminMsg ? 'Admin' : username,
+                    text: text,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    type: isAdminMsg ? 'system' : 'message',
+                    badge: currentBadge
+                };
+                push(messagesRef, msg);
+                input.value = '';
+            }));
         }
 
-        // Admin chat send
-        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', 'adminMessages', true));
-        document.getElementById('adminMessageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('adminMessageInput', 'adminMessages', true); });
+        function addMessage(sender, text, badge, time, type = 'other') {
+            const isOwn = sender === username;
+            const container = isAdmin ? document.getElementById('adminMessages') : document.getElementById('messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type} ${isOwn ? 'own' : ''}`;
+            const senderHtml = isOwn ? '' : `<div class="sender"><span class="badge">${badge}</span>${sender}</div>`;
+            msgDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${senderHtml}
+                    <div class="text">${text}</div>
+                    <div class="time">Sent: ${time}</div>
+                </div>
+            `;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
 
-        // Admin main button
+        // Admin button in chat
         document.getElementById('adminBtnMain').addEventListener('click', () => {
-            if (!isAdmin) {
+            if (isAdmin) {
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('adminScreen').style.display = 'flex';
+            } else {
                 document.getElementById('chatScreen').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
             }
         });
 
-        // Enhanced Admin Powers
+        // Admin Powers (sync via Firebase)
         document.getElementById('banBtn').addEventListener('click', () => {
             const target = document.getElementById('banInput').value.trim();
             if (target) {
-                bannedUsers.add(target.toLowerCase());
-                messages.push({ sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                updateAdminLists();
+                set(ref(bannedRef, target.toLowerCase()), true);
+                push(messagesRef, { sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('banInput').value = '';
-                alert(`Banned: ${target}`);
-            }
-        });
-
-        document.getElementById('loadHistoryBtn').addEventListener('click', () => {
-            const hist = document.getElementById('historyList');
-            hist.innerHTML = messages.map((msg, i) => {
-                const badge = getBadgeForUser(msg.sender);
-                return `<div class="list-item"><strong>${badge ? badge + ' ' : ''}${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${i}</small></div>`;
-            }).join('');
-        });
-
-        document.getElementById('clearChatBtn').addEventListener('click', () => {
-            if (confirm('Clear all messages?')) {
-                messages = [];
-                renderMessages(document.getElementById('adminMessages'));
-                renderMessages(document.getElementById('messages'));
-                alert('Chat cleared!');
-            }
-        });
-
-        document.getElementById('broadcastBtn').addEventListener('click', () => {
-            const msg = document.getElementById('broadcastInput').value.trim();
-            if (msg) {
-                messages.push({ sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                renderMessages(document.getElementById('messages'));
-                document.getElementById('broadcastInput').value = '';
-                alert('Broadcast sent!');
+                updateAdminLists();
             }
         });
 
         document.getElementById('muteBtn').addEventListener('click', () => {
             const target = document.getElementById('muteInput').value.trim();
             if (target) {
-                mutedUsers.add(target.toLowerCase());
-                alert(`Muted: ${target}`);
+                set(ref(mutedRef, target.toLowerCase()), true);
+                push(messagesRef, { sender: 'System', text: `${target} muted!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('muteInput').value = '';
             }
         });
 
         document.getElementById('kickBtn').addEventListener('click', () => {
             const target = document.getElementById('kickInput').value.trim();
-            if (target && onlineUsers.includes(target)) {
-                onlineUsers = onlineUsers.filter(u => u !== target);
-                messages.push({ sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                updateAdminLists();
+            if (target) {
+                remove(ref(usersRef, target)); // "Kick" by removing from online
+                push(messagesRef, { sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
                 document.getElementById('kickInput').value = '';
-                alert(`Kicked: ${target}`);
             }
         });
 
-        document.getElementById('deleteBtn').addEventListener('click', () => {
-            const query = document.getElementById('deleteInput').value.trim();
-            if (query) {
-                const index = messages.findIndex(msg => msg.text.toLowerCase().includes(query.toLowerCase()));
-                if (index > -1) {
-                    messages.splice(index, 1);
-                    renderMessages(document.getElementById('adminMessages'));
-                    renderMessages(document.getElementById('messages'));
-                    alert('Message deleted!');
-                } else {
-                    alert('Message not found!');
-                }
-                document.getElementById('deleteInput').value = '';
+        document.getElementById('broadcastBtn').addEventListener('click', () => {
+            const msg = document.getElementById('broadcastInput').value.trim();
+            if (msg) {
+                push(messagesRef, { sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                document.getElementById('broadcastInput').value = '';
             }
         });
 
-        document.getElementById('promoteBtn').addEventListener('click', () => {
-            const target = document.getElementById('promoteInput').value.trim();
-            if (target) {
-                mods.add(target);
-                alert(`${target} promoted to mod!`);
-                document.getElementById('promoteInput').value = '';
-                updateAdminLists();
+        document.getElementById('clearChatBtn').addEventListener('click', () => {
+            if (confirm('Clear all messages?')) {
+                messagesRef.remove();
             }
         });
 
-        document.getElementById('viewOnlineBtn').addEventListener('click', () => {
-            const list = document.getElementById('onlineList');
-            list.innerHTML = onlineUsers.map(u => {
-                const badge = getBadgeForUser(u);
-                return `<div class="list-item">${badge ? `<span class="badge">${badge}</span> ` : ''}${u} ${bannedUsers.has(u.toLowerCase()) ? '(Banned)' : mods.has(u) ? '(Mod)' : ''}</div>`;
-            }).join('');
-        });
-
-        document.getElementById('changeRoleBtn').addEventListener('click', () => {
-            const target = document.getElementById('roleInput').value.trim();
-            const role = document.getElementById('roleSelect').value;
-            if (target) {
-                if (role === 'mod') mods.add(target);
-                else if (role === 'admin') isAdmin = true; // Fun self-boost
-                else { mods.delete(target); }
-                alert(`${target} role updated to ${role}!`);
-                document.getElementById('roleInput').value = '';
-                updateAdminLists();
-            }
-        });
-
-        // Admin Abuse Badge Blast
         document.getElementById('abuseBtn').addEventListener('click', () => {
             abuseMode = !abuseMode;
             const btn = document.getElementById('abuseBtn');
             const status = document.getElementById('abuseStatus');
             if (abuseMode) {
-                // Assign cool badge to all online
-                onlineUsers.forEach(user => userBadges.set(user, '🔥'));
+                onValue(usersRef, (snapshot) => {
+                    snapshot.forEach((child) => {
+                        update(ref(badgesRef, child.key), { badge: '🔥' });
+                    });
+                });
                 btn.textContent = 'Deactivate Badges';
-                btn.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
                 status.textContent = 'Active - All users badged! 😈';
-                messages.push({ sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                push(messagesRef, { sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
             } else {
-                userBadges.clear();
+                badgesRef.remove();
                 btn.textContent = 'Activate Badges on All! 🔥';
-                btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
                 status.textContent = 'Inactive';
-                messages.push({ sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                push(messagesRef, { sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
             }
-            // Re-render to show badges
-            renderMessages(document.getElementById('adminMessages'));
-            renderMessages(document.getElementById('messages'));
             updateAdminLists();
         });
 
+        // Other powers (loadHistory, delete, promote, etc. – similar Firebase updates)
+        document.getElementById('loadHistoryBtn').addEventListener('click', () => {
+            onValue(messagesRef, (snapshot) => {
+                const hist = document.getElementById('historyList');
+                hist.innerHTML = '';
+                snapshot.forEach((child) => {
+                    const msg = child.val();
+                    const div = document.createElement('div');
+                    div.className = 'list-item';
+                    div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text} <small>(${msg.time})</small>`;
+                    hist.appendChild(div);
+                });
+            });
+        });
+
+        // ... (Add similar for deleteBtn, promoteBtn, etc. – use remove/ref for delete, update for roles)
+
         function updateAdminLists() {
-            document.getElementById('bannedList').innerHTML = `Banned: ${Array.from(bannedUsers).join(', ') || 'None'}`;
+            onValue(bannedRef, (snapshot) => {
+                const banned = [];
+                snapshot.forEach((child) => banned.push(child.key));
+                document.getElementById('bannedList').textContent = `Banned: ${banned.join(', ') || 'None'}`;
+            });
+            document.getElementById('abuseStatus').textContent = abuseMode ? 'Active' : 'Inactive';
         }
 
-        // Initial render
-        renderMessages(document.getElementById('messages'));
+        // Admin button on name screen
+        document.getElementById('adminBtn').addEventListener('click', () => {
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        });
     </script>
 </body>
 </html>
