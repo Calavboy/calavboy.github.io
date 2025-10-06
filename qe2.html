@@ -40,16 +40,17 @@
 
   // Obfuscation functions
   function _0xabc(v) {
-    const k = (function(s) {
-      let h = 0;
-      for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-      return (h & 0xFF) % 100;
-    })('chat-3d6f0');
+    const k = 42; // Fixed key for reliability (previously hashed from "chat-3d6f0")
     const o = 11;
     return (v - o) ^ k;
   }
   function _0xdef(arr) {
     return arr.map(x => String.fromCharCode(_0xabc(x))).join('');
+  }
+  function _0xdummy(s) { // Dummy function to mislead
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+    return (h & 0xFF) % 100;
   }
 
   // Login
@@ -472,6 +473,7 @@
     const _0xdat = [92, 88, 92, 88]; // Obfuscated: (92-11)^42 = 49 ('1'), (88-11)^42 = 55 ('7')
     const _0xfake = [99, 99, 99, 99]; // Dummy array
     const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10); // Dummy calc
+    _0xdummy('decoy'); // Dummy function call
     if (_0xtmp > 0 && code === _0xdef(_0xdat)) {
       isAdmin = true;
       document.getElementById('admin-password').style.display = 'none';
