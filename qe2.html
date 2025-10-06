@@ -34,6 +34,7 @@
 
   // Check if user is banned
   window.checkBanned = function(username) {
+    if (!username) return;
     onValue(ref(db, `bannedUsers/${username}`), (snapshot) => {
       isBanned = snapshot.val() === true;
       const msgInput = document.getElementById('msg');
@@ -46,19 +47,44 @@
         msgInput.disabled = false;
         sendBtn.disabled = false;
       }
+    }, (error) => {
+      console.error('Error checking ban status:', error);
     });
   };
 
   // Send message
   window.sendMessage = function() {
     const input = document.getElementById("msg");
-    if (input && input.value.trim() && !isBanned && currentUsername) {
-      push(messagesRef, { username: currentUsername, text: input.value.trim(), timestamp: Date.now(), isGlobal: false })
-        .catch((error) => console.error('Error sending message:', error));
-      input.value = "";
-    } else if (!input.value.trim()) {
-      alert('Please enter a message');
+    if (!input) {
+      console.error('Message input not found');
+      return;
     }
+    const messageText = input.value.trim();
+    if (!messageText) {
+      alert('Please enter a message');
+      return;
+    }
+    if (!currentUsername) {
+      console.error('No username set');
+      alert('Please log in with a username');
+      return;
+    }
+    if (isBanned) {
+      console.error('User is banned:', currentUsername);
+      alert('You are banned from the chat.');
+      return;
+    }
+    push(messagesRef, { 
+      username: currentUsername, 
+      text: messageText, 
+      timestamp: Date.now(), 
+      isGlobal: false 
+    }).then(() => {
+      input.value = "";
+    }).catch((error) => {
+      console.error('Error sending message:', error);
+      alert('Failed to send message: ' + error.message);
+    });
   };
 
   // Admin functions
