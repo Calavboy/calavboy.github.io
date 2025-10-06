@@ -40,18 +40,12 @@
   let isChatFrozen = false;
   let isMuted = false;
 
-  // Validate username
-  function validateUsername(username) {
-    const regex = /^[a-zA-Z0-9_-]+$/;
-    return regex.test(username) && username.length >= 3 && username.length <= 20;
-  }
-
   // Login
   window.login = async function() {
     const username = document.getElementById('username-input').value.trim();
     const displayName = document.getElementById('display-name-input').value.trim() || username;
-    if (!validateUsername(username)) {
-      alert('Username must be 3-20 characters, alphanumeric with _ or -');
+    if (!username) {
+      alert('Please enter a username');
       return;
     }
     const userRef = ref(db, `users/${username}`);
@@ -890,7 +884,7 @@
   <!-- Login Screen -->
   <div id="login-screen">
     <h2>Chat App</h2>
-    <input id="username-input" placeholder="Username" type="text">
+    <input id="username-input" placeholder="Username (anything goes)" type="text">
     <input id="display-name-input" placeholder="Display Name (optional)" type="text">
     <button onclick="login()">Enter Chat</button>
   </div>
