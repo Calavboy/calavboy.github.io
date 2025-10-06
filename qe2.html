@@ -1,302 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Chat - Monster Edition</title>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-        window.firebase = { initializeApp, getDatabase, ref, push, onValue, set, update, remove, onChildAdded, onChildRemoved, get };
-    </script>
+    <title>Ultimate Chat</title>
     <style>
+        /* Enhanced CSS - iPhone-inspired, responsive, admin glow-up */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
-            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --dark-bg: #1a1a2e;
-            --dark-card: #16213e;
-            --light-bg: #f8f9fa;
-            --light-card: #ffffff;
-            --text-light: #2c3e50;
-            --text-dark: #f8f9fa;
-            --border-light: #e9ecef;
-            --border-dark: #34495e;
-            --shadow-light: rgba(0,0,0,0.08);
-            --shadow-dark: rgba(0,0,0,0.4);
-            --badge-glow: #ffd700;
-            --monster-glow: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00);
-            --admin-bar-bg: linear-gradient(90deg, #667eea, #764ba2);
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             overflow: hidden;
-            color: var(--text-light);
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            color: #333;
         }
 
-        body.dark {
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #0f0f23 100%);
-            color: var(--text-dark);
-        }
-
-        .admin-top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: auto;
-            background: var(--admin-bar-bg);
-            color: white;
-            padding: 0.3rem 0.5rem;
-            display: flex;
-            align-items: center;
-            z-index: 2000;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            animation: barSlideDown 0.8s ease-out;
-            font-size: 0.8rem;
-        }
-
-        body.dark .admin-top-bar {
-            background: linear-gradient(90deg, #2c3e50, #34495e);
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-        }
-
-        @keyframes barSlideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .admin-top-bar .login-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.25rem 0.6rem;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            font-size: 0.75rem;
-        }
-
-        .admin-top-bar .login-btn:hover {
-            background: rgba(255,255,255,0.4);
-            transform: scale(1.05);
-        }
-
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .particle {
-            position: absolute;
-            background: var(--monster-glow);
-            border-radius: 50%;
-            opacity: 0.6;
-            animation: floatMonster 15s linear infinite;
-            box-shadow: 0 0 10px var(--monster-glow);
-        }
-
-        .particle:nth-child(1) { left: 10%; width: 20px; height: 20px; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 20s; }
-        .particle:nth-child(3) { left: 80%; width: 25px; height: 25px; animation-delay: 4s; animation-duration: 18s; }
-        .particle:nth-child(4) { left: 90%; width: 10px; height: 10px; animation-delay: 6s; }
-        .particle:nth-child(5) { left: 50%; width: 18px; height: 18px; animation-delay: 8s; animation-duration: 22s; }
-        .particle:nth-child(6) { left: 30%; width: 12px; height: 12px; animation-delay: 10s; }
-        .particle:nth-child(7) { left: 70%; width: 22px; height: 22px; animation-delay: 12s; animation-duration: 16s; }
-        .particle:nth-child(8) { left: 5%; width: 16px; height: 16px; animation-delay: 14s; }
-
-        @keyframes floatMonster {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
-            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
-        }
-
+        /* Name Entry & Login Screens */
         #nameScreen, #loginScreen {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             text-align: center;
-            z-index: 10;
-            animation: monsterFadeIn 1.5s ease-out;
-            position: relative;
-            margin-top: 40px;
-        }
-
-        @keyframes monsterFadeIn {
-            from { opacity: 0; transform: scale(0.9) rotate(-5deg); filter: blur(5px); }
-            to { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0px); }
         }
 
         .container {
-            background: var(--light-card);
+            background: white;
             padding: 3rem;
             border-radius: 30px;
-            box-shadow: 0 30px 60px var(--shadow-light);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
             max-width: 400px;
             width: 90%;
             position: relative;
-            animation: containerMonsterBounce 1.2s ease-out;
-            border: 2px solid transparent;
-            background-clip: padding-box;
         }
 
-        body.dark .container {
-            background: var(--dark-card);
-            box-shadow: 0 30px 60px var(--shadow-dark);
-        }
-
-        .container::before {
-            content: '';
+        .admin-btn {
             position: absolute;
-            inset: -2px;
-            background: var(--monster-glow);
-            border-radius: 32px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s;
-            animation: borderGlow 3s ease-in-out infinite alternate;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
         }
 
-        .container:hover::before {
-            opacity: 1;
-        }
-
-        @keyframes containerMonsterBounce {
-            0% { transform: scale(0.8) translateY(50px); opacity: 0; }
-            50% { transform: scale(1.1) translateY(-10px); }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        @keyframes borderGlow {
-            from { filter: hue-rotate(0deg); opacity: 0.5; }
-            to { filter: hue-rotate(360deg); opacity: 1; }
+        .admin-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
 
         h1 {
             color: #667eea;
             margin-bottom: 1rem;
             font-size: 2.5rem;
-            animation: monsterPulse 2.5s ease-in-out infinite;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-
-        @keyframes monsterPulse {
-            0%, 100% { transform: scale(1) rotate(0deg); text-shadow: 0 0 10px rgba(102, 126, 234, 0.5); }
-            50% { transform: scale(1.05) rotate(1deg); text-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
-        }
-
-        body.dark h1 {
-            color: #3498db;
         }
 
         input[type="text"], input[type="password"] {
             width: 100%;
             padding: 1rem;
-            border: 2px solid var(--border-light);
+            border: 2px solid #e0e0e0;
             border-radius: 15px;
             font-size: 1rem;
             margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-            background: var(--light-card);
-            color: var(--text-light);
-        }
-
-        body.dark input[type="text"], body.dark input[type="password"] {
-            border-color: var(--border-dark);
-            background: var(--dark-card);
-            color: var(--text-dark);
+            transition: border-color 0.3s;
         }
 
         input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
-            transform: scale(1.02);
-        }
-
-        body.dark input:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
         }
 
         button {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             padding: 1rem 2rem;
             border-radius: 15px;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s;
             width: 100%;
             margin-bottom: 0.5rem;
-            position: relative;
-            overflow: hidden;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        button:hover::before {
-            left: 100%;
         }
 
         button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(-1px) scale(0.98);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        button.loading::after {
-            content: '⏳';
-            margin-left: 0.5rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            transform: translateY(-2px);
         }
 
         .hint {
@@ -304,12 +101,6 @@
             color: #666;
             margin-top: 1rem;
             font-style: italic;
-            animation: fadeInUp 1s ease-out 0.5s both;
-            line-height: 1.4;
-        }
-
-        body.dark .hint {
-            color: #bdc3c7;
         }
 
         #backBtn {
@@ -317,180 +108,84 @@
             margin-top: 1rem;
         }
 
-        #backBtn:hover {
-            background: #5a6268;
-            transform: translateY(-3px);
-        }
-
+        /* Chat Screen */
         #chatScreen {
             display: none;
             height: 100vh;
             flex-direction: column;
-            background: var(--light-bg);
-            animation: slideInFromRight 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            margin-top: 40px;
-        }
-
-        @keyframes slideInFromRight {
-            from { transform: translateX(100vw); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        body.dark #chatScreen {
-            background: var(--dark-bg);
+            background: #f8f9fa;
         }
 
         .chat-header {
-            background: var(--light-card);
+            background: white;
             padding: 1rem;
-            border-bottom: 1px solid var(--border-light);
+            border-bottom: 1px solid #e0e0e0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px var(--shadow-light);
-            animation: slideDownFromTop 0.7s ease-out;
-        }
-
-        body.dark .chat-header {
-            background: var(--dark-card);
-            border-bottom: 1px solid var(--border-dark);
-            box-shadow: 0 4px 12px var(--shadow-dark);
-        }
-
-        @keyframes slideDownFromTop {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            position: relative;
         }
 
         .chat-header h2 {
-            color: var(--text-light);
+            color: #333;
             margin: 0;
-            font-size: 1.5rem;
-            animation: fadeInLeft 0.8s ease-out;
         }
 
-        body.dark .chat-header h2 {
-            color: var(--text-dark);
+        #adminBtnMain {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         .status {
             color: #667eea;
             font-weight: bold;
-            animation: bounceInUp 0.8s ease-out;
-        }
-
-        body.dark .status {
-            color: #3498db;
-        }
-
-        @keyframes bounceInUp {
-            0% { transform: scale(0.3) translateY(30px); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9) translateY(-5px); }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .status::after {
-            content: ' •';
-            animation: pulseDot 1.5s infinite;
-        }
-
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.5); }
         }
 
         .messages {
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
-            background: var(--light-bg);
+            background: #f8f9fa;
             display: flex;
             flex-direction: column;
-            scroll-behavior: smooth;
-            transition: background 0.5s ease;
-        }
-
-        body.dark .messages {
-            background: var(--dark-bg);
-        }
-
-        .messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-            background: var(--border-light);
-            border-radius: 10px;
-        }
-
-        body.dark .messages::-webkit-scrollbar-track {
-            background: var(--border-dark);
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-            background: var(--primary-gradient);
-            border-radius: 10px;
         }
 
         .message {
             margin-bottom: 1.5rem;
             display: flex;
             align-items: flex-end;
-            animation: messagePopIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            animation: slideIn 0.4s ease-out;
             max-width: 80%;
             width: fit-content;
-            opacity: 0;
         }
 
-        .message.show {
-            opacity: 1;
-            animation-play-state: running;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes messagePopIn {
-            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .message.own { justify-content: flex-end; margin-left: auto; animation-delay: 0.1s; }
-        .message.other { justify-content: flex-start; animation-delay: 0.2s; }
-        .message.system { justify-content: center; width: 100%; animation-delay: 0.3s; }
+        .message.own { justify-content: flex-end; margin-left: auto; }
+        .message.other { justify-content: flex-start; }
+        .message.system { justify-content: center; width: 100%; }
 
         .message-bubble {
             max-width: 100%;
             padding: 1rem 1.25rem;
             border-radius: 25px;
             position: relative;
-            box-shadow: 0 4px 12px var(--shadow-light);
-            transition: all 0.3s ease;
-            animation: bubbleFloat 0.3s ease-out;
-        }
-
-        body.dark .message-bubble {
-            box-shadow: 0 4px 12px var(--shadow-dark);
-        }
-
-        .message-bubble:hover {
-            transform: translateY(-3px) rotate(1deg);
-            box-shadow: 0 8px 20px var(--shadow-light);
-        }
-
-        @keyframes bubbleFloat {
-            from { transform: translateY(5px); }
-            to { transform: translateY(0); }
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .message.other .message-bubble {
-            background: var(--light-card);
-        }
-
-        body.dark .message.other .message-bubble {
-            background: var(--dark-card);
+            background: white;
         }
 
         .message.own .message-bubble {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
@@ -501,11 +196,6 @@
             text-align: center;
         }
 
-        body.dark .message.system .message-bubble {
-            background: #4a5b6a;
-            color: #bdc3c7;
-        }
-
         .sender {
             font-size: 0.85rem;
             font-weight: bold;
@@ -513,41 +203,23 @@
             display: flex;
             align-items: center;
             gap: 0.25rem;
-            animation: senderSlide 0.4s ease-out;
-        }
-
-        @keyframes senderSlide {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
         }
 
         .message.own .sender { display: none; }
 
         .badge {
             font-size: 1rem;
-            animation: badgeGlow 2s infinite alternate, spin 4s linear infinite;
+            animation: glow 2s infinite alternate;
         }
 
-        @keyframes badgeGlow {
-            from { text-shadow: 0 0 5px var(--badge-glow); }
-            to { text-shadow: 0 0 15px var(--badge-glow), 0 0 25px var(--badge-glow); }
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #ffd700; }
+            to { text-shadow: 0 0 10px #ffd700, 0 0 15px #ffd700; }
         }
 
         .text {
             font-size: 1rem;
             line-height: 1.5;
-            animation: textFadeIn 0.5s ease-out 0.2s both;
-            word-wrap: break-word;
-        }
-
-        @keyframes textFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .time {
@@ -555,245 +227,77 @@
             opacity: 0.8;
             margin-top: 0.5rem;
             text-align: right;
-            animation: timeSlideIn 0.5s ease-out 0.4s both;
-        }
-
-        @keyframes timeSlideIn {
-            from { opacity: 0; transform: translateX(10px); }
-            to { opacity: 1; transform: translateX(0); }
         }
 
         .message-input {
-            background: var(--light-card);
+            background: white;
             padding: 1rem;
-            border-top: 1px solid var(--border-light);
+            border-top: 1px solid #e0e0e0;
             display: flex;
             gap: 0.75rem;
             align-items: center;
-            animation: inputSlideUp 0.7s ease-out;
-        }
-
-        body.dark .message-input {
-            background: var(--dark-card);
-            border-top: 1px solid var(--border-dark);
-        }
-
-        @keyframes inputSlideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
         }
 
         .message-input input {
             flex: 1;
-            border: 2px solid var(--border-light);
+            border: 2px solid #e0e0e0;
             border-radius: 30px;
             padding: 1rem 1.25rem;
             min-height: 20px;
             resize: none;
-            transition: all 0.3s ease;
-            background: var(--light-card);
-            color: var(--text-light);
-        }
-
-        body.dark .message-input input {
-            border-color: var(--border-dark);
-            background: var(--dark-bg);
-            color: var(--text-dark);
         }
 
         .message-input input:focus {
             border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
-            transform: scaleX(1.02);
-        }
-
-        .message-input input::placeholder {
-            color: #999;
-        }
-
-        body.dark .message-input input::placeholder {
-            color: #7f8c8d;
         }
 
         .message-input button {
             padding: 0.75rem 1rem;
             min-width: 70px;
             width: auto;
-            border-radius: 25px;
-            font-weight: 600;
         }
 
-        .message-input button:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .message-input button:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .message-input button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .typing-indicator {
-            display: none;
-            padding: 0.5rem 1rem;
-            font-style: italic;
-            color: #999;
-            animation: typingWave 1.5s infinite;
-            margin-bottom: 1rem;
-        }
-
-        body.dark .typing-indicator {
-            color: #7f8c8d;
-        }
-
-        @keyframes typingWave {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-2px); }
-        }
-
-        .typing-dots::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60% { content: '...'; }
-            80%, 100% { content: 'Typing...'; }
-        }
-
+        /* Admin Dashboard */
         #adminScreen {
             display: none;
             height: 100vh;
             flex-direction: row;
-            animation: expandFromCenter 0.8s ease-out;
-            margin-top: 40px;
-        }
-
-        @keyframes expandFromCenter {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         .chat-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--border-light);
-            animation: panelSlideLeft 0.6s ease-out;
-        }
-
-        body.dark .chat-panel {
-            border-right: 1px solid var(--border-dark);
-        }
-
-        @keyframes panelSlideLeft {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            border-right: 1px solid #e0e0e0;
         }
 
         .admin-panel {
             flex: 1;
-            background: var(--light-card);
+            background: white;
             padding: 1.5rem;
             overflow-y: auto;
-            animation: panelSlideRight 0.6s ease-out;
-        }
-
-        body.dark .admin-panel {
-            background: var(--dark-card);
-        }
-
-        @keyframes panelSlideRight {
-            from { transform: translateX(20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
         }
 
         .admin-header {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 1.5rem;
             text-align: center;
             border-radius: 15px 15px 0 0;
             margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-            animation: headerMonsterGlow 2s ease-out infinite alternate;
-        }
-
-        @keyframes headerMonsterGlow {
-            from { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); transform: scale(1); }
-            to { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); transform: scale(1.02); }
-        }
-
-        .admin-header h3 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            animation: textMonsterGlow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes textMonsterGlow {
-            from { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-            to { text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.4); }
         }
 
         .admin-section {
             margin-bottom: 1.5rem;
             padding: 1.5rem;
-            border: 2px solid var(--border-light);
+            border: 2px solid #e0e0e0;
             border-radius: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            animation: sectionMonsterStagger 0.5s ease-out forwards;
-        }
-
-        body.dark .admin-section {
-            border-color: var(--border-dark);
-        }
-
-        .admin-section:nth-child(1) { animation-delay: 0.1s; }
-        .admin-section:nth-child(2) { animation-delay: 0.2s; }
-        .admin-section:nth-child(3) { animation-delay: 0.3s; }
-        .admin-section:nth-child(4) { animation-delay: 0.4s; }
-        .admin-section:nth-child(5) { animation-delay: 0.5s; }
-        .admin-section:nth-child(6) { animation-delay: 0.6s; }
-        .admin-section:nth-child(7) { animation-delay: 0.7s; }
-        .admin-section:nth-child(8) { animation-delay: 0.8s; }
-        .admin-section:nth-child(9) { animation-delay: 0.9s; }
-        .admin-section:nth-child(10) { animation-delay: 1s; }
-        .admin-section:nth-child(11) { animation-delay: 1.1s; }
-
-        @keyframes sectionMonsterStagger {
-            from { opacity: 0; transform: translateY(30px) rotate(-2deg); }
-            to { opacity: 1; transform: translateY(0) rotate(0deg); }
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .admin-section:hover {
             border-color: #667eea;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-            transform: translateY(-5px) scale(1.02);
-        }
-
-        .admin-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--success-gradient);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .admin-section:hover::before {
-            transform: scaleX(1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
         }
 
         .admin-section h4 {
@@ -803,39 +307,11 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            animation: iconMonsterBounce 1s ease-out;
-        }
-
-        body.dark .admin-section h4 {
-            color: #3498db;
-        }
-
-        @keyframes iconMonsterBounce {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(360deg); }
         }
 
         .admin-section input, .admin-section select {
             margin-bottom: 1rem;
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            background: var(--light-card);
-            color: var(--text-light);
-        }
-
-        body.dark .admin-section input, body.dark .admin-section select {
-            border-color: var(--border-dark);
-            background: var(--dark-bg);
-            color: var(--text-dark);
-        }
-
-        .admin-section input:focus, .admin-section select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
-            transform: scale(1.02);
         }
 
         .admin-section button {
@@ -844,815 +320,460 @@
             padding: 0.75rem 1.5rem;
             border-radius: 10px;
             font-weight: bold;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
         }
 
-        .admin-section button:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .power-btn {
-            background: var(--secondary-gradient);
+        .admin-section .power-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
             margin-top: 0.5rem;
-        }
-
-        .power-btn:hover {
-            box-shadow: 0 6px 12px rgba(238, 90, 36, 0.3);
         }
 
         #historyList, #onlineList, #bannedList {
             max-height: 150px;
             overflow-y: auto;
-            background: var(--light-bg);
+            background: #f8f9fa;
             padding: 1rem;
             border-radius: 10px;
             font-size: 0.9rem;
-            border: 1px solid var(--border-light);
-            animation: listMonsterFadeIn 0.5s ease-out;
-        }
-
-        body.dark #historyList, body.dark #onlineList, body.dark #bannedList {
-            background: var(--dark-bg);
-            border-color: var(--border-dark);
-        }
-
-        @keyframes listMonsterFadeIn {
-            from { opacity: 0; height: 0; transform: scaleY(0); }
-            to { opacity: 1; height: auto; transform: scaleY(1); }
+            border: 1px solid #e0e0e0;
         }
 
         .list-item {
             padding: 0.5rem;
-            border-bottom: 1px solid var(--border-light);
+            border-bottom: 1px solid #e0e0e0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
-            animation: itemMonsterStagger 0.3s ease-out;
-        }
-
-        body.dark .list-item {
-            border-bottom: 1px solid var(--border-dark);
-        }
-
-        .list-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-            transform: translateX(5px);
-        }
-
-        body.dark .list-item:hover {
-            background: rgba(52, 152, 219, 0.1);
         }
 
         .list-item:last-child {
             border-bottom: none;
         }
 
-        .emoji-picker {
-            display: none;
-            position: absolute;
-            bottom: 80px;
-            right: 10px;
-            background: var(--light-card);
-            border-radius: 15px;
-            padding: 1rem;
-            box-shadow: 0 10px 30px var(--shadow-light);
-            max-width: 300px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            animation: emojiMonsterDrop 0.3s ease-out;
-            border: 1px solid var(--border-light);
-        }
-
-        body.dark .emoji-picker {
-            background: var(--dark-card);
-            border-color: var(--border-dark);
-            box-shadow: 0 10px 30px var(--shadow-dark);
-        }
-
-        @keyframes emojiMonsterDrop {
-            from { opacity: 0; transform: translateY(20px) rotate(5deg); }
-            to { opacity: 1; transform: translateY(0) rotate(0deg); }
-        }
-
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.5rem;
-        }
-
-        .emoji {
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 8px;
-            padding: 0.25rem;
-            text-align: center;
-        }
-
-        .emoji:hover {
-            transform: scale(1.3) rotate(360deg);
-            background: rgba(102, 126, 234, 0.2);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .alert {
-            position: fixed;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--success-gradient);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(86, 171, 47, 0.3);
-            animation: alertMonsterSlideIn 0.5s ease-out, alertFadeOut 0.5s ease-out 3s forwards;
-            z-index: 1002;
-            display: none;
-            font-weight: bold;
-        }
-
-        .alert.error {
-            background: var(--warning-gradient);
-            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
-        }
-
-        @keyframes alertMonsterSlideIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(-50px) rotate(-5deg); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0) rotate(0deg); }
-        }
-
-        @keyframes alertFadeOut {
-            to { opacity: 0; transform: translateX(-50%) translateY(-50px) rotate(5deg); }
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
             #adminScreen {
                 flex-direction: column;
             }
             .admin-panel {
                 height: auto;
-                overflow-y: auto;
             }
             .message { max-width: 95%; }
-            .container { padding: 2rem; }
-            h1 { font-size: 2rem; }
-            .emoji-grid { grid-template-columns: repeat(5, 1fr); }
-            .admin-top-bar { padding: 0.2rem 0.4rem; font-size: 0.7rem; }
-            .admin-top-bar .login-btn { padding: 0.2rem 0.5rem; font-size: 0.7rem; }
-        }
-
-        @media (max-width: 480px) {
-            .emoji-grid { grid-template-columns: repeat(4, 1fr); }
-            .admin-top-bar { padding: 0.15rem 0.3rem; }
-            .admin-top-bar .login-btn { padding: 0.15rem 0.4rem; font-size: 0.65rem; }
         }
     </style>
 </head>
 <body>
-    <div class="admin-top-bar">
-        <button class="login-btn" id="topAdminBtn">Admin Login</button>
-    </div>
-
-    <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-
-    <div class="alert success" id="successAlert"></div>
-    <div class="alert error" id="errorAlert"></div>
-
+    <!-- Name Entry Screen -->
     <div id="nameScreen">
         <div class="container">
+            <button class="admin-btn" id="adminBtn">Admin</button>
             <h1>Ultimate Chat</h1>
-            <p>Enter your name to join the monster conversation</p>
+            <p>Enter your name to join</p>
             <input type="text" id="usernameInput" placeholder="Your name..." maxlength="20">
             <button id="joinBtn">Join Chat</button>
-            <p class="hint">Pro tip: Messages sync live across devices! 🚀</p>
+            <p class="hint">Pure client-side chat – enhanced! 🚀</p>
         </div>
     </div>
 
-    <div id="loginScreen" style="display: none;">
+    <!-- Admin Login Screen -->
+    <div id="loginScreen">
         <div class="container">
             <h1>Admin Login</h1>
-            <p>Enter code 1616 to unlock powers</p>
+            <p>Enter the code to access powers</p>
             <input type="password" id="adminCode" placeholder="Code..." maxlength="4">
             <button id="loginBtn">Login</button>
-            <button id="backBtn">Back</button>
+            <button id="backBtn">Back to Chat</button>
         </div>
     </div>
 
-    <div id="chatScreen" style="display: none;">
+    <!-- Main Chat Screen (Non-Admin) -->
+    <div id="chatScreen">
         <div class="chat-header">
-            <h2>Live Chat Room</h2>
-            <div class="status" id="onlineCount">Loading users...</div>
+            <button id="adminBtnMain">Admin</button>
+            <h2>Ultimate Chat</h2>
+            <div class="status" id="onlineCount">Online: 1 user</div>
         </div>
-        <div id="messages" class="messages">
-            <div class="loading-spinner"></div>
-        </div>
-        <div class="typing-indicator" id="typingIndicator">Someone is typing...</div>
+        <div id="messages" class="messages"></div>
         <div class="message-input">
-            <input type="text" id="messageInput" placeholder="Type a message... (Enter to send)" maxlength="500">
-            <button id="sendBtn" disabled>Send</button>
-            <button id="emojiBtn" title="Emoji">😊</button>
+            <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
+            <button id="sendBtn">Send</button>
         </div>
     </div>
 
-    <div class="emoji-picker" id="emojiPicker">
-        <div class="emoji-grid" id="emojiGrid"></div>
-    </div>
-
-    <div id="adminScreen" style="display: none;">
+    <!-- Admin Dashboard -->
+    <div id="adminScreen">
         <div class="chat-panel">
             <div class="chat-header">
-                <h2>Live Chat (Admin View)</h2>
-                <div class="status">Live users: <span id="adminOnlineCount">Loading...</span></div>
+                <h2>Live Chat</h2>
+                <div class="status">Online: 1 user</div>
             </div>
             <div id="adminMessages" class="messages"></div>
             <div class="message-input">
-                <input type="text" id="adminMessageInput" placeholder="Broadcast as admin..." maxlength="500">
-                <button id="adminSendBtn">Broadcast</button>
+                <input type="text" id="adminMessageInput" placeholder="Type as admin..." maxlength="500">
+                <button id="adminSendBtn">Send</button>
             </div>
         </div>
         <div class="admin-panel">
             <div class="admin-header">
-                <h3>🔥 Monster Admin Powers</h3>
-                <p>11 tools to rule the chat!</p>
+                <h3>🔥 Ultimate Admin Powers</h3>
+                <p>Enhanced controls – abuse wisely! 👑</p>
             </div>
+
+            <!-- Power 1: Ban User -->
             <div class="admin-section">
-                <h4>👮 Ban User</h4>
+                <h4>👮 1. Ban User</h4>
                 <input type="text" id="banInput" placeholder="Username to ban...">
-                <button id="banBtn" class="power-btn">Ban</button>
-                <div id="bannedList">Banned users: None</div>
+                <button id="banBtn">Ban Now</button>
+                <div id="bannedList">Banned: None</div>
             </div>
+
+            <!-- Power 2: View Chat History -->
             <div class="admin-section">
-                <h4>📜 View History</h4>
-                <button id="loadHistoryBtn" class="power-btn">Load History</button>
-                <div id="historyList">Click to load messages</div>
+                <h4>📜 2. View Full History</h4>
+                <button id="loadHistoryBtn">Load History</button>
+                <div id="historyList">History: Click to load</div>
             </div>
+
+            <!-- Power 3: Clear Chat -->
             <div class="admin-section">
-                <h4>🗑️ Clear Chat</h4>
-                <button id="clearChatBtn" class="power-btn">Wipe Chat</button>
-                <p>Resets all messages!</p>
+                <h4>🗑️ 3. Clear All Messages</h4>
+                <button id="clearChatBtn" class="power-btn">Clear Now</button>
+                <p>Wipes the slate clean.</p>
             </div>
+
+            <!-- Power 4: Broadcast Message -->
             <div class="admin-section">
-                <h4>📢 Broadcast</h4>
-                <input type="text" id="broadcastInput" placeholder="Global announcement...">
-                <button id="broadcastBtn" class="power-btn">Send</button>
+                <h4>📢 4. Broadcast to All</h4>
+                <input type="text" id="broadcastInput" placeholder="Global message...">
+                <button id="broadcastBtn">Broadcast</button>
             </div>
+
+            <!-- Power 5: Mute User -->
             <div class="admin-section">
-                <h4>🔇 Mute User</h4>
+                <h4>🔇 5. Mute User</h4>
                 <input type="text" id="muteInput" placeholder="Username to mute...">
-                <button id="muteBtn" class="power-btn">Mute</button>
-                <div id="mutedList">Muted users: None</div>
+                <button id="muteBtn">Mute</button>
+                <div>Muted: None</div>
             </div>
+
+            <!-- Power 6: Kick User -->
             <div class="admin-section">
-                <h4>🚪 Kick User</h4>
+                <h4>🚪 6. Kick User</h4>
                 <input type="text" id="kickInput" placeholder="Username to kick...">
-                <button id="kickBtn" class="power-btn">Kick</button>
+                <button id="kickBtn">Kick</button>
             </div>
+
+            <!-- Power 7: Delete Specific Message -->
             <div class="admin-section">
-                <h4>✂️ Delete Message</h4>
+                <h4>✂️ 7. Delete Message</h4>
                 <input type="text" id="deleteInput" placeholder="Message text snippet...">
-                <button id="deleteBtn" class="power-btn">Delete</button>
+                <button id="deleteBtn">Delete</button>
             </div>
+
+            <!-- Power 8: Promote User -->
             <div class="admin-section">
-                <h4>⭐ Promote to Mod</h4>
+                <h4>⭐ 8. Promote to Mod</h4>
                 <input type="text" id="promoteInput" placeholder="Username to promote...">
-                <button id="promoteBtn" class="power-btn">Promote</button>
-                <div id="modsList">Moderators: None</div>
+                <button id="promoteBtn">Promote</button>
+                <div>Mods: None</div>
             </div>
+
+            <!-- Power 9: View Online Users -->
             <div class="admin-section">
-                <h4>👥 Online Users</h4>
-                <button id="viewOnlineBtn" class="power-btn">Refresh</button>
-                <div id="onlineList">Click to refresh</div>
+                <h4>👥 9. View Online Users</h4>
+                <button id="viewOnlineBtn">Refresh List</button>
+                <div id="onlineList">Online: Click to refresh</div>
             </div>
+
+            <!-- Power 10: Change Role -->
             <div class="admin-section">
-                <h4>⚙️ Change Role</h4>
+                <h4>⚙️ 10. Change Role</h4>
                 <input type="text" id="roleInput" placeholder="Username...">
                 <select id="roleSelect">
                     <option value="user">User</option>
                     <option value="mod">Moderator</option>
                     <option value="admin">Admin</option>
                 </select>
-                <button id="changeRoleBtn" class="power-btn">Update</button>
+                <button id="changeRoleBtn">Update</button>
             </div>
+
+            <!-- Power 11: Admin Abuse - Badge Mode -->
             <div class="admin-section">
-                <h4>😈 Badge Blast</h4>
-                <button id="abuseBtn" class="power-btn">Activate Badges</button>
-                <p>Gives all users glowing badges!</p>
+                <h4>😈 11. Admin Abuse: Badge Blast</h4>
+                <button id="abuseBtn" class="power-btn">Activate Badges on All! 🔥</button>
+                <p>Gives everyone a glowing badge above their name. Pure chaos!</p>
                 <div>Status: <span id="abuseStatus">Inactive</span></div>
             </div>
         </div>
     </div>
 
     <script>
+        // Enhanced JS - No simulations, fixed UI, badges, better admin
         let username = '';
         let isAdmin = false;
-        let currentBadge = '';
+        let messages = [
+            { sender: 'System', text: 'Welcome to the enhanced Ultimate Chat! Time stamps included.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+        ];
+        let bannedUsers = new Set();
+        let mutedUsers = new Set();
+        let mods = new Set();
+        let onlineUsers = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack']; // Simulated for lists
+        let userBadges = new Map(); // username -> badge
         let abuseMode = false;
-        let isDarkMode = localStorage.getItem('darkMode') === 'true';
-        let typingUsers = new Set();
-        let messageReactions = new Map();
-        let unsubscribeMessages, unsubscribeUsers;
         const ADMIN_CODE = '1616';
-        const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '🤔', '😎', '🙌', '🚀', '💯', '👑', '🌟', '⚡', '🛡️', '🐉', '💥', '🌈', '⭐', '🦄'];
 
-        let db, messagesRef, usersRef, bannedRef, mutedRef, badgesRef;
-
-        async function initFirebase() {
-            try {
-                const { initializeApp, getDatabase, ref } = window.firebase;
-                const firebaseConfig = {
-                    apiKey: "YOUR_API_KEY", // You can leave this blank or use a placeholder, as databaseURL is sufficient
-                    databaseURL: "https://chat1-79573-default-rtdb.firebaseio.com/"
-                };
-                const app = initializeApp(firebaseConfig);
-                db = getDatabase(app);
-
-                messagesRef = ref(db, 'messages');
-                usersRef = ref(db, 'users');
-                bannedRef = ref(db, 'banned');
-                mutedRef = ref(db, 'muted');
-                badgesRef = ref(db, 'badges');
-
-                unsubscribeMessages = onChildAdded(messagesRef, (snapshot) => {
-                    const msg = snapshot.val();
-                    addMessage(msg.sender, msg.text, msg.badge || '', msg.time, msg.type || 'other', snapshot.key);
-                });
-
-                unsubscribeUsers = onValue(usersRef, (snapshot) => {
-                    const users = snapshot.val() || {};
-                    const count = Object.keys(users).length;
-                    document.getElementById('onlineCount').textContent = `${count} online`;
-                    document.getElementById('adminOnlineCount').textContent = count;
-                    updateOnlineList(Object.keys(users));
-                });
-
-                get(messagesRef).then((snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        Object.values(data).forEach(msg => addMessage(msg.sender, msg.text, msg.badge || '', msg.time, msg.type || 'other'));
-                    }
-                    hideLoading();
-                });
-
-                console.log('Firebase initialized successfully');
-            } catch (error) {
-                console.error('Firebase init error:', error);
-                showAlert('Failed to connect to server. Please try again.', 'error');
-            }
+        function getBadgeForUser(user) {
+            return userBadges.get(user) || '';
         }
 
-        function showAlert(text, type = 'success') {
-            const alert = document.getElementById(type === 'success' ? 'successAlert' : 'errorAlert');
-            alert.textContent = text;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 4000);
+        function renderMessages(container) {
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${msg.type}`;
+                const badge = getBadgeForUser(msg.sender);
+                const senderHtml = msg.sender === 'System' || msg.type === 'system' ? msg.sender : `<span class="sender"><span class="badge">${badge}</span>${msg.sender}</span>`;
+                msgDiv.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="sender">${senderHtml}</div>
+                        <div class="text">${msg.text}</div>
+                        <div class="time">Sent: ${msg.time}</div>
+                    </div>
+                `;
+                container.appendChild(msgDiv);
+            });
+            container.scrollTop = container.scrollHeight;
         }
 
-        function hideLoading() {
-            const spinner = document.querySelector('.loading-spinner');
-            if (spinner) spinner.style.display = 'none';
-        }
+        // Name screen - FIXED: Now switches instantly on click/Enter
+        document.getElementById('joinBtn').addEventListener('click', joinChat);
+        document.getElementById('usernameInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') joinChat(); });
 
-        function addMessage(sender, text, badge, time, type = 'other', msgId = null) {
-            const isOwn = sender === username;
-            const container = isAdmin ? document.getElementById('adminMessages') : document.getElementById('messages');
-            if (!container) return;
-
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${type} ${isOwn ? 'own' : ''}`;
-            msgDiv.id = `msg-${msgId || Date.now()}`;
-            const senderHtml = isOwn ? '' : `<div class="sender"><div class="avatar">${sender.charAt(0).toUpperCase()}</div><span class="badge">${badge}</span>${sender}</div>`;
-            const reactionsHtml = messageReactions.has(msgId) ? `<div class="reactions">${Object.entries(messageReactions.get(msgId)).map(([emoji, count]) => `<span class="reaction" onclick="addReaction('${msgId}', '${emoji}')">${emoji} ${count}</span>`).join('')}</div>` : '';
-            msgDiv.innerHTML = `
-                <div class="message-bubble">
-                    ${senderHtml}
-                    <div class="text">${text}</div>
-                    <div class="time">Sent: ${time}</div>
-                    ${reactionsHtml}
-                </div>
-            `;
-            container.appendChild(msgDiv);
-            setTimeout(() => msgDiv.classList.add('show'), 10);
-            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-            if (isAtBottom) container.scrollTop = container.scrollHeight;
-        }
-
-        function addReaction(msgId, emoji) {
-            if (!messageReactions.has(msgId)) messageReactions.set(msgId, {});
-            const reactions = messageReactions.get(msgId);
-            reactions[emoji] = (reactions[emoji] || 0) + 1;
-            const msgDiv = document.getElementById(`msg-${msgId}`);
-            if (msgDiv) {
-                let reactionsDiv = msgDiv.querySelector('.reactions');
-                if (!reactionsDiv) {
-                    reactionsDiv = document.createElement('div');
-                    reactionsDiv.className = 'reactions';
-                    msgDiv.querySelector('.message-bubble').appendChild(reactionsDiv);
-                }
-                reactionsDiv.innerHTML = Object.entries(reactions).map(([e, count]) => `<span class="reaction" onclick="addReaction('${msgId}', '${e}')">${e} ${count}</span>`).join('');
-            }
-            showAlert(`Reacted with ${emoji}!`, 'success');
-        }
-
-        function showTyping(user) {
-            typingUsers.add(user);
-            updateTypingIndicator();
-        }
-
-        function hideTyping(user) {
-            typingUsers.delete(user);
-            updateTypingIndicator();
-        }
-
-        function updateTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            if (typingUsers.size > 0) {
-                indicator.textContent = `${Array.from(typingUsers).join(', ')} is typing...`;
-                indicator.style.display = 'block';
-            } else {
-                indicator.style.display = 'none';
-            }
-        }
-
-        async function joinChat() {
-            const input = document.getElementById('usernameInput');
-            const joinBtn = document.getElementById('joinBtn');
-            if (!input || !joinBtn) {
-                console.error('UI elements missing');
-                showAlert('UI error – please reload!', 'error');
-                return;
-            }
-            username = input.value.trim();
+        function joinChat() {
+            username = document.getElementById('usernameInput').value.trim();
             if (!username) {
-                showAlert('Please enter a name!', 'error');
-                input.focus();
+                alert('Enter a name!');
                 return;
             }
-            if (username.length < 1 || username.length > 20) {
-                showAlert('Name must be 1-20 characters!', 'error');
-                input.focus();
-                return;
-            }
-
-            joinBtn.disabled = true;
-            joinBtn.classList.add('loading');
-            joinBtn.textContent = 'Joining...';
-            console.log('Attempting to join with username:', username);
-
-            try {
-                const bannedSnapshot = await get(bannedRef);
-                const banned = bannedSnapshot.val() || {};
-                if (banned[username.toLowerCase()]) {
-                    throw new Error('You are banned from this chat!');
-                }
-                await set(ref(usersRef, username), { online: true, badge: currentBadge, joinedAt: Date.now() });
-                document.getElementById('nameScreen').style.display = 'none';
-                document.getElementById('chatScreen').style.display = 'flex';
-                document.getElementById('messageInput').focus();
-                showAlert(`Welcome, ${username}! Let's chat!`, 'success');
-                await push(messagesRef, {
-                    sender: 'System',
-                    text: `${username} joined the monster chat!`,
-                    type: 'system',
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                });
-            } catch (error) {
-                console.error('Join error:', error.message);
-                let errorMessage = 'Failed to join – try again!';
-                if (error.message.includes('banned')) {
-                    errorMessage = error.message;
-                } else if (error.message.includes('Permission')) {
-                    errorMessage = 'Permission denied – check Firebase rules!';
-                } else if (error.message.includes('network')) {
-                    errorMessage = 'Network error – check your connection!';
-                }
-                showAlert(errorMessage, 'error');
-            } finally {
-                joinBtn.disabled = false;
-                joinBtn.classList.remove('loading');
-                joinBtn.textContent = 'Join Chat';
-            }
+            // Instant switch - no server needed
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+            renderMessages(document.getElementById('messages'));
+            console.log('Joined as:', username); // For debug
         }
 
-        let loginAttempts = 0;
+        // Admin button on name screen
+        document.getElementById('adminBtn').addEventListener('click', () => {
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        });
+
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', adminLogin);
+        document.getElementById('adminCode').addEventListener('keypress', (e) => { if (e.key === 'Enter') adminLogin(); });
+
         function adminLogin() {
-            const codeInput = document.getElementById('adminCode');
-            if (!codeInput) return;
-            const code = codeInput.value;
-            if (loginAttempts >= 3) {
-                showAlert('Too many attempts! Reload to try again.', 'error');
-                return;
-            }
+            const code = document.getElementById('adminCode').value;
             if (code === ADMIN_CODE) {
                 isAdmin = true;
-                loginAttempts = 0;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminScreen').style.display = 'flex';
+                renderMessages(document.getElementById('adminMessages'));
                 document.getElementById('adminMessageInput').focus();
                 updateAdminLists();
-                showAlert('Admin powers unlocked! 🔥', 'success');
-                push(messagesRef, {
-                    sender: 'System',
-                    text: 'Admin has logged in!',
-                    type: 'system',
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                });
             } else {
-                loginAttempts++;
-                showAlert(`Wrong code! ${3 - loginAttempts} attempts left.`, 'error');
-                codeInput.value = '';
-                codeInput.focus();
+                alert('Wrong code! Try again.');
+                document.getElementById('adminCode').value = '';
             }
         }
 
-        async function sendMessage(inputId, containerId, isAdminMsg = false) {
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('nameScreen').style.display = 'flex';
+            document.getElementById('adminCode').value = '';
+        });
+
+        // Main chat send
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        function sendMessage(inputId = 'messageInput', containerId = 'messages', isAdminMsg = false) {
             const input = document.getElementById(inputId);
-            const sendBtn = inputId === 'messageInput' ? document.getElementById('sendBtn') : document.getElementById('adminSendBtn');
-            if (!input || !sendBtn) {
-                showAlert('UI error – reload!', 'error');
-                return;
-            }
-            const text = input.value.trim();
-            if (!text) {
-                input.focus();
-                return;
-            }
-            try {
-                const mutedSnapshot = await get(mutedRef);
-                const muted = mutedSnapshot.val() || {};
-                if (muted[username.toLowerCase()] && !isAdminMsg) {
-                    showAlert('You are muted!', 'error');
-                    return;
-                }
-                sendBtn.disabled = true;
-                sendBtn.classList.add('loading');
-                sendBtn.textContent = 'Sending...';
-                const msg = {
-                    sender: isAdminMsg ? 'Admin' : username,
-                    text: text,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    type: isAdminMsg ? 'system' : 'message',
-                    badge: currentBadge,
-                    timestamp: Date.now()
-                };
-                await push(messagesRef, msg);
-                input.value = '';
-                sendBtn.textContent = 'Sent!';
-                setTimeout(() => {
-                    sendBtn.disabled = false;
-                    sendBtn.classList.remove('loading');
-                    sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
-                }, 800);
-                hideTyping(username);
-                showAlert('Message sent!', 'success');
-            } catch (error) {
-                console.error('Send error:', error);
-                showAlert('Send failed – try again!', 'error');
-                sendBtn.disabled = false;
-                sendBtn.classList.remove('loading');
-                sendBtn.textContent = isAdminMsg ? 'Broadcast' : 'Send';
-            }
+            const msg = input.value.trim();
+            if (!msg) return;
+            if (mutedUsers.has(username.toLowerCase()) && !isAdminMsg) return alert('You are muted!');
+            const newMsg = { 
+                sender: isAdminMsg ? 'Admin' : username, 
+                text: msg, 
+                type: isAdminMsg ? 'system' : 'own', 
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+            };
+            messages.push(newMsg);
+            input.value = '';
+            renderMessages(document.getElementById(containerId));
         }
 
-        document.getElementById('emojiBtn').addEventListener('click', () => {
-            const picker = document.getElementById('emojiPicker');
-            picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
-            if (picker.style.display === 'block') {
-                const grid = document.getElementById('emojiGrid');
-                grid.innerHTML = '';
-                EMOJIS.forEach(emoji => {
-                    const span = document.createElement('span');
-                    span.className = 'emoji';
-                    span.textContent = emoji;
-                    span.addEventListener('click', () => {
-                        const input = document.getElementById('messageInput');
-                        input.value += emoji;
-                        input.focus();
-                        picker.style.display = 'none';
-                    });
-                    grid.appendChild(span);
-                });
+        // Admin chat send
+        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', 'adminMessages', true));
+        document.getElementById('adminMessageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('adminMessageInput', 'adminMessages', true); });
+
+        // Admin main button
+        document.getElementById('adminBtnMain').addEventListener('click', () => {
+            if (!isAdmin) {
+                document.getElementById('chatScreen').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
             }
         });
 
-        function updateAdminLists() {
-            get(bannedRef).then((snapshot) => {
-                const banned = snapshot.val() || {};
-                const bannedList = document.getElementById('bannedList');
-                if (bannedList) bannedList.innerHTML = `Banned users: ${Object.keys(banned).join(', ') || 'None'}`;
-            });
-            get(mutedRef).then((snapshot) => {
-                const muted = snapshot.val() || {};
-                const mutedList = document.getElementById('mutedList');
-                if (mutedList) mutedList.innerHTML = `Muted users: ${Object.keys(muted).join(', ') || 'None'}`;
-            });
-            get(badgesRef).then((snapshot) => {
-                const badges = snapshot.val() || {};
-                document.getElementById('abuseStatus').textContent = Object.keys(badges).length > 0 ? 'Active 🔥' : 'Inactive';
-            });
-        }
-
-        function updateOnlineList(users) {
-            const list = document.getElementById('onlineList');
-            if (list) {
-                list.innerHTML = users.map(u => `<div class="list-item">${u} (Live)</div>`).join('');
-            }
-        }
-
-        document.getElementById('clearChatBtn').addEventListener('click', () => {
-            if (confirm('Clear all messages? This is permanent!')) {
-                remove(messagesRef).then(() => showAlert('Chat cleared!', 'success'));
+        // Enhanced Admin Powers
+        document.getElementById('banBtn').addEventListener('click', () => {
+            const target = document.getElementById('banInput').value.trim();
+            if (target) {
+                bannedUsers.add(target.toLowerCase());
+                messages.push({ sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                updateAdminLists();
+                document.getElementById('banInput').value = '';
+                alert(`Banned: ${target}`);
             }
         });
 
         document.getElementById('loadHistoryBtn').addEventListener('click', () => {
-            get(messagesRef).then((snapshot) => {
-                const hist = document.getElementById('historyList');
-                if (hist) {
-                    hist.innerHTML = '';
-                    const data = snapshot.val() || {};
-                    Object.entries(data).forEach(([id, msg]) => {
-                        const div = document.createElement('div');
-                        div.className = 'list-item';
-                        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${id}</small>`;
-                        hist.appendChild(div);
-                    });
-                    showAlert('History loaded!', 'success');
-                }
-            });
+            const hist = document.getElementById('historyList');
+            hist.innerHTML = messages.map((msg, i) => {
+                const badge = getBadgeForUser(msg.sender);
+                return `<div class="list-item"><strong>${badge ? badge + ' ' : ''}${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${i}</small></div>`;
+            }).join('');
         });
 
-        document.getElementById('banBtn').addEventListener('click', () => {
-            const target = document.getElementById('banInput').value.trim();
-            if (target) {
-                set(ref(bannedRef, target.toLowerCase()), true);
-                push(messagesRef, { sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                document.getElementById('banInput').value = '';
-                updateAdminLists();
-                showAlert(`Banned ${target}!`, 'success');
-            }
-        });
-
-        document.getElementById('muteBtn').addEventListener('click', () => {
-            const target = document.getElementById('muteInput').value.trim();
-            if (target) {
-                set(ref(mutedRef, target.toLowerCase()), true);
-                push(messagesRef, { sender: 'System', text: `${target} has been muted!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                document.getElementById('muteInput').value = '';
-                updateAdminLists();
-                showAlert(`Muted ${target}!`, 'success');
-            }
-        });
-
-        document.getElementById('kickBtn').addEventListener('click', () => {
-            const target = document.getElementById('kickInput').value.trim();
-            if (target) {
-                remove(ref(usersRef, target));
-                push(messagesRef, { sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                document.getElementById('kickInput').value = '';
-                showAlert(`Kicked ${target}!`, 'success');
+        document.getElementById('clearChatBtn').addEventListener('click', () => {
+            if (confirm('Clear all messages?')) {
+                messages = [];
+                renderMessages(document.getElementById('adminMessages'));
+                renderMessages(document.getElementById('messages'));
+                alert('Chat cleared!');
             }
         });
 
         document.getElementById('broadcastBtn').addEventListener('click', () => {
             const msg = document.getElementById('broadcastInput').value.trim();
             if (msg) {
-                push(messagesRef, { sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                messages.push({ sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                renderMessages(document.getElementById('messages'));
                 document.getElementById('broadcastInput').value = '';
-                showAlert('Broadcast sent!', 'success');
+                alert('Broadcast sent!');
+            }
+        });
+
+        document.getElementById('muteBtn').addEventListener('click', () => {
+            const target = document.getElementById('muteInput').value.trim();
+            if (target) {
+                mutedUsers.add(target.toLowerCase());
+                alert(`Muted: ${target}`);
+                document.getElementById('muteInput').value = '';
+            }
+        });
+
+        document.getElementById('kickBtn').addEventListener('click', () => {
+            const target = document.getElementById('kickInput').value.trim();
+            if (target && onlineUsers.includes(target)) {
+                onlineUsers = onlineUsers.filter(u => u !== target);
+                messages.push({ sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                renderMessages(document.getElementById('adminMessages'));
+                updateAdminLists();
+                document.getElementById('kickInput').value = '';
+                alert(`Kicked: ${target}`);
             }
         });
 
         document.getElementById('deleteBtn').addEventListener('click', () => {
             const query = document.getElementById('deleteInput').value.trim();
             if (query) {
-                get(messagesRef).then((snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        const keys = Object.keys(data);
-                        const keyToDelete = keys.find(key => data[key].text.toLowerCase().includes(query.toLowerCase()));
-                        if (keyToDelete) {
-                            remove(ref(messagesRef, keyToDelete));
-                            document.getElementById('deleteInput').value = '';
-                            showAlert('Message deleted!', 'success');
-                        } else {
-                            showAlert('Message not found!', 'error');
-                        }
-                    }
-                });
+                const index = messages.findIndex(msg => msg.text.toLowerCase().includes(query.toLowerCase()));
+                if (index > -1) {
+                    messages.splice(index, 1);
+                    renderMessages(document.getElementById('adminMessages'));
+                    renderMessages(document.getElementById('messages'));
+                    alert('Message deleted!');
+                } else {
+                    alert('Message not found!');
+                }
+                document.getElementById('deleteInput').value = '';
             }
         });
 
         document.getElementById('promoteBtn').addEventListener('click', () => {
             const target = document.getElementById('promoteInput').value.trim();
             if (target) {
-                update(ref(usersRef, target), { role: 'mod' });
-                push(messagesRef, { sender: 'System', text: `${target} promoted to mod!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                mods.add(target);
+                alert(`${target} promoted to mod!`);
                 document.getElementById('promoteInput').value = '';
-                showAlert(`${target} is now a mod!`, 'success');
+                updateAdminLists();
             }
         });
 
         document.getElementById('viewOnlineBtn').addEventListener('click', () => {
-            get(usersRef).then((snapshot) => {
-                const users = snapshot.val() || {};
-                updateOnlineList(Object.keys(users));
-                showAlert('Online list refreshed!', 'success');
-            });
+            const list = document.getElementById('onlineList');
+            list.innerHTML = onlineUsers.map(u => {
+                const badge = getBadgeForUser(u);
+                return `<div class="list-item">${badge ? `<span class="badge">${badge}</span> ` : ''}${u} ${bannedUsers.has(u.toLowerCase()) ? '(Banned)' : mods.has(u) ? '(Mod)' : ''}</div>`;
+            }).join('');
         });
 
         document.getElementById('changeRoleBtn').addEventListener('click', () => {
             const target = document.getElementById('roleInput').value.trim();
             const role = document.getElementById('roleSelect').value;
             if (target) {
-                update(ref(usersRef, target), { role: role });
-                push(messagesRef, { sender: 'System', text: `${target} role changed to ${role}!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+                if (role === 'mod') mods.add(target);
+                else if (role === 'admin') isAdmin = true; // Fun self-boost
+                else { mods.delete(target); }
+                alert(`${target} role updated to ${role}!`);
                 document.getElementById('roleInput').value = '';
-                showAlert(`${target} role updated to ${role}!`, 'success');
+                updateAdminLists();
             }
         });
 
+        // Admin Abuse Badge Blast
         document.getElementById('abuseBtn').addEventListener('click', () => {
             abuseMode = !abuseMode;
             const btn = document.getElementById('abuseBtn');
             const status = document.getElementById('abuseStatus');
             if (abuseMode) {
-                get(usersRef).then((snapshot) => {
-                    const users = snapshot.val() || {};
-                    Object.keys(users).forEach(user => {
-                        update(ref(badgesRef, user), { badge: '🔥' });
-                    });
-                });
+                // Assign cool badge to all online
+                onlineUsers.forEach(user => userBadges.set(user, '🔥'));
                 btn.textContent = 'Deactivate Badges';
-                status.textContent = 'Active 🔥';
-                push(messagesRef, { sender: 'Admin Abuse', text: 'Badge blast activated!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                showAlert('Badges blasted!', 'success');
+                btn.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
+                status.textContent = 'Active - All users badged! 😈';
+                messages.push({ sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
             } else {
-                remove(badgesRef);
-                btn.textContent = 'Activate Badges';
+                userBadges.clear();
+                btn.textContent = 'Activate Badges on All! 🔥';
+                btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
                 status.textContent = 'Inactive';
-                push(messagesRef, { sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                showAlert('Badges deactivated.', 'success');
+                messages.push({ sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
             }
+            // Re-render to show badges
+            renderMessages(document.getElementById('adminMessages'));
+            renderMessages(document.getElementById('messages'));
             updateAdminLists();
         });
 
-        window.addEventListener('beforeunload', () => {
-            if (username) remove(ref(usersRef, username));
-            if (unsubscribeMessages) unsubscribeMessages();
-            if (unsubscribeUsers) unsubscribeUsers();
-        });
-
-        let typingTimer;
-        const messageInput = document.getElementById('messageInput');
-        if (messageInput) {
-            messageInput.addEventListener('input', () => {
-                showTyping(username);
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(() => hideTyping(username), 1500);
-            });
+        function updateAdminLists() {
+            document.getElementById('bannedList').innerHTML = `Banned: ${Array.from(bannedUsers).join(', ') || 'None'}`;
         }
 
-        initFirebase();
-        document.getElementById('joinBtn').addEventListener('click', joinChat);
-        document.getElementById('topAdminBtn').addEventListener('click', () => {
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('adminCode').focus();
-            showAlert('Enter admin code 1616', 'success');
-        });
-        document.getElementById('loginBtn').addEventListener('click', adminLogin);
-        document.getElementById('backBtn').addEventListener('click', () => {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('nameScreen').style.display = 'flex';
-        });
-        document.getElementById('sendBtn').addEventListener('click', () => sendMessage('messageInput', 'messages'));
-        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', 'adminMessages', true));
-        document.getElementById('messageInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage('messageInput', 'messages');
-            }
-        });
-        document.getElementById('adminMessageInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage('adminMessageInput', 'adminMessages', true);
-            }
-        });
+        // Initial render
+        renderMessages(document.getElementById('messages'));
     </script>
+<body>
+    <!-- Your existing chat UI -->
+
+    <ul id="messages" style="list-style: none; padding: 10px; max-height: 60vh; overflow-y: auto;"></ul>
+
+    <div class="message-input" style="display: flex; gap: 0.5rem; padding: 10px;">
+        <input id="msg" placeholder="Type your message..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc;" />
+        <button onclick="sendMessage()" style="padding: 10px 20px; border-radius: 20px; background: #667eea; color: white; border: none;">Send</button>
+    </div>
 </body>
 </html>
