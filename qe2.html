@@ -1,779 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Chat</title>
-    <style>
-        /* Enhanced CSS - iPhone-inspired, responsive, admin glow-up */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Firebase Chat</title>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-            color: #333;
-        }
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        /* Name Entry & Login Screens */
-        #nameScreen, #loginScreen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
+  // 🔥 Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEF8umvfm8VxqImpIjcejIvciB60amPA0",
+    authDomain: "chat-bd6ae.firebaseapp.com",
+    databaseURL: "https://chat-bd6ae-default-rtdb.firebaseio.com",
+    projectId: "chat-bd6ae",
+    storageBucket: "chat-bd6ae.firebasestorage.app",
+    messagingSenderId: "800799340593",
+    appId: "1:800799340593:web:d0d8d7da87ca5928a13d10",
+    measurementId: "G-D1YCHQYBHC"
+  };
 
-        .container {
-            background: white;
-            padding: 3rem;
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            max-width: 400px;
-            width: 90%;
-            position: relative;
-        }
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "messages");
 
-        .admin-btn {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
+  // Send message
+  window.sendMessage = function() {
+    const input = document.getElementById("msg");
+    if (input && input.value.trim()) {
+      push(messagesRef, { text: input.value, timestamp: Date.now() });
+      input.value = "";
+    }
+  };
 
-        .admin-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+  // Receive messages
+  onChildAdded(messagesRef, (snapshot) => {
+    const msg = snapshot.val();
+    const list = document.getElementById("messages");
+    if (list && msg?.text) {
+      const li = document.createElement("li");
+      li.textContent = msg.text;
+      li.style.padding = "8px";
+      li.style.borderBottom = "1px solid #ccc";
+      list.appendChild(li);
 
-        h1 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 2.5rem;
-        }
+      // Auto-scroll
+      list.scrollTop = list.scrollHeight;
+    }
+  });
+</script>
 
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-            transition: border-color 0.3s;
-        }
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
 
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+  #messages {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+    background: #f0f0f0;
+  }
 
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
+  .message-input {
+    display: flex;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #ccc;
+  }
 
-        button:hover {
-            transform: translateY(-2px);
-        }
+  .message-input input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+  }
 
-        .hint {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 1rem;
-            font-style: italic;
-        }
-
-        #backBtn {
-            background: #6c757d;
-            margin-top: 1rem;
-        }
-
-        /* Chat Screen */
-        #chatScreen {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background: #f8f9fa;
-        }
-
-        .chat-header {
-            background: white;
-            padding: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-
-        .chat-header h2 {
-            color: #333;
-            margin: 0;
-        }
-
-        #adminBtnMain {
-            background: none;
-            border: none;
-            color: #667eea;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .status {
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            background: #f8f9fa;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message {
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: flex-end;
-            animation: slideIn 0.4s ease-out;
-            max-width: 80%;
-            width: fit-content;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.own { justify-content: flex-end; margin-left: auto; }
-        .message.other { justify-content: flex-start; }
-        .message.system { justify-content: center; width: 100%; }
-
-        .message-bubble {
-            max-width: 100%;
-            padding: 1rem 1.25rem;
-            border-radius: 25px;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .message.other .message-bubble {
-            background: white;
-        }
-
-        .message.own .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .message.system .message-bubble {
-            background: #e9ecef;
-            color: #666;
-            font-style: italic;
-            text-align: center;
-        }
-
-        .sender {
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .message.own .sender { display: none; }
-
-        .badge {
-            font-size: 1rem;
-            animation: glow 2s infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 5px #ffd700; }
-            to { text-shadow: 0 0 10px #ffd700, 0 0 15px #ffd700; }
-        }
-
-        .text {
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        .time {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            margin-top: 0.5rem;
-            text-align: right;
-        }
-
-        .message-input {
-            background: white;
-            padding: 1rem;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .message-input input {
-            flex: 1;
-            border: 2px solid #e0e0e0;
-            border-radius: 30px;
-            padding: 1rem 1.25rem;
-            min-height: 20px;
-            resize: none;
-        }
-
-        .message-input input:focus {
-            border-color: #667eea;
-        }
-
-        .message-input button {
-            padding: 0.75rem 1rem;
-            min-width: 70px;
-            width: auto;
-        }
-
-        /* Admin Dashboard */
-        #adminScreen {
-            display: none;
-            height: 100vh;
-            flex-direction: row;
-        }
-
-        .chat-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #e0e0e0;
-        }
-
-        .admin-panel {
-            flex: 1;
-            background: white;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        .admin-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            border-radius: 15px 15px 0 0;
-            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-        }
-
-        .admin-section {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .admin-section:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-        }
-
-        .admin-section h4 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .admin-section input, .admin-section select {
-            margin-bottom: 1rem;
-            width: 100%;
-        }
-
-        .admin-section button {
-            margin-right: 0.5rem;
-            width: auto;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-
-        .admin-section .power-btn {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            margin-top: 0.5rem;
-        }
-
-        #historyList, #onlineList, #bannedList {
-            max-height: 150px;
-            overflow-y: auto;
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            border: 1px solid #e0e0e0;
-        }
-
-        .list-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            #adminScreen {
-                flex-direction: column;
-            }
-            .admin-panel {
-                height: auto;
-            }
-            .message { max-width: 95%; }
-        }
-    </style>
+  .message-input button {
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+</style>
 </head>
+
 <body>
-    <!-- Name Entry Screen -->
-    <div id="nameScreen">
-        <div class="container">
-            <button class="admin-btn" id="adminBtn">Admin</button>
-            <h1>Ultimate Chat</h1>
-            <p>Enter your name to join</p>
-            <input type="text" id="usernameInput" placeholder="Your name..." maxlength="20">
-            <button id="joinBtn">Join Chat</button>
-            <p class="hint">Pure client-side chat – enhanced! 🚀</p>
-        </div>
-    </div>
+  <ul id="messages"></ul>
 
-    <!-- Admin Login Screen -->
-    <div id="loginScreen">
-        <div class="container">
-            <h1>Admin Login</h1>
-            <p>Enter the code to access powers</p>
-            <input type="password" id="adminCode" placeholder="Code..." maxlength="4">
-            <button id="loginBtn">Login</button>
-            <button id="backBtn">Back to Chat</button>
-        </div>
-    </div>
-
-    <!-- Main Chat Screen (Non-Admin) -->
-    <div id="chatScreen">
-        <div class="chat-header">
-            <button id="adminBtnMain">Admin</button>
-            <h2>Ultimate Chat</h2>
-            <div class="status" id="onlineCount">Online: 1 user</div>
-        </div>
-        <div id="messages" class="messages"></div>
-        <div class="message-input">
-            <input type="text" id="messageInput" placeholder="Type a message..." maxlength="500">
-            <button id="sendBtn">Send</button>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div id="adminScreen">
-        <div class="chat-panel">
-            <div class="chat-header">
-                <h2>Live Chat</h2>
-                <div class="status">Online: 1 user</div>
-            </div>
-            <div id="adminMessages" class="messages"></div>
-            <div class="message-input">
-                <input type="text" id="adminMessageInput" placeholder="Type as admin..." maxlength="500">
-                <button id="adminSendBtn">Send</button>
-            </div>
-        </div>
-        <div class="admin-panel">
-            <div class="admin-header">
-                <h3>🔥 Ultimate Admin Powers</h3>
-                <p>Enhanced controls – abuse wisely! 👑</p>
-            </div>
-
-            <!-- Power 1: Ban User -->
-            <div class="admin-section">
-                <h4>👮 1. Ban User</h4>
-                <input type="text" id="banInput" placeholder="Username to ban...">
-                <button id="banBtn">Ban Now</button>
-                <div id="bannedList">Banned: None</div>
-            </div>
-
-            <!-- Power 2: View Chat History -->
-            <div class="admin-section">
-                <h4>📜 2. View Full History</h4>
-                <button id="loadHistoryBtn">Load History</button>
-                <div id="historyList">History: Click to load</div>
-            </div>
-
-            <!-- Power 3: Clear Chat -->
-            <div class="admin-section">
-                <h4>🗑️ 3. Clear All Messages</h4>
-                <button id="clearChatBtn" class="power-btn">Clear Now</button>
-                <p>Wipes the slate clean.</p>
-            </div>
-
-            <!-- Power 4: Broadcast Message -->
-            <div class="admin-section">
-                <h4>📢 4. Broadcast to All</h4>
-                <input type="text" id="broadcastInput" placeholder="Global message...">
-                <button id="broadcastBtn">Broadcast</button>
-            </div>
-
-            <!-- Power 5: Mute User -->
-            <div class="admin-section">
-                <h4>🔇 5. Mute User</h4>
-                <input type="text" id="muteInput" placeholder="Username to mute...">
-                <button id="muteBtn">Mute</button>
-                <div>Muted: None</div>
-            </div>
-
-            <!-- Power 6: Kick User -->
-            <div class="admin-section">
-                <h4>🚪 6. Kick User</h4>
-                <input type="text" id="kickInput" placeholder="Username to kick...">
-                <button id="kickBtn">Kick</button>
-            </div>
-
-            <!-- Power 7: Delete Specific Message -->
-            <div class="admin-section">
-                <h4>✂️ 7. Delete Message</h4>
-                <input type="text" id="deleteInput" placeholder="Message text snippet...">
-                <button id="deleteBtn">Delete</button>
-            </div>
-
-            <!-- Power 8: Promote User -->
-            <div class="admin-section">
-                <h4>⭐ 8. Promote to Mod</h4>
-                <input type="text" id="promoteInput" placeholder="Username to promote...">
-                <button id="promoteBtn">Promote</button>
-                <div>Mods: None</div>
-            </div>
-
-            <!-- Power 9: View Online Users -->
-            <div class="admin-section">
-                <h4>👥 9. View Online Users</h4>
-                <button id="viewOnlineBtn">Refresh List</button>
-                <div id="onlineList">Online: Click to refresh</div>
-            </div>
-
-            <!-- Power 10: Change Role -->
-            <div class="admin-section">
-                <h4>⚙️ 10. Change Role</h4>
-                <input type="text" id="roleInput" placeholder="Username...">
-                <select id="roleSelect">
-                    <option value="user">User</option>
-                    <option value="mod">Moderator</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button id="changeRoleBtn">Update</button>
-            </div>
-
-            <!-- Power 11: Admin Abuse - Badge Mode -->
-            <div class="admin-section">
-                <h4>😈 11. Admin Abuse: Badge Blast</h4>
-                <button id="abuseBtn" class="power-btn">Activate Badges on All! 🔥</button>
-                <p>Gives everyone a glowing badge above their name. Pure chaos!</p>
-                <div>Status: <span id="abuseStatus">Inactive</span></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Enhanced JS - No simulations, fixed UI, badges, better admin
-        let username = '';
-        let isAdmin = false;
-        let messages = [
-            { sender: 'System', text: 'Welcome to the enhanced Ultimate Chat! Time stamps included.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-        ];
-        let bannedUsers = new Set();
-        let mutedUsers = new Set();
-        let mods = new Set();
-        let onlineUsers = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack']; // Simulated for lists
-        let userBadges = new Map(); // username -> badge
-        let abuseMode = false;
-        const ADMIN_CODE = '1616';
-
-        function getBadgeForUser(user) {
-            return userBadges.get(user) || '';
-        }
-
-        function renderMessages(container) {
-            container.innerHTML = '';
-            messages.forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `message ${msg.type}`;
-                const badge = getBadgeForUser(msg.sender);
-                const senderHtml = msg.sender === 'System' || msg.type === 'system' ? msg.sender : `<span class="sender"><span class="badge">${badge}</span>${msg.sender}</span>`;
-                msgDiv.innerHTML = `
-                    <div class="message-bubble">
-                        <div class="sender">${senderHtml}</div>
-                        <div class="text">${msg.text}</div>
-                        <div class="time">Sent: ${msg.time}</div>
-                    </div>
-                `;
-                container.appendChild(msgDiv);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Name screen - FIXED: Now switches instantly on click/Enter
-        document.getElementById('joinBtn').addEventListener('click', joinChat);
-        document.getElementById('usernameInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') joinChat(); });
-
-        function joinChat() {
-            username = document.getElementById('usernameInput').value.trim();
-            if (!username) {
-                alert('Enter a name!');
-                return;
-            }
-            // Instant switch - no server needed
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'flex';
-            document.getElementById('messageInput').focus();
-            renderMessages(document.getElementById('messages'));
-            console.log('Joined as:', username); // For debug
-        }
-
-        // Admin button on name screen
-        document.getElementById('adminBtn').addEventListener('click', () => {
-            document.getElementById('nameScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-        });
-
-        // Login
-        document.getElementById('loginBtn').addEventListener('click', adminLogin);
-        document.getElementById('adminCode').addEventListener('keypress', (e) => { if (e.key === 'Enter') adminLogin(); });
-
-        function adminLogin() {
-            const code = document.getElementById('adminCode').value;
-            if (code === ADMIN_CODE) {
-                isAdmin = true;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminScreen').style.display = 'flex';
-                renderMessages(document.getElementById('adminMessages'));
-                document.getElementById('adminMessageInput').focus();
-                updateAdminLists();
-            } else {
-                alert('Wrong code! Try again.');
-                document.getElementById('adminCode').value = '';
-            }
-        }
-
-        document.getElementById('backBtn').addEventListener('click', () => {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('nameScreen').style.display = 'flex';
-            document.getElementById('adminCode').value = '';
-        });
-
-        // Main chat send
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-
-        function sendMessage(inputId = 'messageInput', containerId = 'messages', isAdminMsg = false) {
-            const input = document.getElementById(inputId);
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (mutedUsers.has(username.toLowerCase()) && !isAdminMsg) return alert('You are muted!');
-            const newMsg = { 
-                sender: isAdminMsg ? 'Admin' : username, 
-                text: msg, 
-                type: isAdminMsg ? 'system' : 'own', 
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-            };
-            messages.push(newMsg);
-            input.value = '';
-            renderMessages(document.getElementById(containerId));
-        }
-
-        // Admin chat send
-        document.getElementById('adminSendBtn').addEventListener('click', () => sendMessage('adminMessageInput', 'adminMessages', true));
-        document.getElementById('adminMessageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage('adminMessageInput', 'adminMessages', true); });
-
-        // Admin main button
-        document.getElementById('adminBtnMain').addEventListener('click', () => {
-            if (!isAdmin) {
-                document.getElementById('chatScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            }
-        });
-
-        // Enhanced Admin Powers
-        document.getElementById('banBtn').addEventListener('click', () => {
-            const target = document.getElementById('banInput').value.trim();
-            if (target) {
-                bannedUsers.add(target.toLowerCase());
-                messages.push({ sender: 'System', text: `${target} has been banned!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                updateAdminLists();
-                document.getElementById('banInput').value = '';
-                alert(`Banned: ${target}`);
-            }
-        });
-
-        document.getElementById('loadHistoryBtn').addEventListener('click', () => {
-            const hist = document.getElementById('historyList');
-            hist.innerHTML = messages.map((msg, i) => {
-                const badge = getBadgeForUser(msg.sender);
-                return `<div class="list-item"><strong>${badge ? badge + ' ' : ''}${msg.sender}:</strong> ${msg.text} <small>(${msg.time}) ID: ${i}</small></div>`;
-            }).join('');
-        });
-
-        document.getElementById('clearChatBtn').addEventListener('click', () => {
-            if (confirm('Clear all messages?')) {
-                messages = [];
-                renderMessages(document.getElementById('adminMessages'));
-                renderMessages(document.getElementById('messages'));
-                alert('Chat cleared!');
-            }
-        });
-
-        document.getElementById('broadcastBtn').addEventListener('click', () => {
-            const msg = document.getElementById('broadcastInput').value.trim();
-            if (msg) {
-                messages.push({ sender: 'Admin Broadcast', text: msg, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                renderMessages(document.getElementById('messages'));
-                document.getElementById('broadcastInput').value = '';
-                alert('Broadcast sent!');
-            }
-        });
-
-        document.getElementById('muteBtn').addEventListener('click', () => {
-            const target = document.getElementById('muteInput').value.trim();
-            if (target) {
-                mutedUsers.add(target.toLowerCase());
-                alert(`Muted: ${target}`);
-                document.getElementById('muteInput').value = '';
-            }
-        });
-
-        document.getElementById('kickBtn').addEventListener('click', () => {
-            const target = document.getElementById('kickInput').value.trim();
-            if (target && onlineUsers.includes(target)) {
-                onlineUsers = onlineUsers.filter(u => u !== target);
-                messages.push({ sender: 'System', text: `${target} has been kicked!`, type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                renderMessages(document.getElementById('adminMessages'));
-                updateAdminLists();
-                document.getElementById('kickInput').value = '';
-                alert(`Kicked: ${target}`);
-            }
-        });
-
-        document.getElementById('deleteBtn').addEventListener('click', () => {
-            const query = document.getElementById('deleteInput').value.trim();
-            if (query) {
-                const index = messages.findIndex(msg => msg.text.toLowerCase().includes(query.toLowerCase()));
-                if (index > -1) {
-                    messages.splice(index, 1);
-                    renderMessages(document.getElementById('adminMessages'));
-                    renderMessages(document.getElementById('messages'));
-                    alert('Message deleted!');
-                } else {
-                    alert('Message not found!');
-                }
-                document.getElementById('deleteInput').value = '';
-            }
-        });
-
-        document.getElementById('promoteBtn').addEventListener('click', () => {
-            const target = document.getElementById('promoteInput').value.trim();
-            if (target) {
-                mods.add(target);
-                alert(`${target} promoted to mod!`);
-                document.getElementById('promoteInput').value = '';
-                updateAdminLists();
-            }
-        });
-
-        document.getElementById('viewOnlineBtn').addEventListener('click', () => {
-            const list = document.getElementById('onlineList');
-            list.innerHTML = onlineUsers.map(u => {
-                const badge = getBadgeForUser(u);
-                return `<div class="list-item">${badge ? `<span class="badge">${badge}</span> ` : ''}${u} ${bannedUsers.has(u.toLowerCase()) ? '(Banned)' : mods.has(u) ? '(Mod)' : ''}</div>`;
-            }).join('');
-        });
-
-        document.getElementById('changeRoleBtn').addEventListener('click', () => {
-            const target = document.getElementById('roleInput').value.trim();
-            const role = document.getElementById('roleSelect').value;
-            if (target) {
-                if (role === 'mod') mods.add(target);
-                else if (role === 'admin') isAdmin = true; // Fun self-boost
-                else { mods.delete(target); }
-                alert(`${target} role updated to ${role}!`);
-                document.getElementById('roleInput').value = '';
-                updateAdminLists();
-            }
-        });
-
-        // Admin Abuse Badge Blast
-        document.getElementById('abuseBtn').addEventListener('click', () => {
-            abuseMode = !abuseMode;
-            const btn = document.getElementById('abuseBtn');
-            const status = document.getElementById('abuseStatus');
-            if (abuseMode) {
-                // Assign cool badge to all online
-                onlineUsers.forEach(user => userBadges.set(user, '🔥'));
-                btn.textContent = 'Deactivate Badges';
-                btn.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
-                status.textContent = 'Active - All users badged! 😈';
-                messages.push({ sender: 'Admin Abuse', text: 'Badge blast activated! Everyone gets 🔥!', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-            } else {
-                userBadges.clear();
-                btn.textContent = 'Activate Badges on All! 🔥';
-                btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
-                status.textContent = 'Inactive';
-                messages.push({ sender: 'System', text: 'Badge mode deactivated.', type: 'system', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-            }
-            // Re-render to show badges
-            renderMessages(document.getElementById('adminMessages'));
-            renderMessages(document.getElementById('messages'));
-            updateAdminLists();
-        });
-
-        function updateAdminLists() {
-            document.getElementById('bannedList').innerHTML = `Banned: ${Array.from(bannedUsers).join(', ') || 'None'}`;
-        }
-
-        // Initial render
-        renderMessages(document.getElementById('messages'));
-    </script>
-<body>
-    <!-- Your existing chat UI -->
-
-    <ul id="messages" style="list-style: none; padding: 10px; max-height: 60vh; overflow-y: auto;"></ul>
-
-    <div class="message-input" style="display: flex; gap: 0.5rem; padding: 10px;">
-        <input id="msg" placeholder="Type your message..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc;" />
-        <button onclick="sendMessage()" style="padding: 10px 20px; border-radius: 20px; background: #667eea; color: white; border: none;">Send</button>
-    </div>
+  <div class="message-input">
+    <input id="msg" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
 </body>
 </html>
