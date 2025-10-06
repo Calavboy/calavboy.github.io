@@ -27,12 +27,13 @@
   const db = getDatabase(app);
   const messagesRef = ref(db, "messages");
   const bannedRef = ref(db, "bannedUsers");
-  const eventsRef = ref(db, "events/discoParty");
+  const eventsRef = ref(db, "events/memeMeteorShower");
+  const scoresRef = ref(db, "eventScores/memeMeteorShower");
 
   let currentUsername = '';
   let isAdmin = false;
   let isBanned = false;
-  let isDiscoActive = false;
+  let isMemeShowerActive = false;
 
   // Check if user is banned
   window.checkBanned = function(username) {
@@ -84,9 +85,16 @@
     }).then(() => {
       input.value = "";
       console.log('Message sent by:', currentUsername);
-      // Award Disco Legend badge during event
-      if (isDiscoActive) {
-        set(ref(db, `badges/${currentUsername}`), { badge: 'Disco Legend', color: '#ff00ff', expires: Date.now() + 24 * 60 * 60 * 1000 });
+      // Score points during Meme Meteor Shower
+      if (isMemeShowerActive) {
+        const keywords = ['doge', 'troll', 'pog', 'sus'];
+        if (keywords.some(keyword => messageText.toLowerCase().includes(keyword))) {
+          const userScoreRef = ref(db, `eventScores/memeMeteorShower/${currentUsername}`);
+          onValue(userScoreRef, (snapshot) => {
+            const currentScore = snapshot.val() || 0;
+            set(userScoreRef, currentScore + 1);
+          }, { onlyOnce: true });
+        }
       }
     }).catch((error) => {
       console.error('Error sending message:', error);
@@ -155,79 +163,79 @@
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   };
 
-  // Disco Party Event
-  window.triggerDiscoParty = function() {
+  // Meme Meteor Shower Event
+  window.triggerMemeMeteorShower = function() {
     if (!isAdmin) return;
-    if (isDiscoActive) {
-      alert('Disco Party already active!');
+    if (isMemeShowerActive) {
+      alert('Meme Meteor Shower already active!');
       return;
     }
-    isDiscoActive = true;
-    set(ref(db, 'events/discoParty'), { active: true, endTime: Date.now() + 30 * 1000 })
-      .catch((error) => console.error('Error starting Disco Party:', error));
+    isMemeShowerActive = true;
+    set(ref(db, 'events/memeMeteorShower'), { active: true, endTime: Date.now() + 3 * 60 * 1000 })
+      .catch((error) => console.error('Error starting Meme Meteor Shower:', error));
     push(messagesRef, { 
       username: 'ADMIN', 
-      text: '🕺 DISCO PARTY STARTS NOW! Dance with the stickman for 30 seconds—type to become a Disco Legend! 🎶', 
+      text: '🌠 MEME METEOR SHOWER! Spam "doge", "troll", "pog", or "sus"—top 3 become Meme Astronauts! 3 mins!', 
       timestamp: Date.now(), 
       isGlobal: true 
     });
 
-    // Play music
-    const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_6a2b6e2e3b.mp3');
-    audio.play().catch((error) => console.error('Error playing audio:', error));
+    // Show meme pop-ups and stars
+    const memeContainer = document.getElementById('meme-container');
+    memeContainer.style.display = 'block';
+    document.body.classList.add('meteor-shower');
 
-    // Show stickman and lights
-    const discoDiv = document.getElementById('disco-container');
-    discoDiv.style.display = 'block';
-    document.body.classList.add('disco-lights');
-
-    // Stickman animation
-    const canvas = document.getElementById('stickman-canvas');
-    const ctx = canvas.getContext('2d');
-    let frame = 0;
-    const moves = [
-      { head: { x: 100, y: 50 }, arms: [{ x: 80, y: 70 }, { x: 120, y: 70 }], legs: [{ x: 90, y: 100 }, { x: 110, y: 100 }] }, // Neutral
-      { head: { x: 100, y: 50 }, arms: [{ x: 70, y: 60 }, { x: 130, y: 60 }], legs: [{ x: 90, y: 110 }, { x: 110, y: 90 }] }, // Floss
-      { head: { x: 100, y: 50 }, arms: [{ x: 90, y: 80 }, { x: 110, y: 80 }], legs: [{ x: 80, y: 100 }, { x: 120, y: 100 }] }, // Dab
+    // Meme images (CDN URLs for popular memes)
+    const memes = [
+      'https://i.imgur.com/3GqZ2rM.jpg', // Doge
+      'https://i.imgur.com/1yO2e0k.png', // Trollface
+      'https://i.imgur.com/4s3x6kL.jpg', // PogChamp
+      'https://i.imgur.com/9yKz7qX.png'  // Sus Amogus
     ];
-    function animateStickman() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.beginPath();
-      const move = moves[Math.floor(frame / 10) % moves.length];
-      ctx.arc(move.head.x, move.head.y, 10, 0, Math.PI * 2); // Head
-      ctx.moveTo(move.head.x, move.head.y + 10);
-      ctx.lineTo(move.head.x, move.head.y + 40); // Body
-      ctx.moveTo(move.head.x, move.head.y + 20);
-      ctx.lineTo(move.arms[0].x, move.arms[0].y); // Left arm
-      ctx.moveTo(move.head.x, move.head.y + 20);
-      ctx.lineTo(move.arms[1].x, move.arms[1].y); // Right arm
-      ctx.moveTo(move.head.x, move.head.y + 40);
-      ctx.lineTo(move.legs[0].x, move.legs[0].y); // Left leg
-      ctx.moveTo(move.head.x, move.head.y + 40);
-      ctx.lineTo(move.legs[1].x, move.legs[1].y); // Right leg
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 5;
-      ctx.stroke();
-      frame++;
-      if (isDiscoActive) requestAnimationFrame(animateStickman);
+    let memeIndex = 0;
+    function showMeme() {
+      if (!isMemeShowerActive) return;
+      const memeDiv = document.createElement('div');
+      memeDiv.className = 'meme-popup';
+      memeDiv.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+      memeDiv.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
+      memeDiv.style.backgroundImage = `url(${memes[memeIndex % memes.length]})`;
+      memeContainer.appendChild(memeDiv);
+      setTimeout(() => memeDiv.remove(), 2000);
+      memeIndex++;
+      setTimeout(showMeme, 3000);
     }
-    animateStickman();
+    showMeme();
 
-    // End event after 30 seconds
+    // End event after 3 minutes
     setTimeout(() => {
-      isDiscoActive = false;
-      set(ref(db, 'events/discoParty'), { active: false })
-        .catch((error) => console.error('Error ending Disco Party:', error));
-      push(messagesRef, { 
-        username: 'ADMIN', 
-        text: '🎉 DISCO PARTY OVER! Disco Legends, share your screenshots! 🕺', 
-        timestamp: Date.now(), 
-        isGlobal: true 
-      });
-      audio.pause();
-      discoDiv.style.display = 'none';
-      document.body.classList.remove('disco-lights');
-    }, 30 * 1000);
+      isMemeShowerActive = false;
+      set(ref(db, 'events/memeMeteorShower'), { active: false })
+        .catch((error) => console.error('Error ending Meme Meteor Shower:', error));
+      // Announce winners
+      onValue(scoresRef, (snapshot) => {
+        const scores = [];
+        snapshot.forEach((child) => {
+          scores.push({ username: child.key, score: child.val() });
+        });
+        scores.sort((a, b) => b.score - a.score);
+        const winners = scores.slice(0, 3).map(s => s.username).join(', ');
+        if (winners) {
+          push(messagesRef, { 
+            username: 'ADMIN', 
+            text: `🌠 MEME METEOR SHOWER OVER! Meme Astronauts: ${winners}! Share your screenshots!`, 
+            timestamp: Date.now(), 
+            isGlobal: true 
+          });
+          scores.slice(0, 3).forEach(s => {
+            set(ref(db, `badges/${s.username}`), { badge: 'Meme Astronaut', color: '#00ff00', emoji: '🌠', expires: Date.now() + 24 * 60 * 60 * 1000 });
+          });
+        }
+        remove(scoresRef); // Clear scores
+      }, { onlyOnce: true });
+      memeContainer.style.display = 'none';
+      document.body.classList.remove('meteor-shower');
+    }, 3 * 60 * 1000);
   };
 
   // Receive messages and apply badges
@@ -243,12 +251,12 @@
       li.textContent = `${msg.username || 'Unknown'}: ${msg.text}`;
       li.style.padding = "8px";
       li.style.borderBottom = "1px solid #ccc";
-      // Check for Disco Legend badge
+      // Check for Meme Astronaut badge
       onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
         const badge = badgeSnapshot.val();
-        if (badge && badge.badge === 'Disco Legend' && badge.expires > Date.now()) {
+        if (badge && badge.badge === 'Meme Astronaut' && badge.expires > Date.now()) {
           li.style.color = badge.color;
-          li.textContent = `🕺 ${msg.username}: ${msg.text}`;
+          li.textContent = `${badge.emoji} ${msg.username}: ${msg.text}`;
         }
       }, { onlyOnce: true });
       list.appendChild(li);
@@ -439,31 +447,39 @@
     border-bottom: 1px solid #ccc;
   }
 
-  #disco-container {
+  #meme-container {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
     z-index: 1000;
   }
 
-  #stickman-canvas {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
+  .meme-popup {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    animation: fadeInOut 2s ease-in-out;
   }
 
-  .disco-lights {
-    animation: rainbow-flicker 0.5s infinite;
+  .meteor-shower {
+    background: linear-gradient(180deg, #1a1a40, #000);
+    animation: star-fall 0.5s infinite;
   }
 
-  @keyframes rainbow-flicker {
-    0% { background: linear-gradient(135deg, red, orange); }
-    20% { background: linear-gradient(135deg, orange, yellow); }
-    40% { background: linear-gradient(135deg, yellow, green); }
-    60% { background: linear-gradient(135deg, green, blue); }
-    80% { background: linear-gradient(135deg, blue, purple); }
-    100% { background: linear-gradient(135deg, purple, red); }
+  @keyframes star-fall {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+  }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.5); }
   }
 </style>
 </head>
@@ -498,7 +514,7 @@
         <button onclick="clearChat()">Clear Chat</button>
         <input type="text" id="global-input" placeholder="Global message">
         <button onclick="sendGlobalMessage()">Send Global</button>
-        <button onclick="triggerDiscoParty()">Trigger Disco Party</button>
+        <button onclick="triggerMemeMeteorShower()">Trigger Meme Meteor Shower</button>
         <h4>Banned Users</h4>
         <ul id="banned-users"></ul>
       </div>
@@ -508,9 +524,7 @@
   <!-- Admin Badge/Button -->
   <button id="admin-btn" onclick="toggleAdminPanel()">Admin</button>
 
-  <!-- Disco Party Container -->
-  <div id="disco-container">
-    <canvas id="stickman-canvas" width="200" height="200"></canvas>
-  </div>
+  <!-- Meme Meteor Shower Container -->
+  <div id="meme-container"></div>
 </body>
 </html>
