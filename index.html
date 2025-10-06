@@ -30,7 +30,6 @@
   const eventsRef = ref(db, "events");
   const usersRef = ref(db, "users");
   const badgesRef = ref(db, "badges");
-  const badgeAwardsRef = ref(db, "badgeAwards");
 
   let currentUser = null;
   let currentDisplayName = '';
@@ -238,54 +237,40 @@
       alert('Please enter a display name and select a badge');
       return;
     }
-    checkDailyBadgeLimit((canAward) => {
-      if (!canAward) {
-        alert('Daily badge limit (5) reached!');
-        return;
+    findUserByDisplayName(badgeInput, (username) => {
+      if (username) {
+        const badges = {
+          'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
+          'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
+          'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
+          'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
+          'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
+          'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
+          'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
+          'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
+          'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
+          'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
+        };
+        const badgeRef = ref(db, `badges/${username}/${badgeSelect}`);
+        set(badgeRef, {
+          badge: badges[badgeSelect].name,
+          emoji: badges[badgeSelect].emoji,
+          style: badges[badgeSelect].style,
+          expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
+        }).then(() => {
+          push(messagesRef, {
+            username: 'admin',
+            displayName: 'ADMIN',
+            text: `${badgeInput} earned ${badges[badgeSelect].name}! ${badges[badgeSelect].emoji}`,
+            timestamp: Date.now(),
+            isGlobal: true,
+            style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
+          });
+          badgeInput.value = '';
+        }).catch((error) => console.error('Error awarding badge:', error));
+      } else {
+        alert('User not found');
       }
-      findUserByDisplayName(badgeInput, (username) => {
-        if (username) {
-          const badges = {
-            'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
-            'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
-            'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
-            'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
-            'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
-            'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
-            'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
-            'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
-            'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
-            'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
-          };
-          const badgeRef = ref(db, `badges/${username}/${badgeSelect}`);
-          set(badgeRef, {
-            badge: badges[badgeSelect].name,
-            emoji: badges[badgeSelect].emoji,
-            style: badges[badgeSelect].style,
-            expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
-          }).then(() => {
-            const date = new Date().toISOString().split('T')[0];
-            const awardRef = ref(db, `badgeAwards/${date}`);
-            onValue(awardRef, (snapshot) => {
-              const data = snapshot.val() || { count: 0, awards: [] };
-              data.count += 1;
-              data.awards.push({ username, badge: badges[badgeSelect].name, timestamp: Date.now() });
-              set(awardRef, data);
-            }, { onlyOnce: true });
-            push(messagesRef, {
-              username: 'admin',
-              displayName: 'ADMIN',
-              text: `${badgeInput} earned ${badges[badgeSelect].name}! ${badges[badgeSelect].emoji}`,
-              timestamp: Date.now(),
-              isGlobal: true,
-              style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
-            });
-            badgeInput.value = '';
-          }).catch((error) => console.error('Error awarding badge:', error));
-        } else {
-          alert('User not found');
-        }
-      });
     });
   };
 
@@ -394,57 +379,43 @@
       return;
     }
     const displayNames = massInput.split(',').map(name => name.trim()).filter(name => name);
-    checkDailyBadgeLimit((canAward, remaining) => {
-      if (displayNames.length > remaining) {
-        alert(`Only ${remaining} badges can be awarded today!`);
-        return;
-      }
-      displayNames.forEach((displayName, index) => {
-        setTimeout(() => {
-          findUserByDisplayName(displayName, (username) => {
-            if (username) {
-              const badges = {
-                'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
-                'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
-                'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
-                'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
-                'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
-                'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
-                'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
-                'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
-                'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
-                'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
-              };
-              const badgeRef = ref(db, `badges/${username}/${massSelect}`);
-              set(badgeRef, {
-                badge: badges[massSelect].name,
-                emoji: badges[massSelect].emoji,
-                style: badges[massSelect].style,
-                expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
-              }).then(() => {
-                const date = new Date().toISOString().split('T')[0];
-                const awardRef = ref(db, `badgeAwards/${date}`);
-                onValue(awardRef, (snapshot) => {
-                  const data = snapshot.val() || { count: 0, awards: [] };
-                  data.count += 1;
-                  data.awards.push({ username, badge: badges[massSelect].name, timestamp: Date.now() });
-                  set(awardRef, data);
-                }, { onlyOnce: true });
-                push(messagesRef, {
-                  username: 'admin',
-                  displayName: 'ADMIN',
-                  text: `${displayName} earned ${badges[massSelect].name}! ${badges[massSelect].emoji}`,
-                  timestamp: Date.now(),
-                  isGlobal: true,
-                  style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
-                });
-              }).catch((error) => console.error('Error awarding badge:', error));
-            }
-          });
-        }, index * 1000); // Stagger to avoid rate limits
-      });
-      massInput.value = '';
+    displayNames.forEach((displayName, index) => {
+      setTimeout(() => {
+        findUserByDisplayName(displayName, (username) => {
+          if (username) {
+            const badges = {
+              'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
+              'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
+              'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
+              'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
+              'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
+              'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
+              'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
+              'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
+              'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
+              'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
+            };
+            const badgeRef = ref(db, `badges/${username}/${massSelect}`);
+            set(badgeRef, {
+              badge: badges[massSelect].name,
+              emoji: badges[massSelect].emoji,
+              style: badges[massSelect].style,
+              expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
+            }).then(() => {
+              push(messagesRef, {
+                username: 'admin',
+                displayName: 'ADMIN',
+                text: `${displayName} earned ${badges[massSelect].name}! ${badges[massSelect].emoji}`,
+                timestamp: Date.now(),
+                isGlobal: true,
+                style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
+              });
+            }).catch((error) => console.error('Error awarding badge:', error));
+          }
+        });
+      }, index * 1000); // Stagger to avoid rate limits
     });
+    massInput.value = '';
   };
 
   window.freezeChat = function() {
@@ -535,15 +506,6 @@
         }
       });
       callback(foundUsername);
-    }, { onlyOnce: true });
-  }
-
-  // Check daily badge limit
-  function checkDailyBadgeLimit(callback) {
-    const date = new Date().toISOString().split('T')[0];
-    onValue(ref(db, `badgeAwards/${date}`), (snapshot) => {
-      const data = snapshot.val() || { count: 0 };
-      callback(data.count < 5, 5 - data.count);
     }, { onlyOnce: true });
   }
 
