@@ -8,7 +8,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, push, onChildAdded, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   // 🔥 Your Firebase config
   const firebaseConfig = {
@@ -36,13 +36,15 @@
   window.checkBanned = function(username) {
     onValue(ref(db, `bannedUsers/${username}`), (snapshot) => {
       isBanned = snapshot.val() === true;
+      const msgInput = document.getElementById('msg');
+      const sendBtn = document.querySelector('.message-input button');
       if (isBanned) {
-        document.getElementById('msg').disabled = true;
-        document.querySelector('.message-input button').disabled = true;
+        msgInput.disabled = true;
+        sendBtn.disabled = true;
         alert('You are banned from the chat.');
       } else {
-        document.getElementById('msg').disabled = false;
-        document.querySelector('.message-input button').disabled = false;
+        msgInput.disabled = false;
+        sendBtn.disabled = false;
       }
     });
   };
@@ -51,7 +53,8 @@
   window.sendMessage = function() {
     const input = document.getElementById("msg");
     if (input && input.value.trim() && !isBanned && currentUsername) {
-      push(messagesRef, { username: currentUsername, text: input.value, timestamp: Date.now(), isGlobal: false });
+      push(messagesRef, { username: currentUsername, text: input.value.trim(), timestamp: Date.now(), isGlobal: false })
+        .catch((error) => console.error('Error sending message:', error));
       input.value = "";
     } else if (!input.value.trim()) {
       alert('Please enter a message');
@@ -63,10 +66,31 @@
     if (!isAdmin) return;
     const banInput = document.getElementById('ban-input');
     if (banInput && banInput.value.trim()) {
-      set(ref(db, `bannedUsers/${banInput.value.trim()}`), true);
+      set(ref(db, `bannedUsers/${banInput.value.trim()}`), true)
+        .catch((error) => console.error('Error banning user:', error));
       banInput.value = "";
     } else {
       alert('Please enter a username to ban');
+    }
+  };
+
+  window.unbanUser = function() {
+    if (!isAdmin) return;
+    const unbanInput = document.getElementById('unban-input');
+    if (unbanInput && unbanInput.value.trim()) {
+      remove(ref(db, `bannedUsers/${unbanInput.value.trim()}`))
+        .catch((error) => console.error('Error unbanning user:', error));
+      unbanInput.value = "";
+    } else {
+      alert('Please enter a username to unban');
+    }
+  };
+
+  window.clearChat = function() {
+    if (!isAdmin) return;
+    if (confirm('Are you sure you want to clear all messages?')) {
+      remove(messagesRef)
+        .catch((error) => console.error('Error clearing chat:', error));
     }
   };
 
@@ -74,7 +98,8 @@
     if (!isAdmin) return;
     const globalInput = document.getElementById('global-input');
     if (globalInput && globalInput.value.trim()) {
-      push(messagesRef, { username: 'ADMIN', text: globalInput.value, timestamp: Date.now(), isGlobal: true });
+      push(messagesRef, { username: 'ADMIN', text: globalInput.value.trim(), timestamp: Date.now(), isGlobal: true })
+        .catch((error) => console.error('Error sending global message:', error));
       globalInput.value = "";
     } else {
       alert('Please enter a global message');
@@ -114,6 +139,32 @@
 
       // Auto-scroll
       list.scrollTop = list.scrollHeight;
+    }
+  });
+
+  // Display banned users
+  onValue(bannedRef, (snapshot) => {
+    const bannedList = document.getElementById('banned-users');
+    if (bannedList) {
+      bannedList.innerHTML = '';
+      snapshot.forEach((child) => {
+        const user = child.key;
+        const li = document.createElement('li');
+        li.textContent = user;
+        bannedList.appendChild(li);
+      });
+    }
+  });
+
+  // Enter key support for sending messages
+  document.addEventListener('DOMContentLoaded', () => {
+    const msgInput = document.getElementById('msg');
+    if (msgInput) {
+      msgInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
     }
   });
 </script>
@@ -246,6 +297,18 @@
     border: none;
     cursor: pointer;
   }
+
+  #banned-users {
+    list-style: none;
+    padding: 0;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  #banned-users li {
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+  }
 </style>
 </head>
 
@@ -274,8 +337,13 @@
       <div id="admin-controls" style="display: none;">
         <input type="text" id="ban-input" placeholder="Username to ban">
         <button onclick="banUser()">Ban</button>
+        <input type="text" id="unban-input" placeholder="Username to unban">
+        <button onclick="unbanUser()">Unban</button>
+        <button onclick="clearChat()">Clear Chat</button>
         <input type="text" id="global-input" placeholder="Global message">
         <button onclick="sendGlobalMessage()">Send Global</button>
+        <h4>Banned Users</h4>
+        <ul id="banned-users"></ul>
       </div>
     </div>
   </div>
