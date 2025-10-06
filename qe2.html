@@ -64,7 +64,7 @@
       alert('Please enter a message');
       return;
     }
-    if (!currentUsername) {
+    if (!currentUsername.trim()) {
       console.error('No username set, currentUsername:', currentUsername);
       alert('Please log in with a username');
       return;
@@ -194,6 +194,21 @@
       });
     }
   });
+
+  // Initialize username on login
+  window.loginUser = function() {
+    const usernameInput = document.getElementById('username-input');
+    const username = usernameInput.value.trim();
+    if (username) {
+      currentUsername = username;
+      console.log('Username set:', currentUsername);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('chat-container').style.display = 'flex';
+      checkBanned(currentUsername);
+    } else {
+      alert('Please enter a username');
+    }
+  };
 </script>
 
 <style>
@@ -344,7 +359,7 @@
   <div id="login-screen">
     <h2>Enter Your Name</h2>
     <input type="text" id="username-input" placeholder="Your name">
-    <button onclick="const username = document.getElementById('username-input').value.trim(); if(username){currentUsername = username; document.getElementById('login-screen').style.display='none'; document.getElementById('chat-container').style.display='flex'; checkBanned(currentUsername);} else {alert('Please enter a username');}">Login</button>
+    <button onclick="loginUser()">Login</button>
   </div>
 
   <!-- Chat Container: Messages left, Admin right -->
