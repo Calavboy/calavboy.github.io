@@ -40,31 +40,18 @@
   let isChatFrozen = false;
   let isMuted = false;
 
-  // Hash password (client-side, for simplicity)
-  async function hashPassword(password) {
-    const msgBuffer = new TextEncoder().encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
   // Validate username
   function validateUsername(username) {
     const regex = /^[a-zA-Z0-9_-]+$/;
     return regex.test(username) && username.length >= 3 && username.length <= 20;
   }
 
-  // Sign up
-  window.signUp = async function() {
+  // Login
+  window.login = async function() {
     const username = document.getElementById('username-input').value.trim();
-    const password = document.getElementById('password-input').value.trim();
     const displayName = document.getElementById('display-name-input').value.trim() || username;
     if (!validateUsername(username)) {
       alert('Username must be 3-20 characters, alphanumeric with _ or -');
-      return;
-    }
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters');
       return;
     }
     const userRef = ref(db, `users/${username}`);
@@ -73,64 +60,13 @@
       alert('Username already taken');
       return;
     }
-    const hashedPassword = await hashPassword(password);
-    await set(userRef, { passwordHash: hashedPassword, displayName });
+    await set(userRef, { displayName });
+    await remove(ref(db, `badges/${username}`)); // Clear badges on new login
     currentUser = username;
     currentDisplayName = displayName;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('chat-container').style.display = 'flex';
     checkBanned(username);
-    alert('Sign up successful! You are now logged in.');
-  };
-
-  // Login
-  window.login = async function() {
-    const username = document.getElementById('username-input').value.trim();
-    const password = document.getElementById('password-input').value.trim();
-    if (!validateUsername(username)) {
-      alert('Invalid username format');
-      return;
-    }
-    if (!password) {
-      alert('Please enter a password');
-      return;
-    }
-    const userRef = ref(db, `users/${username}`);
-    const snapshot = await get(userRef);
-    if (!snapshot.exists()) {
-      alert('Username not found');
-      return;
-    }
-    const userData = snapshot.val();
-    const hashedPassword = await hashPassword(password);
-    if (hashedPassword !== userData.passwordHash) {
-      alert('Incorrect password');
-      return;
-    }
-    currentUser = username;
-    currentDisplayName = userData.displayName;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('chat-container').style.display = 'flex';
-    checkBanned(username);
-  };
-
-  // Toggle signup/login
-  window.toggleAuthMode = function() {
-    const signupFields = document.getElementById('signup-fields');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const toggleBtn = document.getElementById('toggle-auth');
-    if (signupFields.style.display === 'none') {
-      signupFields.style.display = 'block';
-      loginBtn.style.display = 'none';
-      signupBtn.style.display = 'block';
-      toggleBtn.textContent = 'Switch to Login';
-    } else {
-      signupFields.style.display = 'none';
-      loginBtn.style.display = 'block';
-      signupBtn.style.display = 'none';
-      toggleBtn.textContent = 'Switch to Sign Up';
-    }
   };
 
   // Check if user is banned
@@ -174,7 +110,7 @@
       return;
     }
     if (!currentUser || !currentDisplayName) {
-      alert('Please log in');
+      alert('Please enter a username');
       return;
     }
     if (isBanned || isChatFrozen || isMuted) {
@@ -569,7 +505,7 @@
   // Show profile
   window.showProfile = function() {
     if (!currentUser) {
-      alert('Please log in');
+      alert('Please enter a username');
       return;
     }
     const profileModal = document.getElementById('profile-modal');
@@ -757,12 +693,6 @@
 
   #login-screen button:hover {
     transform: scale(1.05);
-  }
-
-  #toggle-auth {
-    background: none;
-    border: 1px solid #00ff00;
-    color: #00ff00;
   }
 
   #chat-container {
@@ -961,13 +891,8 @@
   <div id="login-screen">
     <h2>Chat App</h2>
     <input id="username-input" placeholder="Username" type="text">
-    <input id="password-input" placeholder="Password" type="password">
-    <div id="signup-fields" style="display: none;">
-      <input id="display-name-input" placeholder="Display Name (optional)" type="text">
-    </div>
-    <button id="login-btn" onclick="login()">Login</button>
-    <button id="signup-btn" onclick="signUp()" style="display: none;">Sign Up</button>
-    <button id="toggle-auth" onclick="toggleAuthMode()">Switch to Sign Up</button>
+    <input id="display-name-input" placeholder="Display Name (optional)" type="text">
+    <button onclick="login()">Enter Chat</button>
   </div>
 
   <!-- Chat Container -->
