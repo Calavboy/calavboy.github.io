@@ -455,7 +455,8 @@
   };
 
   window.verifyAdmin = function(code) {
-    if (code === '1616') {
+    const validCode = atob('MTUxNQ=='); // Decodes to '1515'
+    if (code === validCode) {
       isAdmin = true;
       document.getElementById('admin-password').style.display = 'none';
       document.getElementById('admin-controls').style.display = 'block';
