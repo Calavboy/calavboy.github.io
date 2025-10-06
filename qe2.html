@@ -65,7 +65,7 @@
       return;
     }
     if (!currentUsername) {
-      console.error('No username set');
+      console.error('No username set, currentUsername:', currentUsername);
       alert('Please log in with a username');
       return;
     }
@@ -81,6 +81,7 @@
       isGlobal: false 
     }).then(() => {
       input.value = "";
+      console.log('Message sent by:', currentUsername);
     }).catch((error) => {
       console.error('Error sending message:', error);
       alert('Failed to send message: ' + error.message);
@@ -343,7 +344,7 @@
   <div id="login-screen">
     <h2>Enter Your Name</h2>
     <input type="text" id="username-input" placeholder="Your name">
-    <button onclick="if(document.getElementById('username-input').value.trim()){currentUsername = document.getElementById('username-input').value.trim(); document.getElementById('login-screen').style.display='none'; document.getElementById('chat-container').style.display='flex'; checkBanned(currentUsername);} else {alert('Please enter a username');}">Login</button>
+    <button onclick="const username = document.getElementById('username-input').value.trim(); if(username){currentUsername = username; document.getElementById('login-screen').style.display='none'; document.getElementById('chat-container').style.display='flex'; checkBanned(currentUsername);} else {alert('Please enter a username');}">Login</button>
   </div>
 
   <!-- Chat Container: Messages left, Admin right -->
