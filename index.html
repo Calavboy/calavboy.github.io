@@ -8,7 +8,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, push, onChildAdded, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   // 🔥 Your Firebase config
   const firebaseConfig = {
@@ -39,6 +39,10 @@
       if (isBanned) {
         document.getElementById('msg').disabled = true;
         document.querySelector('.message-input button').disabled = true;
+        alert('You are banned from the chat.');
+      } else {
+        document.getElementById('msg').disabled = false;
+        document.querySelector('.message-input button').disabled = false;
       }
     });
   };
@@ -49,6 +53,8 @@
     if (input && input.value.trim() && !isBanned && currentUsername) {
       push(messagesRef, { username: currentUsername, text: input.value, timestamp: Date.now(), isGlobal: false });
       input.value = "";
+    } else if (!input.value.trim()) {
+      alert('Please enter a message');
     }
   };
 
@@ -59,6 +65,8 @@
     if (banInput && banInput.value.trim()) {
       set(ref(db, `bannedUsers/${banInput.value.trim()}`), true);
       banInput.value = "";
+    } else {
+      alert('Please enter a username to ban');
     }
   };
 
@@ -68,6 +76,8 @@
     if (globalInput && globalInput.value.trim()) {
       push(messagesRef, { username: 'ADMIN', text: globalInput.value, timestamp: Date.now(), isGlobal: true });
       globalInput.value = "";
+    } else {
+      alert('Please enter a global message');
     }
   };
 
@@ -79,6 +89,12 @@
       return true;
     }
     return false;
+  };
+
+  // Toggle admin panel
+  window.toggleAdminPanel = function() {
+    const panel = document.getElementById('admin-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   };
 
   // Receive messages
@@ -196,11 +212,12 @@
     top: 10px;
     left: 10px;
     padding: 10px;
-    background: #667eea;
+    background: #ff4444;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
   }
 
   #admin-password {
@@ -211,6 +228,8 @@
     width: 100%;
     padding: 5px;
     margin-bottom: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
   }
 
   #admin-controls input, #admin-controls button {
@@ -235,7 +254,7 @@
   <div id="login-screen">
     <h2>Enter Your Name</h2>
     <input type="text" id="username-input" placeholder="Your name">
-    <button onclick="document.getElementById('login-screen').style.display='none'; currentUsername = document.getElementById('username-input').value; document.getElementById('chat-container').style.display='flex'; checkBanned(currentUsername);">Login</button>
+    <button onclick="if(document.getElementById('username-input').value.trim()){currentUsername = document.getElementById('username-input').value.trim(); document.getElementById('login-screen').style.display='none'; document.getElementById('chat-container').style.display='flex'; checkBanned(currentUsername);} else {alert('Please enter a username');}">Login</button>
   </div>
 
   <!-- Chat Container: Messages left, Admin right -->
@@ -248,9 +267,8 @@
       </div>
     </div>
     <div id="admin-panel">
-      <button id="admin-btn" onclick="document.getElementById('admin-panel').style.display='block';">Admin</button>
       <div id="admin-password">
-        <input type="password" id="admin-code" placeholder="Enter code">
+        <input type="password" id="admin-code" placeholder="Enter admin code">
         <button onclick="if(verifyAdmin(document.getElementById('admin-code').value)){document.getElementById('admin-password').style.display='none'; document.getElementById('admin-controls').style.display='block';} else {alert('Wrong code');}">Verify</button>
       </div>
       <div id="admin-controls" style="display: none;">
@@ -261,5 +279,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Admin Badge/Button -->
+  <button id="admin-btn" onclick="toggleAdminPanel()">Admin</button>
 </body>
 </html>
