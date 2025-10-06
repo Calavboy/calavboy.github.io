@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -187,7 +186,10 @@
       style: styleSelect.value
     }).then(() => {
       globalInput.value = '';
-    }).catch((error) => console.error('Error sending global message:', error));
+    }).catch((error) => {
+      console.error('Error sending global message:', error);
+      alert('Failed to send global message: ' + error.message);
+    });
   };
 
   window.assignRole = function() {
@@ -555,6 +557,7 @@
       
       if (msg.isGlobal) {
         li.className = `global-${msg.style || 'red-bold'}`;
+        li.textContent = messageText;
       } else {
         onValue(ref(db, `roles/${msg.username}`), (roleSnapshot) => {
           const role = roleSnapshot.val();
@@ -563,16 +566,16 @@
             li.style.background = role.color.includes('gradient') ? role.color : 'transparent';
             messageText = `${role.emoji} ${msg.displayName}: ${msg.text}`;
           }
-        }, { onlyOnce: true });
-        onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
-          const badges = badgeSnapshot.val() || {};
-          const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
-          if (activeBadges.length > 0) {
-            const badge = activeBadges[activeBadges.length - 1]; // Latest badge
-            li.className = `badge-${badge.style}`;
-            messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
-          }
-          li.textContent = messageText;
+          onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
+            const badges = badgeSnapshot.val() || {};
+            const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
+            if (activeBadges.length > 0) {
+              const badge = activeBadges[activeBadges.length - 1]; // Latest badge
+              li.className = `badge-${badge.style}`;
+              messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
+            }
+            li.textContent = messageText;
+          }, { onlyOnce: true });
         }, { onlyOnce: true });
       }
       
@@ -737,69 +740,89 @@
   }
 
   #admin-panel {
-    width: 320px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px;
-    border-left: 1px solid #333;
+    width: 300px;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    border-left: 1px solid #00f;
     display: none;
+    font-size: 14px;
   }
 
   #admin-btn {
     position: fixed;
     top: 10px;
     left: 10px;
-    padding: 10px;
+    padding: 8px;
     background: linear-gradient(45deg, #ff4444, #ff0000);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
   }
 
-  #admin-password, #admin-controls section {
-    margin-bottom: 15px;
+  #admin-password, #admin-controls details {
+    margin-bottom: 10px;
+    border: 1px solid #00f;
+    border-radius: 6px;
+    padding: 5px;
   }
 
   #admin-password input, #admin-controls input, #admin-controls select {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 8px;
-    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 5px;
+    border-radius: 6px;
     border: none;
     background: rgba(255, 255, 255, 0.1);
     color: white;
+    font-size: 14px;
   }
 
   #admin-controls button {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 8px;
-    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 5px;
+    border-radius: 6px;
     background: linear-gradient(45deg, #667eea, #00ff00);
     color: white;
     border: none;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: box-shadow 0.2s;
+    font-size: 14px;
   }
 
   #admin-controls button:hover {
-    transform: scale(1.02);
+    box-shadow: 0 0 8px #00ff00;
+  }
+
+  #admin-controls summary {
+    cursor: pointer;
+    padding: 5px;
+    background: rgba(0, 0, 255, 0.2);
+    border-radius: 6px;
+    font-weight: bold;
+  }
+
+  #admin-controls summary:hover {
+    background: rgba(0, 0, 255, 0.3);
   }
 
   #banned-users, #badge-leaderboard {
     list-style: none;
     padding: 0;
-    max-height: 100px;
+    max-height: 80px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 5px;
   }
 
   #banned-users li, #badge-leaderboard li {
     padding: 5px;
     border-bottom: 1px solid #333;
+    font-size: 12px;
   }
 
   #crash-alert {
@@ -810,12 +833,12 @@
     transform: translate(-50%, -50%);
     background: linear-gradient(45deg, #ff4444, #ff0000);
     color: white;
-    padding: 20px;
-    border-radius: 10px;
-    font-size: 24px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 20px;
     font-weight: bold;
     z-index: 1000;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
   }
 
   #profile-modal {
@@ -825,20 +848,22 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.9);
-    padding: 20px;
-    border-radius: 10px;
+    padding: 15px;
+    border-radius: 8px;
     z-index: 1000;
     color: white;
-    max-width: 300px;
+    max-width: 280px;
+    font-size: 14px;
   }
 
   #profile-modal button {
     background: linear-gradient(45deg, #667eea, #00ff00);
     border: none;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 8px;
+    font-size: 14px;
   }
 
   /* Global Message Styles */
@@ -905,23 +930,23 @@
         <button onclick="verifyAdmin(document.getElementById('admin-code').value)">Verify</button>
       </div>
       <div id="admin-controls" style="display: none;">
-        <section>
-          <h3>Ban Controls</h3>
+        <details>
+          <summary>Ban Controls</summary>
           <input id="ban-input" placeholder="Display name to ban">
           <button onclick="banUser()">Ban</button>
           <input id="unban-input" placeholder="Display name to unban">
           <button onclick="unbanUser()">Unban</button>
           <h4>Banned Users</h4>
           <ul id="banned-users"></ul>
-        </section>
-        <section>
-          <h3>Chat Controls</h3>
+        </details>
+        <details>
+          <summary>Chat Controls</summary>
           <button onclick="clearChat()">Clear Chat</button>
           <button onclick="freezeChat()">Freeze Chat</button>
           <button onclick="globalMute()">Global Mute (1 min)</button>
-        </section>
-        <section>
-          <h3>Global Message</h3>
+        </details>
+        <details>
+          <summary>Global Message</summary>
           <input id="global-input" placeholder="Global message">
           <select id="global-style">
             <option value="red-bold">Red Bold</option>
@@ -930,9 +955,9 @@
             <option value="rainbow-shake">Rainbow Shake</option>
           </select>
           <button onclick="sendGlobalMessage()">Send Global</button>
-        </section>
-        <section>
-          <h3>Role Assignment</h3>
+        </details>
+        <details>
+          <summary>Role Assignment</summary>
           <input id="role-input" placeholder="Display name for role">
           <select id="role-select">
             <option value="vip">VIP (Gold)</option>
@@ -940,9 +965,9 @@
             <option value="chaos-lord">Chaos Lord (Red)</option>
           </select>
           <button onclick="assignRole()">Assign Role</button>
-        </section>
-        <section>
-          <h3>Badge Assignment</h3>
+        </details>
+        <details>
+          <summary>Badge Assignment</summary>
           <input id="badge-input" placeholder="Display name for badge">
           <select id="badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -958,9 +983,9 @@
           </select>
           <label><input type="checkbox" id="badge-temporary"> Temporary (1 hour)</label>
           <button onclick="awardBadge()">Award Badge</button>
-        </section>
-        <section>
-          <h3>Mass Badge Award</h3>
+        </details>
+        <details>
+          <summary>Mass Badge Award</summary>
           <input id="mass-badge-input" placeholder="Display names (comma-separated)">
           <select id="mass-badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -976,9 +1001,9 @@
           </select>
           <label><input type="checkbox" id="mass-badge-temporary"> Temporary (1 hour)</label>
           <button onclick="massBadgeAward()">Mass Award</button>
-        </section>
-        <section>
-          <h3>Badge Removal</h3>
+        </details>
+        <details>
+          <summary>Badge Removal</summary>
           <input id="remove-badge-input" placeholder="Display name">
           <select id="remove-badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -995,11 +1020,11 @@
           <button onclick="removeBadge()">Remove Badge</button>
           <input id="clear-badges-input" placeholder="Display name to clear all badges">
           <button onclick="clearUserBadges()">Clear All Badges</button>
-        </section>
-        <section>
-          <h3>Badge Leaderboard</h3>
+        </details>
+        <details>
+          <summary>Badge Leaderboard</summary>
           <ul id="badge-leaderboard"></ul>
-        </section>
+        </details>
       </div>
     </div>
   </div>
