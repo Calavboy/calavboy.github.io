@@ -27,10 +27,12 @@
   const db = getDatabase(app);
   const messagesRef = ref(db, "messages");
   const bannedRef = ref(db, "bannedUsers");
+  const eventsRef = ref(db, "events/discoParty");
 
   let currentUsername = '';
   let isAdmin = false;
   let isBanned = false;
+  let isDiscoActive = false;
 
   // Check if user is banned
   window.checkBanned = function(username) {
@@ -82,6 +84,10 @@
     }).then(() => {
       input.value = "";
       console.log('Message sent by:', currentUsername);
+      // Award Disco Legend badge during event
+      if (isDiscoActive) {
+        set(ref(db, `badges/${currentUsername}`), { badge: 'Disco Legend', color: '#ff00ff', expires: Date.now() + 24 * 60 * 60 * 1000 });
+      }
     }).catch((error) => {
       console.error('Error sending message:', error);
       alert('Failed to send message: ' + error.message);
@@ -149,7 +155,82 @@
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   };
 
-  // Receive messages
+  // Disco Party Event
+  window.triggerDiscoParty = function() {
+    if (!isAdmin) return;
+    if (isDiscoActive) {
+      alert('Disco Party already active!');
+      return;
+    }
+    isDiscoActive = true;
+    set(ref(db, 'events/discoParty'), { active: true, endTime: Date.now() + 30 * 1000 })
+      .catch((error) => console.error('Error starting Disco Party:', error));
+    push(messagesRef, { 
+      username: 'ADMIN', 
+      text: '🕺 DISCO PARTY STARTS NOW! Dance with the stickman for 30 seconds—type to become a Disco Legend! 🎶', 
+      timestamp: Date.now(), 
+      isGlobal: true 
+    });
+
+    // Play music
+    const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_6a2b6e2e3b.mp3');
+    audio.play().catch((error) => console.error('Error playing audio:', error));
+
+    // Show stickman and lights
+    const discoDiv = document.getElementById('disco-container');
+    discoDiv.style.display = 'block';
+    document.body.classList.add('disco-lights');
+
+    // Stickman animation
+    const canvas = document.getElementById('stickman-canvas');
+    const ctx = canvas.getContext('2d');
+    let frame = 0;
+    const moves = [
+      { head: { x: 100, y: 50 }, arms: [{ x: 80, y: 70 }, { x: 120, y: 70 }], legs: [{ x: 90, y: 100 }, { x: 110, y: 100 }] }, // Neutral
+      { head: { x: 100, y: 50 }, arms: [{ x: 70, y: 60 }, { x: 130, y: 60 }], legs: [{ x: 90, y: 110 }, { x: 110, y: 90 }] }, // Floss
+      { head: { x: 100, y: 50 }, arms: [{ x: 90, y: 80 }, { x: 110, y: 80 }], legs: [{ x: 80, y: 100 }, { x: 120, y: 100 }] }, // Dab
+    ];
+    function animateStickman() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      const move = moves[Math.floor(frame / 10) % moves.length];
+      ctx.arc(move.head.x, move.head.y, 10, 0, Math.PI * 2); // Head
+      ctx.moveTo(move.head.x, move.head.y + 10);
+      ctx.lineTo(move.head.x, move.head.y + 40); // Body
+      ctx.moveTo(move.head.x, move.head.y + 20);
+      ctx.lineTo(move.arms[0].x, move.arms[0].y); // Left arm
+      ctx.moveTo(move.head.x, move.head.y + 20);
+      ctx.lineTo(move.arms[1].x, move.arms[1].y); // Right arm
+      ctx.moveTo(move.head.x, move.head.y + 40);
+      ctx.lineTo(move.legs[0].x, move.legs[0].y); // Left leg
+      ctx.moveTo(move.head.x, move.head.y + 40);
+      ctx.lineTo(move.legs[1].x, move.legs[1].y); // Right leg
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      frame++;
+      if (isDiscoActive) requestAnimationFrame(animateStickman);
+    }
+    animateStickman();
+
+    // End event after 30 seconds
+    setTimeout(() => {
+      isDiscoActive = false;
+      set(ref(db, 'events/discoParty'), { active: false })
+        .catch((error) => console.error('Error ending Disco Party:', error));
+      push(messagesRef, { 
+        username: 'ADMIN', 
+        text: '🎉 DISCO PARTY OVER! Disco Legends, share your screenshots! 🕺', 
+        timestamp: Date.now(), 
+        isGlobal: true 
+      });
+      audio.pause();
+      discoDiv.style.display = 'none';
+      document.body.classList.remove('disco-lights');
+    }, 30 * 1000);
+  };
+
+  // Receive messages and apply badges
   onChildAdded(messagesRef, (snapshot) => {
     const msg = snapshot.val();
     const list = document.getElementById("messages");
@@ -162,9 +243,15 @@
       li.textContent = `${msg.username || 'Unknown'}: ${msg.text}`;
       li.style.padding = "8px";
       li.style.borderBottom = "1px solid #ccc";
+      // Check for Disco Legend badge
+      onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
+        const badge = badgeSnapshot.val();
+        if (badge && badge.badge === 'Disco Legend' && badge.expires > Date.now()) {
+          li.style.color = badge.color;
+          li.textContent = `🕺 ${msg.username}: ${msg.text}`;
+        }
+      }, { onlyOnce: true });
       list.appendChild(li);
-
-      // Auto-scroll
       list.scrollTop = list.scrollHeight;
     }
   });
@@ -351,6 +438,33 @@
     padding: 5px;
     border-bottom: 1px solid #ccc;
   }
+
+  #disco-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+  }
+
+  #stickman-canvas {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+  }
+
+  .disco-lights {
+    animation: rainbow-flicker 0.5s infinite;
+  }
+
+  @keyframes rainbow-flicker {
+    0% { background: linear-gradient(135deg, red, orange); }
+    20% { background: linear-gradient(135deg, orange, yellow); }
+    40% { background: linear-gradient(135deg, yellow, green); }
+    60% { background: linear-gradient(135deg, green, blue); }
+    80% { background: linear-gradient(135deg, blue, purple); }
+    100% { background: linear-gradient(135deg, purple, red); }
+  }
 </style>
 </head>
 
@@ -384,6 +498,7 @@
         <button onclick="clearChat()">Clear Chat</button>
         <input type="text" id="global-input" placeholder="Global message">
         <button onclick="sendGlobalMessage()">Send Global</button>
+        <button onclick="triggerDiscoParty()">Trigger Disco Party</button>
         <h4>Banned Users</h4>
         <ul id="banned-users"></ul>
       </div>
@@ -392,5 +507,10 @@
 
   <!-- Admin Badge/Button -->
   <button id="admin-btn" onclick="toggleAdminPanel()">Admin</button>
+
+  <!-- Disco Party Container -->
+  <div id="disco-container">
+    <canvas id="stickman-canvas" width="200" height="200"></canvas>
+  </div>
 </body>
 </html>
