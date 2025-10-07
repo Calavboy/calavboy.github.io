@@ -11,98 +11,171 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #6b7280 0%, #1e3a8a 100%);
+            color: #1f2937;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
         header {
             text-align: center;
-            padding: 20px 0;
-            color: white;
+            padding: 48px 0;
+            color: #ffffff;
+            position: relative;
+        }
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
         }
         nav {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 32px;
+            margin-bottom: 32px;
         }
         nav button {
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.15);
             border: none;
-            border-radius: 25px;
-            color: white;
+            border-radius: 9999px;
+            color: #ffffff;
+            font-size: 1.125rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        nav button:hover, nav button.active {
-            background: rgba(255,255,255,0.3);
+        nav button:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        nav button.active {
+            background: rgba(255,255,255,0.35);
+            transform: scale(1.05);
         }
         .section {
             display: none;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 48px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .section.active {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
         form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 24px;
+            max-width: 640px;
+            margin: 0 auto;
         }
-        input, textarea, button {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+        .file-input-wrapper {
+            position: relative;
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .file-input-wrapper input {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-wrapper span {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+        input[type="text"], textarea {
+            padding: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 12px rgba(99,102,241,0.2);
+            outline: none;
         }
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 160px;
         }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        button[type="submit"] {
+            padding: 16px;
+            background: linear-gradient(135deg, #6366f1 0%, #9333ea 100%);
+            color: #ffffff;
             border: none;
+            border-radius: 10px;
+            font-size: 1.125rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
         }
-        button:hover {
-            transform: translateY(-2px);
+        button[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        button[type="submit"]:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
         }
         .image-card {
-            border-radius: 10px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
+            background: #ffffff;
         }
         .image-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
         .image-card img {
             width: 100%;
-            height: 200px;
+            height: 240px;
             object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .image-card:hover img {
+            transform: scale(1.06);
         }
         .image-info {
-            padding: 10px;
-            background: white;
+            padding: 16px;
+            text-align: center;
+        }
+        .image-info h4 {
+            margin-bottom: 8px;
+            color: #1f2937;
+            font-weight: 600;
         }
         .modal {
             display: none;
@@ -111,78 +184,178 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.75);
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .modal.active {
+            opacity: 1;
         }
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
+            background: #ffffff;
+            padding: 48px;
+            border-radius: 24px;
+            max-width: 640px;
             text-align: center;
+            position: relative;
+            animation: zoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .modal img {
             max-width: 100%;
-            max-height: 60vh;
-            margin-bottom: 20px;
+            max-height: 65vh;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .modal h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+        .modal p {
+            color: #6b7280;
         }
         .close {
             position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 30px;
+            top: 16px;
+            right: 24px;
+            font-size: 2rem;
             cursor: pointer;
-            color: white;
+            color: #4b5563;
+            transition: color 0.3s;
+        }
+        .close:hover {
+            color: #6366f1;
         }
         .admin-section {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        .admin-section > div {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         .pending-item, .accepted-item {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 15px;
-            background: #f9f9f9;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .pending-item:hover, .accepted-item:hover {
+            transform: translateY(-3px);
         }
         .pending-item img, .accepted-item img {
             width: 100%;
-            height: 150px;
+            height: 200px;
             object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
         }
         .admin-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 12px;
         }
         .admin-actions button {
             flex: 1;
-            padding: 8px;
-            font-size: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .admin-actions button.accept {
+            background: #22c55e;
+            color: #ffffff;
+        }
+        .admin-actions button.delete {
+            background: #ef4444;
+            color: #ffffff;
+        }
+        .admin-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .global-message {
             position: fixed;
-            top: 20px;
+            top: -100px;
             left: 50%;
             transform: translateX(-50%);
-            background: #ff6b6b;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 25px;
+            background: #f43f5e;
+            color: #ffffff;
+            padding: 16px 48px;
+            border-radius: 9999px;
             z-index: 1001;
-            display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            font-weight: 500;
+            transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .global-message.active {
+            top: 24px;
         }
         .login-form {
-            max-width: 300px;
+            max-width: 448px;
             margin: 0 auto;
+            background: #f9fafb;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .login-form input {
+            margin-bottom: 16px;
+        }
+        .login-form button {
+            width: 100%;
         }
         .hidden {
+            display: none !important;
+        }
+        #adminBtn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #adminBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .progress {
             display: none;
+            text-align: center;
+            color: #6b7280;
+            font-size: 1rem;
+            margin-top: 12px;
+        }
+        .progress.active {
+            display: block;
+        }
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -192,29 +365,33 @@
     <div class="container">
         <header>
             <h1>Image Upload Gallery</h1>
+            <button id="adminBtn" onclick="showSection('admin')">Admin</button>
         </header>
         
         <nav>
-            <button onclick="showSection('upload')" class="active">Upload</button>
-            <button onclick="showSection('gallery')">Gallery</button>
-            <button onclick="showSection('admin')">Admin</button>
+            <button onclick="showSection('gallery')" class="active">Gallery</button>
+            <button onclick="showSection('upload')">Upload</button>
         </nav>
         
-        <!-- Upload Section -->
-        <div id="upload" class="section active">
-            <h2>Upload Your Image</h2>
-            <form id="uploadForm">
-                <input type="file" id="imageFile" accept="image/*" required>
-                <input type="text" id="imageName" placeholder="Image Name" required>
-                <textarea id="imageDesc" placeholder="Description" required></textarea>
-                <button type="submit">Upload</button>
-            </form>
-        </div>
-        
         <!-- Gallery Section -->
-        <div id="gallery" class="section">
+        <div id="gallery" class="section active">
             <h2>Gallery</h2>
             <div id="galleryGrid" class="gallery"></div>
+        </div>
+        
+        <!-- Upload Section -->
+        <div id="upload" class="section">
+            <h2>Upload Your Image</h2>
+            <form id="uploadForm">
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFile" accept="image/jpeg,image/png,image/gif" required>
+                    <span id="fileLabel">Choose an image (JPEG, PNG, GIF)</span>
+                </div>
+                <input type="text" id="imageName" placeholder="Image Name" required>
+                <textarea id="imageDesc" placeholder="Description" required></textarea>
+                <button type="submit" id="uploadBtn">Upload</button>
+                <div class="progress" id="uploadProgress">Uploading...</div>
+            </form>
         </div>
         
         <!-- Admin Section -->
@@ -225,18 +402,20 @@
                 <input type="password" id="adminPass" placeholder="Password">
                 <button onclick="loginAdmin()">Login</button>
             </div>
-            <div id="adminControls" class="hidden admin-section">
-                <div>
-                    <h3>Pending Uploads</h3>
-                    <div id="pendingList"></div>
+            <div id="adminControls" class="hidden">
+                <div class="admin-section">
+                    <div>
+                        <h3>Pending Uploads</h3>
+                        <div id="pendingList"></div>
+                    </div>
+                    <div>
+                        <h3>Accepted Images</h3>
+                        <div id="acceptedList"></div>
+                    </div>
                 </div>
-                <div>
-                    <h3>Accepted Images</h3>
-                    <div id="acceptedList"></div>
-                </div>
-                <div>
+                <div style="margin-top: 32px; text-align: center;">
                     <h3>Global Message</h3>
-                    <input type="text" id="globalMsgInput" placeholder="Global message">
+                    <input type="text" id="globalMsgInput" placeholder="Global message" style="width: 60%; margin-right: 12px;">
                     <button onclick="sendGlobalMessage()">Send</button>
                 </div>
             </div>
@@ -245,8 +424,8 @@
     
     <!-- Modal -->
     <div id="imageModal" class="modal">
-        <span class="close" onclick="closeModal()">&times;</span>
         <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
             <img id="modalImg" src="" alt="">
             <h3 id="modalName"></h3>
             <p id="modalDesc"></p>
@@ -256,8 +435,8 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getDatabase, ref, push, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+        import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB6jDSHBED66rlb5MWgV83s91cNuX51OlY",
@@ -277,28 +456,60 @@
 
         let isAdmin = false;
 
-        // Show sections
-        function showSection(sectionId) {
+        // File input label update
+        document.getElementById('imageFile').addEventListener('change', (e) => {
+            const fileLabel = document.getElementById('fileLabel');
+            fileLabel.textContent = e.target.files[0]?.name || 'Choose an image (JPEG, PNG, GIF)';
+        });
+
+        // Show section
+        window.showSection = function(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            document.querySelector(`nav button[onclick="showSection('${sectionId}')"]`).classList.add('active');
+            const section = document.getElementById(sectionId);
+            section.classList.add('active');
+            const btn = document.querySelector(`nav button[onclick="showSection('${sectionId}')"]`);
+            if (btn) btn.classList.add('active');
             if (sectionId === 'gallery') loadGallery();
-            if (sectionId === 'admin' && isAdmin) document.getElementById('adminLogin').classList.add('hidden');
-        }
+            if (sectionId === 'admin' && isAdmin) {
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminControls').classList.remove('hidden');
+                loadAdmin();
+            }
+        };
 
         // Upload form
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const file = document.getElementById('imageFile').files[0];
-            const name = document.getElementById('imageName').value;
-            const desc = document.getElementById('imageDesc').value;
-            if (!file) return alert('Please select an image');
+            const name = document.getElementById('imageName').value.trim();
+            const desc = document.getElementById('imageDesc').value.trim();
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progress = document.getElementById('uploadProgress');
 
-            const uploadId = push(uploadsRef).key;
-            const storageImageRef = storageRef(storage, `images/${uploadId}`);
+            if (!file || !name || !desc) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            // Validate file type and size
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPEG, PNG, or GIF image');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be less than 5MB');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            progress.classList.add('active');
 
             try {
+                const uploadId = push(uploadsRef).key;
+                const storageImageRef = storageRef(storage, `images/${uploadId}`);
+
                 const snapshot = await uploadBytes(storageImageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
                 await set(ref(db, `uploads/${uploadId}`), {
@@ -310,9 +521,13 @@
                 });
                 alert('Upload submitted for approval!');
                 document.getElementById('uploadForm').reset();
+                document.getElementById('fileLabel').textContent = 'Choose an image (JPEG, PNG, GIF)';
             } catch (error) {
                 console.error('Upload error:', error);
-                alert('Upload failed');
+                alert('Upload failed: ' + error.message);
+            } finally {
+                uploadBtn.disabled = false;
+                progress.classList.remove('active');
             }
         });
 
@@ -320,38 +535,49 @@
         function loadGallery() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
-            onValue(ref(db, 'uploads'), (snapshot) => {
+            onValue(uploadsRef, (snapshot) => {
                 grid.innerHTML = '';
+                let items = [];
                 snapshot.forEach((child) => {
                     const data = child.val();
                     if (data.status === 'accepted') {
-                        const card = document.createElement('div');
-                        card.className = 'image-card';
-                        card.innerHTML = `
-                            <img src="${data.imageUrl}" alt="${data.name}" onclick="openModal('${data.imageUrl}', '${data.name}', '${data.description}')">
-                            <div class="image-info">${data.name}</div>
-                        `;
-                        grid.appendChild(card);
+                        items.push({ key: child.key, data });
                     }
                 });
-            });
+                items.sort((a, b) => b.data.timestamp - a.data.timestamp);
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+                    card.innerHTML = `
+                        <img src="${item.data.imageUrl}" alt="${item.data.name}" 
+                             onerror="this.src='https://via.placeholder.com/300?text=Image+Not+Found'"
+                             onclick="openModal('${item.data.imageUrl}', '${item.data.name}', '${item.data.description}')">
+                        <div class="image-info"><h4>${item.data.name}</h4></div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }, { onlyOnce: false });
         }
 
         // Modal
-        function openModal(imgUrl, name, desc) {
+        window.openModal = function(imgUrl, name, desc) {
             document.getElementById('modalImg').src = imgUrl;
             document.getElementById('modalName').textContent = name;
             document.getElementById('modalDesc').textContent = desc;
             document.getElementById('imageModal').style.display = 'flex';
-        }
-        function closeModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
+            setTimeout(() => document.getElementById('imageModal').classList.add('active'), 10);
+        };
+
+        window.closeModal = function() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400);
+        };
 
         // Admin login
-        function loginAdmin() {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
+        window.loginAdmin = function() {
+            const user = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPass').value.trim();
             if (user === 'louie' && pass === 'mahomes') {
                 isAdmin = true;
                 document.getElementById('adminLogin').classList.add('hidden');
@@ -360,91 +586,127 @@
             } else {
                 alert('Invalid credentials');
             }
-        }
+        };
 
         // Load admin panels
         function loadAdmin() {
-            // Pending
             const pendingList = document.getElementById('pendingList');
-            onValue(ref(db, 'uploads'), (snapshot) => {
+            onValue(uploadsRef, (snapshot) => {
                 pendingList.innerHTML = '';
+                let items = [];
                 snapshot.forEach((child) => {
                     const id = child.key;
                     const data = child.val();
                     if (data.status === 'pending') {
-                        const div = document.createElement('div');
-                        div.className = 'pending-item';
-                        div.innerHTML = `
-                            <img src="${data.imageUrl}" alt="${data.name}">
-                            <h4>${data.name}</h4>
-                            <p>${data.description}</p>
-                            <div class="admin-actions">
-                                <button onclick="acceptUpload('${id}')">Accept</button>
-                                <button onclick="deleteUpload('${id}')">Delete</button>
-                            </div>
-                        `;
-                        pendingList.appendChild(div);
+                        items.push({ id, data });
                     }
+                });
+                items.sort((a, b) => b.data.timestamp - a.data.timestamp);
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'pending-item';
+                    div.innerHTML = `
+                        <img src="${item.data.imageUrl}" alt="${item.data.name}" 
+                             onerror="this.src='https://via.placeholder.com/300?text=Image+Not+Found'">
+                        <h4>${item.data.name}</h4>
+                        <p>${item.data.description}</p>
+                        <div class="admin-actions">
+                            <button class="accept" onclick="acceptUpload('${item.id}')">Accept</button>
+                            <button class="delete" onclick="deleteUpload('${item.id}')">Delete</button>
+                        </div>
+                    `;
+                    pendingList.appendChild(div);
                 });
             });
 
-            // Accepted
             const acceptedList = document.getElementById('acceptedList');
-            onValue(ref(db, 'uploads'), (snapshot) => {
+            onValue(uploadsRef, (snapshot) => {
                 acceptedList.innerHTML = '';
+                let items = [];
                 snapshot.forEach((child) => {
                     const id = child.key;
                     const data = child.val();
                     if (data.status === 'accepted') {
-                        const div = document.createElement('div');
-                        div.className = 'accepted-item';
-                        div.innerHTML = `
-                            <img src="${data.imageUrl}" alt="${data.name}">
-                            <h4>${data.name}</h4>
-                            <p>${data.description}</p>
-                            <div class="admin-actions">
-                                <button onclick="deleteUpload('${id}')">Delete</button>
-                            </div>
-                        `;
-                        acceptedList.appendChild(div);
+                        items.push({ id, data });
                     }
+                });
+                items.sort((a, b) => b.data.timestamp - a.data.timestamp);
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'accepted-item';
+                    div.innerHTML = `
+                        <img src="${item.data.imageUrl}" alt="${item.data.name}" 
+                             onerror="this.src='https://via.placeholder.com/300?text=Image+Not+Found'">
+                        <h4>${item.data.name}</h4>
+                        <p>${item.data.description}</p>
+                        <div class="admin-actions">
+                            <button class="delete" onclick="deleteUpload('${item.id}')">Delete</button>
+                        </div>
+                    `;
+                    acceptedList.appendChild(div);
                 });
             });
         }
 
         // Accept upload
-        async function acceptUpload(id) {
-            await set(ref(db, `uploads/${id}/status`), 'accepted');
-            alert('Accepted!');
-        }
+        window.acceptUpload = async function(id) {
+            try {
+                await set(ref(db, `uploads/${id}/status`), 'accepted');
+                alert('Image accepted!');
+                loadGallery();
+            } catch (error) {
+                console.error('Accept error:', error);
+                alert('Failed to accept image: ' + error.message);
+            }
+        };
 
         // Delete upload
-        async function deleteUpload(id) {
-            if (confirm('Delete this image?')) {
-                await remove(ref(db, `uploads/${id}`));
-                // Also delete from storage if needed, but for simplicity, skip
-                alert('Deleted!');
+        window.deleteUpload = async function(id) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                try {
+                    const imageRef = ref(db, `uploads/${id}`);
+                    const snapshot = await get(imageRef);
+                    const imageUrl = snapshot.val()?.imageUrl;
+                    if (imageUrl) {
+                        const storageImageRef = storageRef(storage, `images/${id}`);
+                        await deleteObject(storageImageRef).catch(err => console.warn('Storage delete error:', err));
+                    }
+                    await remove(imageRef);
+                    alert('Image deleted!');
+                    loadGallery();
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    alert('Failed to delete image: ' + error.message);
+                }
             }
-        }
+        };
 
         // Global message
-        function sendGlobalMessage() {
-            const msg = document.getElementById('globalMsgInput').value;
-            if (msg) {
+        window.sendGlobalMessage = function() {
+            const msg = document.getElementById('globalMsgInput').value.trim();
+            if (!msg) {
+                alert('Enter a message');
+                return;
+            }
+            try {
                 set(globalMsgRef, { message: msg, timestamp: Date.now() });
                 document.getElementById('globalMsgInput').value = '';
                 showGlobalMessage(msg);
+            } catch (error) {
+                console.error('Global message error:', error);
+                alert('Failed to send global message: ' + error.message);
             }
-        }
+        };
 
-        // Show global message
+        // Monitor global message
         onValue(globalMsgRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) {
+            if (data && data.message) {
                 showGlobalMessage(data.message);
-                // Auto hide after 10s
                 setTimeout(() => {
-                    document.getElementById('globalMessage').style.display = 'none';
+                    const elem = document.getElementById('globalMessage');
+                    elem.classList.remove('active');
+                    setTimeout(() => elem.style.display = 'none', 500);
                 }, 10000);
             }
         });
@@ -453,15 +715,18 @@
             const elem = document.getElementById('globalMessage');
             elem.textContent = msg;
             elem.style.display = 'block';
+            setTimeout(() => elem.classList.add('active'), 10);
         }
 
         // Close modal on outside click
         window.onclick = (e) => {
-            if (e.target.classList.contains('modal')) closeModal();
-        }
+            const modal = document.getElementById('imageModal');
+            if (e.target === modal) closeModal();
+        };
 
         // Initial load
-        showSection('upload');
+        showSection('gallery');
+        loadGallery();
     </script>
 </body>
 </html>
