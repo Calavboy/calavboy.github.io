@@ -43,50 +43,45 @@
     const _0xcl = console;
     _0xcl.log = _0xcl.error = _0xcl.warn = _0xcl.info = () => {};
 
-    // Anti-tampering: Block right-click
-    document.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      return false;
-    });
-
-    // Anti-tampering: Block DevTools shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) // Ctrl+Shift+I/C/J
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        alert('Developer tools are restricted!');
-        return false;
-      }
-    }, true);
-
-    // Anti-tampering: Detect DevTools via window size
+    // Anti-tampering: Detect DevTools and redirect
     let _0xdev = false;
-    setInterval(() => {
+    const _0xchkDev = () => {
       const _0xth = 100;
-      if (window.outerWidth - window.innerWidth > _0xth || window.outerHeight - window.innerHeight > _0xth) {
+      if (
+        window.outerWidth - window.innerWidth > _0xth ||
+        window.outerHeight - window.innerHeight > _0xth ||
+        (typeof console.profile === 'function' && console.profile.toString().includes('[native code]'))
+      ) {
         if (!_0xdev) {
           _0xdev = true;
-          window.blur();
-          alert('DevTools detected! Close them to continue.');
+          const _0xwarn = document.createElement('div');
+          _0xwarn.style.position = 'fixed';
+          _0xwarn.style.top = '50%';
+          _0xwarn.style.left = '50%';
+          _0xwarn.style.transform = 'translate(-50%, -50%)';
+          _0xwarn.style.background = 'linear-gradient(45deg, #ff0000, #ff4444)';
+          _0xwarn.style.color = 'white';
+          _0xwarn.style.padding = '20px';
+          _0xwarn.style.borderRadius = '10px';
+          _0xwarn.style.zIndex = '9999';
+          _0xwarn.style.fontSize = '18px';
+          _0xwarn.style.fontWeight = 'bold';
+          _0xwarn.style.textAlign = 'center';
+          _0xwarn.textContent = 'Inspecting is forbidden! You will be redirected.';
+          document.body.appendChild(_0xwarn);
+          setTimeout(() => {
+            window.location.href = 'about:blank';
+          }, 2000);
         }
-      } else {
-        _0xdev = false;
       }
-    }, 500);
-
-    // Anti-tampering: Debugger trap
-    setInterval(() => {
-      if (_0xdev) eval('debugger;');
-    }, 1000);
+    };
+    setInterval(_0xchkDev, 500);
 
     // Anti-tampering: Detect DOM tampering
     const _0xobs = new MutationObserver((muts) => {
       muts.forEach(mut => {
         if (mut.target.id === 'admin-panel' || mut.target.id === 'admin-controls') {
-          location.reload();
+          window.location.href = 'about:blank';
         }
       });
     });
