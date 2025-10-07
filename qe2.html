@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Firebase Chat</title>
 
-<!-- Firebase SDK -->
+<!-- Firebase SDK (Compat for modular syntax) -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  // Import Firebase compat libraries for modular syntax
+  import firebase from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
 
-  // Firebase config
+  // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyBj-sFLG7P5qdwy0CViBG-HIRraYcUn2c4",
     authDomain: "chat-3d6f0.firebaseapp.com",
@@ -22,7 +23,7 @@
   };
 
   // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+  const app = firebase.initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const messagesRef = ref(db, "messages");
   const bannedRef = ref(db, "bannedUsers");
