@@ -7,6 +7,7 @@
 
 <!-- Firebase SDK -->
 <script type="module">
+  // Import Firebase modular SDK
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -51,7 +52,7 @@
       for (let _0xi = 0; _0xi < 1000; _0xi++) _0xtrap += Math.random();
       const _0xend = performance.now();
       const _0xtime = _0xend - _0xstart;
-      if (_0xtime > 50) { // DevTools slows execution
+      if (_0xtime > 50) {
         if (!_0xdev) {
           _0xdev = true;
           const _0xwarn = document.createElement('div');
@@ -89,7 +90,7 @@
 
     // Obfuscation functions
     const _0xdef = (_0xa) => _0xa.map(_0xi => String.fromCharCode(_0xi)).join('');
-    const _0xdummy = (_0xs) => { // Decoy
+    const _0xdummy = (_0xs) => {
       let _0xh = 0;
       for (let _0xi = 0; _0xi < _0xs.length; _0xi++) _0xh = (_0xh << 5) - _0xh + _0xs.charCodeAt(_0xi);
       return (_0xh & 0xFF) % 100;
@@ -98,8 +99,8 @@
     // Admin verification
     window._0x1a2b = function() {
       const _0xcode = document.getElementById('admin-code')?.value?.trim() || '';
-      const _0xa1 = [49, 49, 55]; // 117
-      const _0xa2 = [49, 49, 55]; // 117
+      const _0xa1 = [49, 49, 55];
+      const _0xa2 = [49, 49, 55];
       const _0xdat = _0xa1.concat(_0xa2);
       const _0xfake = [99, 99, 99, 99];
       const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10);
@@ -201,7 +202,7 @@
     };
 
     // Admin functions
-    window._0x9b1c = function() { // Ban user
+    window._0x9b1c = function() {
       if (!_0xadm) return;
       const _0xbanInp = document.getElementById('ban-input')?.value?.trim();
       if (!_0xbanInp) {
@@ -219,7 +220,7 @@
       });
     };
 
-    window._0x2d5e = function() { // Unban user
+    window._0x2d5e = function() {
       if (!_0xadm) return;
       const _0xunbanInp = document.getElementById('unban-input')?.value?.trim();
       if (!_0xunbanInp) {
@@ -237,7 +238,7 @@
       });
     };
 
-    window._0x6f7a = function() { // Clear chat
+    window._0x6f7a = function() {
       if (!_0xadm) return;
       if (confirm('Clear all messages?')) {
         remove(_0xmsgs)
@@ -245,7 +246,7 @@
       }
     };
 
-    window._0x8c3d = function() { // Global message
+    window._0x8c3d = function() {
       if (!_0xadm) return;
       const _0xglbInp = document.getElementById('global-input');
       const _0xstySel = document.getElementById('global-style');
@@ -265,7 +266,7 @@
       }).catch((_0xe) => alert('Failed to send global message: ' + _0xe.message));
     };
 
-    window._0x4b9e = function() { // Assign role
+    window._0x4b9e = function() {
       if (!_0xadm) return;
       const _0xroleInp = document.getElementById('role-input')?.value?.trim();
       const _0xroleSel = document.getElementById('role-select')?.value;
@@ -302,7 +303,7 @@
       });
     };
 
-    window._0x5a2f = function() { // Award badge
+    window._0x5a2f = function() {
       if (!_0xadm) return;
       const _0xbadgeInp = document.getElementById('badge-input')?.value?.trim();
       const _0xbadgeSel = document.getElementById('badge-select')?.value;
@@ -348,7 +349,7 @@
       });
     };
 
-    window._0x3c7b = function() { // Remove badge
+    window._0x3c7b = function() {
       if (!_0xadm) return;
       const _0xremInp = document.getElementById('remove-badge-input')?.value?.trim();
       const _0xremSel = document.getElementById('remove-badge-select')?.value;
@@ -377,7 +378,7 @@
       });
     };
 
-    window._0x8e9f = function() { // Clear user badges
+    window._0x8e9f = function() {
       if (!_0xadm) return;
       const _0xclrInp = document.getElementById('clear-badges-input')?.value?.trim();
       if (!_0xclrInp) {
@@ -407,7 +408,7 @@
       }
     };
 
-    window._0x7d2a = function() { // Global mute
+    window._0x7d2a = function() {
       if (!_0xadm) return;
       if (_0xmute) {
         alert('Chat is already muted!');
@@ -443,7 +444,7 @@
       }, 60 * 1000);
     };
 
-    window._0x9f1e = function() { // Mass badge award
+    window._0x9f1e = function() {
       if (!_0xadm) return;
       const _0xmassInp = document.getElementById('mass-badge-input')?.value?.trim();
       const _0xmassSel = document.getElementById('mass-badge-select')?.value;
@@ -492,7 +493,7 @@
       _0xmassInp.value = '';
     };
 
-    window._0x2b6c = function() { // Freeze chat
+    window._0x2b6c = function() {
       if (!_0xadm) return;
       if (_0xfrz) {
         alert('Chat is already frozen!');
@@ -528,7 +529,7 @@
       }, 30 * 1000);
     };
 
-    window._0x4e8a = function() { // Toggle admin panel
+    window._0x4e8a = function() {
       const _0xpnl = document.getElementById('admin-panel');
       if (_0xpnl) _0xpnl.style.display = _0xpnl.style.display === 'none' ? 'block' : 'none';
     };
@@ -557,7 +558,7 @@
       }, { onlyOnce: true }, (_0xe) => alert('Error fetching badges: ' + _0xe.message));
     };
 
-    window._0x9c4b = function() { // Close profile
+    window._0x9c4b = function() {
       const _0xmod = document.getElementById('profile-modal');
       if (_0xmod) _0xmod.style.display = 'none';
     };
