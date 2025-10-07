@@ -38,71 +38,20 @@
   let isChatFrozen = false;
   let isMuted = false;
 
-  // Disable right-click
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // Block DevTools shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (
-      e.keyCode === 123 || // F12
-      (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) // Ctrl+Shift+I/C/J
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      alert('Access to developer tools is restricted.');
-      return false;
-    }
-  }, true);
-
-  // Detect DevTools opening (window size anomaly)
-  let devtoolsOpen = false;
-  setInterval(() => {
-    const threshold = 100;
-    if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
-      if (!devtoolsOpen) {
-        devtoolsOpen = true;
-        window.blur();
-        alert('Developer tools detected! Please close them to continue using the chat.');
-      }
-    } else {
-      devtoolsOpen = false;
-    }
-  }, 500);
-
-  // Debugger traps to pause execution if DevTools is open
-  setInterval(() => {
-    if (devtoolsOpen) {
-      debugger;
-    }
-  }, 1000);
-
   // Obfuscation functions
-  function _0xdef(arr) {
-    return arr.map(x => String.fromCharCode(x)).join('');
+  function _0xabc(v) {
+    const k = 42;
+    const o = 11;
+    return (v - o) ^ k;
   }
-  function _0xdummy(s) { // Dummy function to mislead
+  function _0xdef(arr) {
+    return arr.map(x => String.fromCharCode(_0xabc(x))).join('');
+  }
+  function _0xdummy(s) { // Dummy
     let h = 0;
     for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
     return (h & 0xFF) % 100;
   }
-
-  // Admin verification
-  window.verifyAdmin = function() {
-    const code = document.getElementById('admin-code')?.value?.trim() || '';
-    const a1 = [110, 111, 108, 97, 110]; // First part of nolanisgay
-    const a2 = [105, 115, 103, 97, 121]; // Second part
-    const _0xdat = a1.concat(a2); // [110, 111, 108, 97, 110, 105, 115, 103, 97, 121]
-    const _0xfake = [99, 99, 99, 99]; // Dummy array
-    const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10); // Dummy calc
-    _0xdummy('decoy'); // Dummy function call
-    if (_0xtmp > 0 && code === _0xdef(_0xdat)) {
-      isAdmin = true;
-      document.getElementById('admin-password').style.display = 'none';
-      document.getElementById('admin-controls').style.display = 'block';
-    } else {
-      alert('Wrong code');
-    }
-  };
 
   // Login
   window.login = async function() {
@@ -520,11 +469,28 @@
     }, 30 * 1000);
   };
 
+  window.verifyAdmin = function(code) {
+    const a1 = [38, 40];
+    const a2 = a1.slice();
+    const _0xdat = a1.concat(a2); // [38, 40, 38, 40]
+    const _0xfake = [99, 99, 99, 99]; // Dummy array
+    const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10); // Dummy calc
+    _0xdummy('decoy'); // Dummy function call
+    if (_0xtmp > 0 && code === _0xdef(_0xdat)) {
+      isAdmin = true;
+      document.getElementById('admin-password').style.display = 'none';
+      document.getElementById('admin-controls').style.display = 'block';
+    } else {
+      alert('Wrong code');
+    }
+  };
+
   window.toggleAdminPanel = function() {
     const panel = document.getElementById('admin-panel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   };
 
+  // Show profile
   window.showProfile = function() {
     if (!currentUser) {
       alert('Please enter a username');
@@ -551,6 +517,7 @@
     document.getElementById('profile-modal').style.display = 'none';
   };
 
+  // Find user by display name
   function findUserByDisplayName(displayName, callback) {
     onValue(usersRef, (snapshot) => {
       let foundUsername = null;
@@ -563,6 +530,7 @@
     }, { onlyOnce: true });
   }
 
+  // Display messages
   onChildAdded(messagesRef, (snapshot) => {
     const msg = snapshot.val();
     const list = document.getElementById('messages');
@@ -585,7 +553,7 @@
             const badges = badgeSnapshot.val() || {};
             const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
             if (activeBadges.length > 0) {
-              const badge = activeBadges[activeBadges.length - 1];
+              const badge = activeBadges[activeBadges.length - 1]; // Latest badge
               li.className = `badge-${badge.style}`;
               messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
             }
@@ -601,6 +569,7 @@
     }
   });
 
+  // Display banned users
   onValue(bannedRef, (snapshot) => {
     const bannedList = document.getElementById('banned-users');
     if (bannedList) {
@@ -618,6 +587,7 @@
     }
   });
 
+  // Display badge leaderboard
   function updateBadgeLeaderboard() {
     const leaderboard = document.getElementById('badge-leaderboard');
     if (!leaderboard) return;
@@ -638,6 +608,7 @@
     }, { onlyOnce: true });
   }
 
+  // Enter key for messages
   document.addEventListener('DOMContentLoaded', () => {
     const msgInput = document.getElementById('msg');
     if (msgInput) {
@@ -878,11 +849,13 @@
     font-size: 14px;
   }
 
+  /* Global Message Styles */
   .global-red-bold { color: red; font-weight: bold; }
   .global-neon-flash { color: #00ff00; animation: neonFlash 1s infinite; }
   .global-blue-italic { color: blue; font-style: italic; }
   .global-rainbow-shake { animation: rainbowShake 0.5s infinite; }
 
+  /* Badge Styles */
   .badge-legendary-troll { color: gold; text-shadow: 0 0 5px yellow; }
   .badge-meme-overlord { color: #00ff00; animation: pulse 1s infinite; }
   .badge-chaos-titan { color: #ff0000; font-weight: bold; animation: shake 0.5s infinite; }
@@ -894,6 +867,7 @@
   .badge-galaxy-brain { background: linear-gradient(45deg, red, blue, green); -webkit-background-clip: text; color: transparent; animation: zoom 1s infinite; }
   .badge-yeet-lord { color: #ffff00; font-weight: bold; animation: jump 0.5s infinite; }
 
+  /* Animations */
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes neonFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes rainbowShake {
@@ -915,6 +889,7 @@
 </head>
 
 <body>
+  <!-- Login Screen -->
   <div id="login-screen">
     <h2>Chat App</h2>
     <input id="username-input" placeholder="Username (anything goes)" type="text">
@@ -922,6 +897,7 @@
     <button onclick="login()">Enter Chat</button>
   </div>
 
+  <!-- Chat Container -->
   <div id="chat-container">
     <div id="messages-container">
       <ul id="messages"></ul>
@@ -934,7 +910,7 @@
     <div id="admin-panel">
       <div id="admin-password">
         <input type="password" id="admin-code" placeholder="Enter admin code">
-        <button onclick="verifyAdmin()">Verify</button>
+        <button onclick="verifyAdmin(document.getElementById('admin-code').value)">Verify</button>
       </div>
       <div id="admin-controls" style="display: none;">
         <details>
@@ -1036,8 +1012,13 @@
     </div>
   </div>
 
+  <!-- Admin Button -->
   <button id="admin-btn" onclick="toggleAdminPanel()">Admin</button>
+
+  <!-- Crash Alert -->
   <div id="crash-alert">Chat Crashed! 😱</div>
+
+  <!-- Profile Modal -->
   <div id="profile-modal">
     <h3>Your Badges</h3>
     <ul id="badge-list"></ul>
