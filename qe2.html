@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Firebase Chat</title>
 
-<!-- Firebase SDK (Compat for modular syntax) -->
+<!-- Firebase SDK -->
 <script type="module">
-  // Import Firebase compat libraries for modular syntax
-  import firebase from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -23,632 +22,699 @@
   };
 
   // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const messagesRef = ref(db, "messages");
-  const bannedRef = ref(db, "bannedUsers");
-  const rolesRef = ref(db, "roles");
-  const eventsRef = ref(db, "events");
-  const usersRef = ref(db, "users");
-  const badgesRef = ref(db, "badges");
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const messagesRef = ref(db, "messages");
+    const bannedRef = ref(db, "bannedUsers");
+    const rolesRef = ref(db, "roles");
+    const eventsRef = ref(db, "events");
+    const usersRef = ref(db, "users");
+    const badgesRef = ref(db, "badges");
 
-  let currentUser = null;
-  let currentDisplayName = '';
-  let isAdmin = false;
-  let isBanned = false;
-  let isChatFrozen = false;
-  let isMuted = false;
+    let currentUser = null;
+    let currentDisplayName = '';
+    let isAdmin = false;
+    let isBanned = false;
+    let isChatFrozen = false;
+    let isMuted = false;
 
-  // Disable right-click
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // Block DevTools shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (
-      e.keyCode === 123 || // F12
-      (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) // Ctrl+Shift+I/C/J
-    ) {
+    // Disable right-click
+    document.addEventListener('contextmenu', e => {
       e.preventDefault();
-      e.stopPropagation();
-      alert('Access to developer tools is restricted.');
       return false;
-    }
-  }, true);
+    });
 
-  // Detect DevTools opening (window size anomaly)
-  let devtoolsOpen = false;
-  setInterval(() => {
-    const threshold = 100;
-    if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
-      if (!devtoolsOpen) {
-        devtoolsOpen = true;
-        window.blur();
-        alert('Developer tools detected! Please close them to continue using the chat.');
+    // Block DevTools shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (
+        e.keyCode === 123 || // F12
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67 || e.keyCode === 74)) // Ctrl+Shift+I/C/J
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('Access to developer tools is restricted.');
+        return false;
       }
-    } else {
-      devtoolsOpen = false;
-    }
-  }, 500);
+    }, true);
 
-  // Debugger traps to pause execution if DevTools is open
-  setInterval(() => {
-    if (devtoolsOpen) {
-      debugger;
-    }
-  }, 1000);
+    // Detect DevTools opening (window size anomaly)
+    let devtoolsOpen = false;
+    setInterval(() => {
+      const threshold = 100;
+      if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+        if (!devtoolsOpen) {
+          devtoolsOpen = true;
+          window.blur();
+          alert('Developer tools detected! Please close them to continue using the chat.');
+        }
+      } else {
+        devtoolsOpen = false;
+      }
+    }, 500);
 
-  // Obfuscation functions
-  function _0xdef(arr) {
-    return arr.map(x => String.fromCharCode(x)).join('');
-  }
-  function _0xdummy(s) { // Dummy function to mislead
-    let h = 0;
-    for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-    return (h & 0xFF) % 100;
-  }
+    // Debugger traps
+    setInterval(() => {
+      if (devtoolsOpen) {
+        debugger;
+      }
+    }, 1000);
 
-  // Admin verification
-  window.verifyAdmin = function() {
-    const code = document.getElementById('admin-code')?.value?.trim() || '';
-    const a1 = [110, 111, 108, 97, 110]; // First part of nolanisgay
-    const a2 = [105, 115, 103, 97, 121]; // Second part
-    const _0xdat = a1.concat(a2); // [110, 111, 108, 97, 110, 105, 115, 103, 97, 121]
-    const _0xfake = [99, 99, 99, 99]; // Dummy array
-    const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10); // Dummy calc
-    _0xdummy('decoy'); // Dummy function call
-    if (_0xtmp > 0 && code === _0xdef(_0xdat)) {
-      isAdmin = true;
-      document.getElementById('admin-password').style.display = 'none';
-      document.getElementById('admin-controls').style.display = 'block';
-    } else {
-      alert('Wrong code');
+    // Obfuscation functions
+    function _0xdef(arr) {
+      return arr.map(x => String.fromCharCode(x)).join('');
     }
-  };
+    function _0xdummy(s) { // Dummy function to mislead
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+      return (h & 0xFF) % 100;
+    }
 
-  // Login
-  window.login = async function() {
-    const username = document.getElementById('username-input').value.trim();
-    const displayName = document.getElementById('display-name-input').value.trim() || username;
-    if (!username) {
-      alert('Please enter a username');
-      return;
-    }
-    const userRef = ref(db, `users/${username}`);
-    const snapshot = await get(userRef);
-    if (snapshot.exists()) {
-      alert('Username already taken');
-      return;
-    }
-    await set(userRef, { displayName });
-    await remove(ref(db, `badges/${username}`)); // Clear badges on new login
-    currentUser = username;
-    currentDisplayName = displayName;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('chat-container').style.display = 'flex';
-    checkBanned(username);
-  };
+    // Admin verification
+    window.verifyAdmin = function() {
+      const code = document.getElementById('admin-code')?.value?.trim() || '';
+      const a1 = [110, 111, 108, 97, 110]; // First part of nolanisgay
+      const a2 = [105, 115, 103, 97, 121]; // Second part
+      const _0xdat = a1.concat(a2);
+      const _0xfake = [99, 99, 99, 99]; // Dummy array
+      const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10); // Dummy calc
+      _0xdummy('decoy');
+      if (_0xtmp > 0 && code === _0xdef(_0xdat)) {
+        isAdmin = true;
+        document.getElementById('admin-password').style.display = 'none';
+        document.getElementById('admin-controls').style.display = 'block';
+      } else {
+        alert('Wrong code');
+      }
+    };
 
-  // Check if user is banned
-  function checkBanned(username) {
-    onValue(ref(db, `bannedUsers/${username}`), (snapshot) => {
-      isBanned = snapshot.val() === true;
+    // Login
+    window.login = async function() {
+      const username = document.getElementById('username-input')?.value?.trim();
+      const displayName = document.getElementById('display-name-input')?.value?.trim() || username;
+      if (!username) {
+        alert('Please enter a username');
+        return;
+      }
+      try {
+        const userRef = ref(db, `users/${username}`);
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          alert('Username already taken');
+          return;
+        }
+        await set(userRef, { displayName });
+        await remove(ref(db, `badges/${username}`));
+        currentUser = username;
+        currentDisplayName = displayName;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'flex';
+        checkBanned(username);
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
+      }
+    };
+
+    // Check if user is banned
+    function checkBanned(username) {
+      onValue(ref(db, `bannedUsers/${username}`), (snapshot) => {
+        isBanned = snapshot.val() === true;
+        updateInputState();
+      }, (error) => {
+        console.error('Error checking ban status:', error);
+        alert('Error checking ban status: ' + error.message);
+      });
+    }
+
+    // Update message input state
+    function updateInputState() {
+      const msgInput = document.getElementById('msg');
+      const sendBtn = document.querySelector('.message-input button');
+      if (!msgInput || !sendBtn) return;
+      if (isBanned || isChatFrozen || isMuted) {
+        msgInput.disabled = true;
+        sendBtn.disabled = true;
+        if (isBanned) alert('You are banned from the chat.');
+        else if (isChatFrozen) alert('Chat Crashed! 😱 Wait it out!');
+        else if (isMuted) alert('Chat is muted! Wait for the admin to unmute!');
+      } else {
+        msgInput.disabled = false;
+        sendBtn.disabled = false;
+      }
+    }
+
+    // Check event states
+    onValue(eventsRef, (snapshot) => {
+      const events = snapshot.val() || {};
+      isChatFrozen = events.chatFreeze?.active && events.chatFreeze.endTime > Date.now();
+      isMuted = events.globalMute?.active && events.globalMute.endTime > Date.now();
       updateInputState();
-    }, (error) => console.error('Error checking ban status:', error));
-  }
-
-  // Update message input state
-  function updateInputState() {
-    const msgInput = document.getElementById('msg');
-    const sendBtn = document.querySelector('.message-input button');
-    if (isBanned || isChatFrozen || isMuted) {
-      msgInput.disabled = true;
-      sendBtn.disabled = true;
-      if (isBanned) alert('You are banned from the chat.');
-      if (isChatFrozen && !isBanned) alert('Chat Crashed! 😱 Wait it out!');
-      if (isMuted && !isBanned && !isChatFrozen) alert('Chat is muted! Wait for the admin to unmute!');
-    } else {
-      msgInput.disabled = false;
-      sendBtn.disabled = false;
-    }
-  }
-
-  // Check event states
-  onValue(eventsRef, (snapshot) => {
-    const events = snapshot.val() || {};
-    isChatFrozen = events.chatFreeze?.active && events.chatFreeze.endTime > Date.now();
-    isMuted = events.globalMute?.active && events.globalMute.endTime > Date.now();
-    updateInputState();
-    document.getElementById('crash-alert').style.display = isChatFrozen ? 'block' : 'none';
-  });
-
-  // Send message
-  window.sendMessage = function() {
-    const input = document.getElementById('msg');
-    if (!input || !input.value.trim()) {
-      alert('Please enter a message');
-      return;
-    }
-    if (!currentUser || !currentDisplayName) {
-      alert('Please enter a username');
-      return;
-    }
-    if (isBanned || isChatFrozen || isMuted) {
-      alert(isBanned ? 'You are banned.' : isChatFrozen ? 'Chat is frozen!' : 'Chat is muted!');
-      return;
-    }
-    push(messagesRef, {
-      username: currentUser,
-      displayName: currentDisplayName,
-      text: input.value.trim(),
-      timestamp: Date.now(),
-      isGlobal: false
-    }).then(() => {
-      input.value = '';
-    }).catch((error) => {
-      console.error('Error sending message:', error);
-      alert('Failed to send message: ' + error.message);
+      const crashAlert = document.getElementById('crash-alert');
+      if (crashAlert) crashAlert.style.display = isChatFrozen ? 'block' : 'none';
+    }, (error) => {
+      console.error('Error checking events:', error);
     });
-  };
 
-  // Admin functions
-  window.banUser = function() {
-    if (!isAdmin) return;
-    const banInput = document.getElementById('ban-input').value.trim();
-    if (!banInput) {
-      alert('Please enter a display name to ban');
-      return;
-    }
-    findUserByDisplayName(banInput, (username) => {
-      if (username) {
-        set(ref(db, `bannedUsers/${username}`), true)
-          .then(() => { banInput.value = ''; })
-          .catch((error) => console.error('Error banning user:', error));
-      } else {
-        alert('User not found');
+    // Send message
+    window.sendMessage = function() {
+      const input = document.getElementById('msg');
+      if (!input || !input.value.trim()) {
+        alert('Please enter a message');
+        return;
       }
-    });
-  };
-
-  window.unbanUser = function() {
-    if (!isAdmin) return;
-    const unbanInput = document.getElementById('unban-input').value.trim();
-    if (!unbanInput) {
-      alert('Please enter a display name to unban');
-      return;
-    }
-    findUserByDisplayName(unbanInput, (username) => {
-      if (username) {
-        remove(ref(db, `bannedUsers/${username}`))
-          .then(() => { unbanInput.value = ''; })
-          .catch((error) => console.error('Error unbanning user:', error));
-      } else {
-        alert('User not found');
+      if (!currentUser || !currentDisplayName) {
+        alert('Please enter a username');
+        return;
       }
-    });
-  };
-
-  window.clearChat = function() {
-    if (!isAdmin) return;
-    if (confirm('Clear all messages?')) {
-      remove(messagesRef)
-        .catch((error) => console.error('Error clearing chat:', error));
-    }
-  };
-
-  window.sendGlobalMessage = function() {
-    if (!isAdmin) return;
-    const globalInput = document.getElementById('global-input');
-    const styleSelect = document.getElementById('global-style');
-    if (!globalInput.value.trim()) {
-      alert('Please enter a global message');
-      return;
-    }
-    push(messagesRef, {
-      username: 'admin',
-      displayName: 'ADMIN',
-      text: globalInput.value.trim(),
-      timestamp: Date.now(),
-      isGlobal: true,
-      style: styleSelect.value
-    }).then(() => {
-      globalInput.value = '';
-    }).catch((error) => {
-      console.error('Error sending global message:', error);
-      alert('Failed to send global message: ' + error.message);
-    });
-  };
-
-  window.assignRole = function() {
-    if (!isAdmin) return;
-    const roleInput = document.getElementById('role-input').value.trim();
-    const roleSelect = document.getElementById('role-select').value;
-    if (!roleInput) {
-      alert('Please enter a display name and select a role');
-      return;
-    }
-    findUserByDisplayName(roleInput, (username) => {
-      if (username) {
-        const roles = {
-          'vip': { name: 'VIP', color: 'gold', emoji: '👑' },
-          'jester': { name: 'Jester', color: 'linear-gradient(45deg, red, blue, green)', emoji: '🤡' },
-          'chaos-lord': { name: 'Chaos Lord', color: '#ff0000', emoji: '😈' }
-        };
-        set(ref(db, `roles/${username}`), {
-          role: roles[roleSelect].name,
-          color: roles[roleSelect].color,
-          emoji: roles[roleSelect].emoji,
-          expires: Date.now() + 60 * 60 * 1000
-        }).then(() => {
-          push(messagesRef, {
-            username: 'admin',
-            displayName: 'ADMIN',
-            text: `${roleInput} is now a ${roles[roleSelect].name}! ${roles[roleSelect].emoji}`,
-            timestamp: Date.now(),
-            isGlobal: true,
-            style: 'red-bold'
-          });
-          roleInput.value = '';
-        }).catch((error) => console.error('Error assigning role:', error));
-      } else {
-        alert('User not found');
+      if (isBanned || isChatFrozen || isMuted) {
+        alert(isBanned ? 'You are banned.' : isChatFrozen ? 'Chat is frozen!' : 'Chat is muted!');
+        return;
       }
-    });
-  };
+      push(messagesRef, {
+        username: currentUser,
+        displayName: currentDisplayName,
+        text: input.value.trim(),
+        timestamp: Date.now(),
+        isGlobal: false
+      }).then(() => {
+        input.value = '';
+      }).catch((error) => {
+        console.error('Error sending message:', error);
+        alert('Failed to send message: ' + error.message);
+      });
+    };
 
-  window.awardBadge = function() {
-    if (!isAdmin) return;
-    const badgeInput = document.getElementById('badge-input').value.trim();
-    const badgeSelect = document.getElementById('badge-select').value;
-    const isTemporary = document.getElementById('badge-temporary').checked;
-    if (!badgeInput) {
-      alert('Please enter a display name and select a badge');
-      return;
-    }
-    findUserByDisplayName(badgeInput, (username) => {
-      if (username) {
-        const badges = {
-          'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
-          'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
-          'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
-          'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
-          'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
-          'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
-          'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
-          'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
-          'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
-          'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
-        };
-        const badgeRef = ref(db, `badges/${username}/${badgeSelect}`);
-        set(badgeRef, {
-          badge: badges[badgeSelect].name,
-          emoji: badges[badgeSelect].emoji,
-          style: badges[badgeSelect].style,
-          expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
-        }).then(() => {
-          push(messagesRef, {
-            username: 'admin',
-            displayName: 'ADMIN',
-            text: `${badgeInput} earned ${badges[badgeSelect].name}! ${badges[badgeSelect].emoji}`,
-            timestamp: Date.now(),
-            isGlobal: true,
-            style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
-          });
-          badgeInput.value = '';
-        }).catch((error) => console.error('Error awarding badge:', error));
-      } else {
-        alert('User not found');
+    // Admin functions
+    window.banUser = function() {
+      if (!isAdmin) return;
+      const banInput = document.getElementById('ban-input')?.value?.trim();
+      if (!banInput) {
+        alert('Please enter a display name to ban');
+        return;
       }
-    });
-  };
-
-  window.removeBadge = function() {
-    if (!isAdmin) return;
-    const removeInput = document.getElementById('remove-badge-input').value.trim();
-    const removeSelect = document.getElementById('remove-badge-select').value;
-    if (!removeInput || !removeSelect) {
-      alert('Please enter a display name and select a badge to remove');
-      return;
-    }
-    findUserByDisplayName(removeInput, (username) => {
-      if (username) {
-        remove(ref(db, `badges/${username}/${removeSelect}`))
-          .then(() => {
-            push(messagesRef, {
-              username: 'admin',
-              displayName: 'ADMIN',
-              text: `${removeInput} lost their ${removeSelect.replace('-', ' ')} badge! 😢`,
-              timestamp: Date.now(),
-              isGlobal: true,
-              style: 'red-bold'
-            });
-            removeInput.value = '';
-          })
-          .catch((error) => console.error('Error removing badge:', error));
-      } else {
-        alert('User not found');
-      }
-    });
-  };
-
-  window.clearUserBadges = function() {
-    if (!isAdmin) return;
-    const clearInput = document.getElementById('clear-badges-input').value.trim();
-    if (!clearInput) {
-      alert('Please enter a display name to clear badges');
-      return;
-    }
-    if (confirm(`Clear all badges for ${clearInput}?`)) {
-      findUserByDisplayName(clearInput, (username) => {
+      findUserByDisplayName(banInput, (username) => {
         if (username) {
-          remove(ref(db, `badges/${username}`))
-            .then(() => {
-              push(messagesRef, {
-                username: 'admin',
-                displayName: 'ADMIN',
-                text: `${clearInput}'s badges wiped! 😱`,
-                timestamp: Date.now(),
-                isGlobal: true,
-                style: 'red-bold'
-              });
-              clearInput.value = '';
-            })
-            .catch((error) => console.error('Error clearing badges:', error));
+          set(ref(db, `bannedUsers/${username}`), true)
+            .then(() => { banInput.value = ''; })
+            .catch((error) => {
+              console.error('Error banning user:', error);
+              alert('Error banning user: ' + error.message);
+            });
         } else {
           alert('User not found');
         }
       });
-    }
-  };
+    };
 
-  window.globalMute = function() {
-    if (!isAdmin) return;
-    if (isMuted) {
-      alert('Chat is already muted!');
-      return;
-    }
-    isMuted = true;
-    set(ref(db, 'events/globalMute'), { active: true, endTime: Date.now() + 60 * 1000 })
-      .then(() => {
-        push(messagesRef, {
-          username: 'admin',
-          displayName: 'ADMIN',
-          text: '🔇 CHAT MUTED for 1 minute! Only admins can talk!',
-          timestamp: Date.now(),
-          isGlobal: true,
-          style: 'neon-flash'
-        });
-      })
-      .catch((error) => console.error('Error muting chat:', error));
-    setTimeout(() => {
-      isMuted = false;
-      set(ref(db, 'events/globalMute'), { active: false })
-        .then(() => {
-          push(messagesRef, {
-            username: 'admin',
-            displayName: 'ADMIN',
-            text: '🔊 Chat unmuted! Let the chaos resume!',
-            timestamp: Date.now(),
-            isGlobal: true,
-            style: 'rainbow-shake'
+    window.unbanUser = function() {
+      if (!isAdmin) return;
+      const unbanInput = document.getElementById('unban-input')?.value?.trim();
+      if (!unbanInput) {
+        alert('Please enter a display name to unban');
+        return;
+      }
+      findUserByDisplayName(unbanInput, (username) => {
+        if (username) {
+          remove(ref(db, `bannedUsers/${username}`))
+            .then(() => { unbanInput.value = ''; })
+            .catch((error) => {
+              console.error('Error unbanning user:', error);
+              alert('Error unbanning user: ' + error.message);
+            });
+        } else {
+          alert('User not found');
+        }
+      });
+    };
+
+    window.clearChat = function() {
+      if (!isAdmin) return;
+      if (confirm('Clear all messages?')) {
+        remove(messagesRef)
+          .catch((error) => {
+            console.error('Error clearing chat:', error);
+            alert('Error clearing chat: ' + error.message);
           });
-        })
-        .catch((error) => console.error('Error unmuting chat:', error));
-    }, 60 * 1000);
-  };
+      }
+    };
 
-  window.massBadgeAward = function() {
-    if (!isAdmin) return;
-    const massInput = document.getElementById('mass-badge-input').value.trim();
-    const massSelect = document.getElementById('mass-badge-select').value;
-    const isTemporary = document.getElementById('mass-badge-temporary').checked;
-    if (!massInput) {
-      alert('Please enter display names (comma-separated)');
-      return;
-    }
-    const displayNames = massInput.split(',').map(name => name.trim()).filter(name => name);
-    displayNames.forEach((displayName, index) => {
-      setTimeout(() => {
-        findUserByDisplayName(displayName, (username) => {
-          if (username) {
-            const badges = {
-              'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
-              'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
-              'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
-              'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
-              'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
-              'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
-              'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
-              'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
-              'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
-              'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
-            };
-            const badgeRef = ref(db, `badges/${username}/${massSelect}`);
-            set(badgeRef, {
-              badge: badges[massSelect].name,
-              emoji: badges[massSelect].emoji,
-              style: badges[massSelect].style,
-              expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
-            }).then(() => {
+    window.sendGlobalMessage = function() {
+      if (!isAdmin) return;
+      const globalInput = document.getElementById('global-input');
+      const styleSelect = document.getElementById('global-style');
+      if (!globalInput?.value?.trim()) {
+        alert('Please enter a global message');
+        return;
+      }
+      push(messagesRef, {
+        username: 'admin',
+        displayName: 'ADMIN',
+        text: globalInput.value.trim(),
+        timestamp: Date.now(),
+        isGlobal: true,
+        style: styleSelect?.value || 'red-bold'
+      }).then(() => {
+        globalInput.value = '';
+      }).catch((error) => {
+        console.error('Error sending global message:', error);
+        alert('Failed to send global message: ' + error.message);
+      });
+    };
+
+    window.assignRole = function() {
+      if (!isAdmin) return;
+      const roleInput = document.getElementById('role-input')?.value?.trim();
+      const roleSelect = document.getElementById('role-select')?.value;
+      if (!roleInput || !roleSelect) {
+        alert('Please enter a display name and select a role');
+        return;
+      }
+      findUserByDisplayName(roleInput, (username) => {
+        if (username) {
+          const roles = {
+            'vip': { name: 'VIP', color: 'gold', emoji: '👑' },
+            'jester': { name: 'Jester', color: 'linear-gradient(45deg, red, blue, green)', emoji: '🤡' },
+            'chaos-lord': { name: 'Chaos Lord', color: '#ff0000', emoji: '😈' }
+          };
+          set(ref(db, `roles/${username}`), {
+            role: roles[roleSelect].name,
+            color: roles[roleSelect].color,
+            emoji: roles[roleSelect].emoji,
+            expires: Date.now() + 60 * 60 * 1000
+          }).then(() => {
+            push(messagesRef, {
+              username: 'admin',
+              displayName: 'ADMIN',
+              text: `${roleInput} is now a ${roles[roleSelect].name}! ${roles[roleSelect].emoji}`,
+              timestamp: Date.now(),
+              isGlobal: true,
+              style: 'red-bold'
+            });
+            roleInput.value = '';
+          }).catch((error) => {
+            console.error('Error assigning role:', error);
+            alert('Error assigning role: ' + error.message);
+          });
+        } else {
+          alert('User not found');
+        }
+      });
+    };
+
+    window.awardBadge = function() {
+      if (!isAdmin) return;
+      const badgeInput = document.getElementById('badge-input')?.value?.trim();
+      const badgeSelect = document.getElementById('badge-select')?.value;
+      const isTemporary = document.getElementById('badge-temporary')?.checked;
+      if (!badgeInput || !badgeSelect) {
+        alert('Please enter a display name and select a badge');
+        return;
+      }
+      findUserByDisplayName(badgeInput, (username) => {
+        if (username) {
+          const badges = {
+            'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
+            'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
+            'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
+            'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
+            'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
+            'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
+            'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
+            'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
+            'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
+            'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
+          };
+          const badgeRef = ref(db, `badges/${username}/${badgeSelect}`);
+          set(badgeRef, {
+            badge: badges[badgeSelect].name,
+            emoji: badges[badgeSelect].emoji,
+            style: badges[badgeSelect].style,
+            expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
+          }).then(() => {
+            push(messagesRef, {
+              username: 'admin',
+              displayName: 'ADMIN',
+              text: `${badgeInput} earned ${badges[badgeSelect].name}! ${badges[badgeSelect].emoji}`,
+              timestamp: Date.now(),
+              isGlobal: true,
+              style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
+            });
+            badgeInput.value = '';
+          }).catch((error) => {
+            console.error('Error awarding badge:', error);
+            alert('Error awarding badge: ' + error.message);
+          });
+        } else {
+          alert('User not found');
+        }
+      });
+    };
+
+    window.removeBadge = function() {
+      if (!isAdmin) return;
+      const removeInput = document.getElementById('remove-badge-input')?.value?.trim();
+      const removeSelect = document.getElementById('remove-badge-select')?.value;
+      if (!removeInput || !removeSelect) {
+        alert('Please enter a display name and select a badge to remove');
+        return;
+      }
+      findUserByDisplayName(removeInput, (username) => {
+        if (username) {
+          remove(ref(db, `badges/${username}/${removeSelect}`))
+            .then(() => {
               push(messagesRef, {
                 username: 'admin',
                 displayName: 'ADMIN',
-                text: `${displayName} earned ${badges[massSelect].name}! ${badges[massSelect].emoji}`,
+                text: `${removeInput} lost their ${removeSelect.replace('-', ' ')} badge! 😢`,
                 timestamp: Date.now(),
                 isGlobal: true,
-                style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
+                style: 'red-bold'
               });
-            }).catch((error) => console.error('Error awarding badge:', error));
+              removeInput.value = '';
+            })
+            .catch((error) => {
+              console.error('Error removing badge:', error);
+              alert('Error removing badge: ' + error.message);
+            });
+        } else {
+          alert('User not found');
+        }
+      });
+    };
+
+    window.clearUserBadges = function() {
+      if (!isAdmin) return;
+      const clearInput = document.getElementById('clear-badges-input')?.value?.trim();
+      if (!clearInput) {
+        alert('Please enter a display name to clear badges');
+        return;
+      }
+      if (confirm(`Clear all badges for ${clearInput}?`)) {
+        findUserByDisplayName(clearInput, (username) => {
+          if (username) {
+            remove(ref(db, `badges/${username}`))
+              .then(() => {
+                push(messagesRef, {
+                  username: 'admin',
+                  displayName: 'ADMIN',
+                  text: `${clearInput}'s badges wiped! 😱`,
+                  timestamp: Date.now(),
+                  isGlobal: true,
+                  style: 'red-bold'
+                });
+                clearInput.value = '';
+              })
+              .catch((error) => {
+                console.error('Error clearing badges:', error);
+                alert('Error clearing badges: ' + error.message);
+              });
+          } else {
+            alert('User not found');
           }
         });
-      }, index * 1000); // Stagger to avoid rate limits
-    });
-    massInput.value = '';
-  };
+      }
+    };
 
-  window.freezeChat = function() {
-    if (!isAdmin) return;
-    if (isChatFrozen) {
-      alert('Chat is already frozen!');
-      return;
-    }
-    isChatFrozen = true;
-    set(ref(db, 'events/chatFreeze'), { active: true, endTime: Date.now() + 30 * 1000 })
-      .then(() => {
-        push(messagesRef, {
-          username: 'admin',
-          displayName: 'ADMIN',
-          text: '😱 CHAT CRASHED! Frozen for 30 seconds!',
-          timestamp: Date.now(),
-          isGlobal: true,
-          style: 'neon-flash'
-        });
-      })
-      .catch((error) => console.error('Error freezing chat:', error));
-    setTimeout(() => {
-      isChatFrozen = false;
-      set(ref(db, 'events/chatFreeze'), { active: false })
+    window.globalMute = function() {
+      if (!isAdmin) return;
+      if (isMuted) {
+        alert('Chat is already muted!');
+        return;
+      }
+      isMuted = true;
+      set(ref(db, 'events/globalMute'), { active: true, endTime: Date.now() + 60 * 1000 })
         .then(() => {
           push(messagesRef, {
             username: 'admin',
             displayName: 'ADMIN',
-            text: '😂 Chat unfrozen! Gotcha!',
+            text: '🔇 CHAT MUTED for 1 minute! Only admins can talk!',
             timestamp: Date.now(),
             isGlobal: true,
-            style: 'rainbow-shake'
+            style: 'neon-flash'
           });
         })
-        .catch((error) => console.error('Error unfreezing chat:', error));
-    }, 30 * 1000);
-  };
+        .catch((error) => {
+          console.error('Error muting chat:', error);
+          alert('Error muting chat: ' + error.message);
+        });
+      setTimeout(() => {
+        isMuted = false;
+        set(ref(db, 'events/globalMute'), { active: false })
+          .then(() => {
+            push(messagesRef, {
+              username: 'admin',
+              displayName: 'ADMIN',
+              text: '🔊 Chat unmuted! Let the chaos resume!',
+              timestamp: Date.now(),
+              isGlobal: true,
+              style: 'rainbow-shake'
+            });
+          })
+          .catch((error) => {
+            console.error('Error unmuting chat:', error);
+            alert('Error unmuting chat: ' + error.message);
+          });
+      }, 60 * 1000);
+    };
 
-  window.toggleAdminPanel = function() {
-    const panel = document.getElementById('admin-panel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  };
-
-  window.showProfile = function() {
-    if (!currentUser) {
-      alert('Please enter a username');
-      return;
-    }
-    const profileModal = document.getElementById('profile-modal');
-    const badgeList = document.getElementById('badge-list');
-    badgeList.innerHTML = '';
-    onValue(ref(db, `badges/${currentUser}`), (snapshot) => {
-      const badges = snapshot.val() || {};
-      Object.values(badges).forEach(badge => {
-        if (!badge.expires || badge.expires > Date.now()) {
-          const li = document.createElement('li');
-          li.textContent = `${badge.emoji} ${badge.badge}`;
-          li.className = `badge-${badge.style}`;
-          badgeList.appendChild(li);
-        }
-      });
-      profileModal.style.display = 'block';
-    }, { onlyOnce: true });
-  };
-
-  window.closeProfile = function() {
-    document.getElementById('profile-modal').style.display = 'none';
-  };
-
-  function findUserByDisplayName(displayName, callback) {
-    onValue(usersRef, (snapshot) => {
-      let foundUsername = null;
-      snapshot.forEach((child) => {
-        if (child.val().displayName === displayName) {
-          foundUsername = child.key;
-        }
-      });
-      callback(foundUsername);
-    }, { onlyOnce: true });
-  }
-
-  onChildAdded(messagesRef, (snapshot) => {
-    const msg = snapshot.val();
-    const list = document.getElementById('messages');
-    if (list && msg?.text && msg.displayName) {
-      const li = document.createElement('li');
-      let messageText = `${msg.displayName}: ${msg.text}`;
-      
-      if (msg.isGlobal) {
-        li.className = `global-${msg.style || 'red-bold'}`;
-        li.textContent = messageText;
-      } else {
-        onValue(ref(db, `roles/${msg.username}`), (roleSnapshot) => {
-          const role = roleSnapshot.val();
-          if (role && role.expires > Date.now()) {
-            li.style.color = role.color;
-            li.style.background = role.color.includes('gradient') ? role.color : 'transparent';
-            messageText = `${role.emoji} ${msg.displayName}: ${msg.text}`;
-          }
-          onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
-            const badges = badgeSnapshot.val() || {};
-            const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
-            if (activeBadges.length > 0) {
-              const badge = activeBadges[activeBadges.length - 1];
-              li.className = `badge-${badge.style}`;
-              messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
-            }
-            li.textContent = messageText;
-          }, { onlyOnce: true });
-        }, { onlyOnce: true });
+    window.massBadgeAward = function() {
+      if (!isAdmin) return;
+      const massInput = document.getElementById('mass-badge-input')?.value?.trim();
+      const massSelect = document.getElementById('mass-badge-select')?.value;
+      const isTemporary = document.getElementById('mass-badge-temporary')?.checked;
+      if (!massInput || !massSelect) {
+        alert('Please enter display names (comma-separated) and select a badge');
+        return;
       }
-      
-      li.style.padding = '8px';
-      li.style.borderBottom = '1px solid #ccc';
-      list.appendChild(li);
-      list.scrollTop = list.scrollHeight;
-    }
-  });
+      const displayNames = massInput.split(',').map(name => name.trim()).filter(name => name);
+      displayNames.forEach((displayName, index) => {
+        setTimeout(() => {
+          findUserByDisplayName(displayName, (username) => {
+            if (username) {
+              const badges = {
+                'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
+                'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
+                'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
+                'skibidi-supreme': { name: 'Skibidi Supreme', emoji: '🚽', style: 'skibidi-supreme' },
+                'pogchamp-pro': { name: 'PogChamp Pro', emoji: '😎', style: 'pogchamp-pro' },
+                'sus-master': { name: 'Sus Master', emoji: '🕵️', style: 'sus-master' },
+                'rizzler-elite': { name: 'Rizzler Elite', emoji: '😘', style: 'rizzler-elite' },
+                'ohio-outlaw': { name: 'Ohio Outlaw', emoji: '🌎', style: 'ohio-outlaw' },
+                'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
+                'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
+              };
+              const badgeRef = ref(db, `badges/${username}/${massSelect}`);
+              set(badgeRef, {
+                badge: badges[massSelect].name,
+                emoji: badges[massSelect].emoji,
+                style: badges[massSelect].style,
+                expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
+              }).then(() => {
+                push(messagesRef, {
+                  username: 'admin',
+                  displayName: 'ADMIN',
+                  text: `${displayName} earned ${badges[massSelect].name}! ${badges[massSelect].emoji}`,
+                  timestamp: Date.now(),
+                  isGlobal: true,
+                  style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
+                });
+              }).catch((error) => {
+                console.error('Error awarding badge:', error);
+                alert('Error awarding badge: ' + error.message);
+              });
+            }
+          });
+        }, index * 1000);
+      });
+      massInput.value = '';
+    };
 
-  onValue(bannedRef, (snapshot) => {
-    const bannedList = document.getElementById('banned-users');
-    if (bannedList) {
-      bannedList.innerHTML = '';
-      snapshot.forEach((child) => {
-        onValue(ref(db, `users/${child.key}`), (userSnapshot) => {
-          const user = userSnapshot.val();
-          if (user) {
+    window.freezeChat = function() {
+      if (!isAdmin) return;
+      if (isChatFrozen) {
+        alert('Chat is already frozen!');
+        return;
+      }
+      isChatFrozen = true;
+      set(ref(db, 'events/chatFreeze'), { active: true, endTime: Date.now() + 30 * 1000 })
+        .then(() => {
+          push(messagesRef, {
+            username: 'admin',
+            displayName: 'ADMIN',
+            text: '😱 CHAT CRASHED! Frozen for 30 seconds!',
+            timestamp: Date.now(),
+            isGlobal: true,
+            style: 'neon-flash'
+          });
+        })
+        .catch((error) => {
+          console.error('Error freezing chat:', error);
+          alert('Error freezing chat: ' + error.message);
+        });
+      setTimeout(() => {
+        isChatFrozen = false;
+        set(ref(db, 'events/chatFreeze'), { active: false })
+          .then(() => {
+            push(messagesRef, {
+              username: 'admin',
+              displayName: 'ADMIN',
+              text: '😂 Chat unfrozen! Gotcha!',
+              timestamp: Date.now(),
+              isGlobal: true,
+              style: 'rainbow-shake'
+            });
+          })
+          .catch((error) => {
+            console.error('Error unfreezing chat:', error);
+            alert('Error unfreezing chat: ' + error.message);
+          });
+      }, 30 * 1000);
+    };
+
+    window.toggleAdminPanel = function() {
+      const panel = document.getElementById('admin-panel');
+      if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.showProfile = function() {
+      if (!currentUser) {
+        alert('Please enter a username');
+        return;
+      }
+      const profileModal = document.getElementById('profile-modal');
+      const badgeList = document.getElementById('badge-list');
+      if (!profileModal || !badgeList) return;
+      badgeList.innerHTML = '';
+      onValue(ref(db, `badges/${currentUser}`), (snapshot) => {
+        const badges = snapshot.val() || {};
+        Object.values(badges).forEach(badge => {
+          if (!badge.expires || badge.expires > Date.now()) {
             const li = document.createElement('li');
-            li.textContent = user.displayName;
-            bannedList.appendChild(li);
+            li.textContent = `${badge.emoji} ${badge.badge}`;
+            li.className = `badge-${badge.style}`;
+            badgeList.appendChild(li);
           }
-        }, { onlyOnce: true });
+        });
+        profileModal.style.display = 'block';
+      }, { onlyOnce: true }, (error) => {
+        console.error('Error fetching badges:', error);
+      });
+    };
+
+    window.closeProfile = function() {
+      const profileModal = document.getElementById('profile-modal');
+      if (profileModal) profileModal.style.display = 'none';
+    };
+
+    function findUserByDisplayName(displayName, callback) {
+      onValue(usersRef, (snapshot) => {
+        let foundUsername = null;
+        snapshot.forEach((child) => {
+          if (child.val().displayName === displayName) {
+            foundUsername = child.key;
+          }
+        });
+        callback(foundUsername);
+      }, { onlyOnce: true }, (error) => {
+        console.error('Error finding user:', error);
       });
     }
-  });
 
-  function updateBadgeLeaderboard() {
-    const leaderboard = document.getElementById('badge-leaderboard');
-    if (!leaderboard) return;
-    onValue(badgesRef, (snapshot) => {
-      const badgeCounts = [];
-      snapshot.forEach((userSnapshot) => {
-        const badges = userSnapshot.val() || {};
-        const count = Object.values(badges).filter(b => !b.expires || b.expires > Date.now()).length;
-        onValue(ref(db, `users/${userSnapshot.key}`), (userSnapshot) => {
-          const user = userSnapshot.val();
-          if (user) {
-            badgeCounts.push({ displayName: user.displayName, count });
-          }
-        }, { onlyOnce: true });
+    onChildAdded(messagesRef, (snapshot) => {
+      const msg = snapshot.val();
+      const list = document.getElementById('messages');
+      if (list && msg?.text && msg.displayName) {
+        const li = document.createElement('li');
+        let messageText = `${msg.displayName}: ${msg.text}`;
+        
+        if (msg.isGlobal) {
+          li.className = `global-${msg.style || 'red-bold'}`;
+          li.textContent = messageText;
+        } else {
+          onValue(ref(db, `roles/${msg.username}`), (roleSnapshot) => {
+            const role = roleSnapshot.val();
+            if (role && role.expires > Date.now()) {
+              li.style.color = role.color;
+              li.style.background = role.color.includes('gradient') ? role.color : 'transparent';
+              messageText = `${role.emoji} ${msg.displayName}: ${msg.text}`;
+            }
+            onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
+              const badges = badgeSnapshot.val() || {};
+              const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
+              if (activeBadges.length > 0) {
+                const badge = activeBadges[activeBadges.length - 1];
+                li.className = `badge-${badge.style}`;
+                messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
+              }
+              li.textContent = messageText;
+            }, { onlyOnce: true });
+          }, { onlyOnce: true });
+        }
+        
+        li.style.padding = '8px';
+        li.style.borderBottom = '1px solid #ccc';
+        list.appendChild(li);
+        list.scrollTop = list.scrollHeight;
+      }
+    }, (error) => {
+      console.error('Error listening to messages:', error);
+    });
+
+    onValue(bannedRef, (snapshot) => {
+      const bannedList = document.getElementById('banned-users');
+      if (bannedList) {
+        bannedList.innerHTML = '';
+        snapshot.forEach((child) => {
+          onValue(ref(db, `users/${child.key}`), (userSnapshot) => {
+            const user = userSnapshot.val();
+            if (user) {
+              const li = document.createElement('li');
+              li.textContent = user.displayName;
+              bannedList.appendChild(li);
+            }
+          }, { onlyOnce: true });
+        });
+      }
+    }, (error) => {
+      console.error('Error fetching banned users:', error);
+    });
+
+    function updateBadgeLeaderboard() {
+      const leaderboard = document.getElementById('badge-leaderboard');
+      if (!leaderboard) return;
+      onValue(badgesRef, (snapshot) => {
+        const badgeCounts = [];
+        snapshot.forEach((userSnapshot) => {
+          const badges = userSnapshot.val() || {};
+          const count = Object.values(badges).filter(b => !b.expires || b.expires > Date.now()).length;
+          onValue(ref(db, `users/${userSnapshot.key}`), (userSnapshot) => {
+            const user = userSnapshot.val();
+            if (user) {
+              badgeCounts.push({ displayName: user.displayName, count });
+            }
+          }, { onlyOnce: true });
+        });
+        badgeCounts.sort((a, b) => b.count - a.count);
+        leaderboard.innerHTML = badgeCounts.slice(0, 3).map(c => `<li>${c.displayName}: ${c.count} badges</li>`).join('');
+      }, { onlyOnce: true }, (error) => {
+        console.error('Error updating leaderboard:', error);
       });
-      badgeCounts.sort((a, b) => b.count - a.count);
-      leaderboard.innerHTML = badgeCounts.slice(0, 3).map(c => `<li>${c.displayName}: ${c.count} badges</li>`).join('');
-    }, { onlyOnce: true });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const msgInput = document.getElementById('msg');
+      if (msgInput) {
+        msgInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') sendMessage();
+        });
+      }
+      updateBadgeLeaderboard();
+    });
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    alert('Failed to initialize Firebase: ' + error.message);
   }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const msgInput = document.getElementById('msg');
-    if (msgInput) {
-      msgInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-      });
-    }
-    updateBadgeLeaderboard();
-  });
-
 </script>
 
 <style>
