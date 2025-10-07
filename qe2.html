@@ -10,7 +10,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-  // Firebase configuration
+  // Firebase config
   const _0xcfg = {
     apiKey: "AIzaSyB6jDSHBED66rlb5MWgV83s91cNuX51OlY",
     authDomain: "chat-v4-da99c.firebaseapp.com",
@@ -95,191 +95,7 @@
       return (_0xh & 0xFF) % 100;
     };
 
-    // Admin verification (dynamic eval)
-    window._0x1a2b = function() {
-      const _0xcode = document.getElementById('admin-code')?.value?.trim() || '';
-      const _0xa1 = [49, 49, 55]; // 117
-      const _0xa2 = [49, 49, 55 $
-
-System: I'm sorry, it looks like the code was cut off in the response. Let me provide the complete `index.html` with the fixes for the unintended DevTools redirect, "PERMISSION_DENIED" error, and all requested features, including the new anti-tampering mechanism that warns and redirects only when DevTools is actually open. The code uses the `chat-v4-da99c` Firebase config, admin code `117117` (obfuscated as `[49, 49, 55]` and `[49, 49, 55]`), and retains all features in a single file for GitHub Pages.
-
-### Fixes Applied
-- **Anti-Tampering**:
-  - Replaced `window.outerWidth - window.innerWidth` with a timing-based DevTools detection (DevTools slows execution, detected if a loop takes >50ms).
-  - Removed `console.profile` check due to browser inconsistencies.
-  - Shows a warning (“Inspecting is forbidden!”) and redirects to `about:blank` after 2s only when DevTools is confirmed open.
-  - Kept console clearing and MutationObserver for DOM tampering.
-  - Obfuscated function names (e.g., `_0x1a2b` for `verifyAdmin`) and admin logic in `eval`.
-- **PERMISSION_DENIED**:
-  - Updated Firebase rules to allow read/write with validation for `messages`, `users`, `badges`, `bannedUsers`, `roles`, and `events`.
-  - Ensured `isGlobal` and `style` fields are optional and validated.
-- **Features**: Preserved all (login, messages, admin controls, badges, roles, leaderboard, profile modal).
-- **Stability**: Used Firebase v10.12.0 CDN imports, added error handling.
-
-### Firebase Rules
-To fix "PERMISSION_DENIED," apply these rules in Firebase Console:
-
-```json
-{
-  "rules": {
-    "users": {
-      "$username": {
-        ".read": "true",
-        ".write": "true",
-        ".validate": "newData.hasChild('displayName') && newData.child('displayName').isString()"
-      }
-    },
-    "badges": {
-      "$username": {
-        "$badgeId": {
-          ".read": "true",
-          ".write": "true",
-          ".validate": "newData.hasChildren(['badge', 'emoji', 'style']) && newData.child('badge').isString() && newData.child('emoji').isString() && newData.child('style').isString() && (newData.child('expires').exists() ? newData.child('expires').isNumber() : true)"
-        }
-      }
-    },
-    "messages": {
-      "$messageId": {
-        ".read": "true",
-        ".write": "true",
-        ".validate": "newData.hasChildren(['username', 'displayName', 'text', 'timestamp']) && newData.child('username').isString() && newData.child('displayName').isString() && newData.child('text').isString() && newData.child('text').val().length <= 500 && newData.child('timestamp').isNumber() && (newData.child('isGlobal').exists() ? newData.child('isGlobal').isBoolean() : true) && (newData.child('style').exists() ? newData.child('style').isString() : true)"
-      }
-    },
-    "bannedUsers": {
-      "$username": {
-        ".read": "true",
-        ".write": "true",
-        ".validate": "newData.isBoolean()"
-      }
-    },
-    "roles": {
-      "$username": {
-        ".read": "true",
-        ".write": "true",
-        ".validate": "newData.hasChildren(['role', 'color', 'emoji', 'expires']) && newData.child('role').isString() && newData.child('color').isString() && newData.child('emoji').isString() && newData.child('expires').isNumber()"
-      }
-    },
-    "events": {
-      "$eventId": {
-        ".read": "true",
-        ".write": "true",
-        ".validate": "newData.hasChild('active') && newData.child('active').isBoolean() && (newData.child('endTime').exists() ? newData.child('endTime').isNumber() : true)"
-      }
-    }
-  }
-}
-```
-
-- **Apply**: Firebase Console > Realtime Database (`chat-v4-da99c`) > Rules > Paste > Publish.
-- **Verify**: Refresh Console to confirm rules are saved.
-- **Fallback**: If "PERMISSION_DENIED" persists, test with:
-  ```json
-  { "rules": { ".read": "true", ".write": "true" } }
-  ```
-  - Revert to full rules after confirming functionality.
-
-### Updated Code
-This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIED," and includes all features.
-
-<xaiArtifact artifact_id="e646cfd5-c9b1-4bbd-bf7c-f44ac5dcefa1" artifact_version_id="6a8179f6-14ce-4ddb-9292-3ed6fc3de061" title="index.html" contentType="text/html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Firebase Chat</title>
-
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  // Firebase configuration
-  const _0xcfg = {
-    apiKey: "AIzaSyB6jDSHBED66rlb5MWgV83s91cNuX51OlY",
-    authDomain: "chat-v4-da99c.firebaseapp.com",
-    databaseURL: "https://chat-v4-da99c-default-rtdb.firebaseio.com",
-    projectId: "chat-v4-da99c",
-    storageBucket: "chat-v4-da99c.firebasestorage.app",
-    messagingSenderId: "903861644775",
-    appId: "1:903861644775:web:7760362fae1c15861be142"
-  };
-
-  // Initialize Firebase
-  try {
-    const _0xapp = initializeApp(_0xcfg);
-    const _0xdb = getDatabase(_0xapp);
-    const _0xmsgs = ref(_0xdb, "messages");
-    const _0xbans = ref(_0xdb, "bannedUsers");
-    const _0xroles = ref(_0xdb, "roles");
-    const _0xevts = ref(_0xdb, "events");
-    const _0xusrs = ref(_0xdb, "users");
-    const _0xbdgs = ref(_0xdb, "badges");
-
-    let _0xcurUsr = null;
-    let _0xcurDsp = '';
-    let _0xadm = false;
-    let _0xban = false;
-    let _0xfrz = false;
-    let _0xmute = false;
-
-    // Anti-tampering: Disable console
-    const _0xcl = console;
-    _0xcl.log = _0xcl.error = _0xcl.warn = _0xcl.info = () => {};
-
-    // Anti-tampering: Detect DevTools with timing-based check
-    let _0xdev = false;
-    const _0xchkDev = () => {
-      const _0xstart = performance.now();
-      let _0xtrap = 0;
-      for (let _0xi = 0; _0xi < 1000; _0xi++) _0xtrap += Math.random();
-      const _0xend = performance.now();
-      const _0xtime = _0xend - _0xstart;
-      if (_0xtime > 50) { // DevTools slows execution
-        if (!_0xdev) {
-          _0xdev = true;
-          const _0xwarn = document.createElement('div');
-          _0xwarn.style.position = 'fixed';
-          _0xwarn.style.top = '50%';
-          _0xwarn.style.left = '50%';
-          _0xwarn.style.transform = 'translate(-50%, -50%)';
-          _0xwarn.style.background = 'linear-gradient(45deg, #ff0000, #ff4444)';
-          _0xwarn.style.color = 'white';
-          _0xwarn.style.padding = '20px';
-          _0xwarn.style.borderRadius = '10px';
-          _0xwarn.style.zIndex = '9999';
-          _0xwarn.style.fontSize = '18px';
-          _0xwarn.style.fontWeight = 'bold';
-          _0xwarn.style.textAlign = 'center';
-          _0xwarn.textContent = 'Inspecting is forbidden! You will be redirected.';
-          document.body.appendChild(_0xwarn);
-          setTimeout(() => {
-            window.location.href = 'about:blank';
-          }, 2000);
-        }
-      }
-    };
-    setInterval(_0xchkDev, 1000);
-
-    // Anti-tampering: Detect DOM tampering
-    const _0xobs = new MutationObserver((muts) => {
-      muts.forEach(mut => {
-        if (mut.target.id === 'admin-panel' || mut.target.id === 'admin-controls') {
-          window.location.href = 'about:blank';
-        }
-      });
-    });
-    _0xobs.observe(document.body, { childList: true, subtree: true });
-
-    // Obfuscation functions
-    const _0xdef = (_0xa) => _0xa.map(_0xi => String.fromCharCode(_0xi)).join('');
-    const _0xdummy = (_0xs) => { // Decoy
-      let _0xh = 0;
-      for (let _0xi = 0; _0xi < _0xs.length; _0xi++) _0xh = (_0xh << 5) - _0xh + _0xs.charCodeAt(_0xi);
-      return (_0xh & 0xFF) % 100;
-    };
-
-    // Admin verification (dynamic eval)
+    // Admin verification
     window._0x1a2b = function() {
       const _0xcode = document.getElementById('admin-code')?.value?.trim() || '';
       const _0xa1 = [49, 49, 55]; // 117
@@ -324,15 +140,15 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       }
     };
 
-    // Check ban status
+    // Check if user is banned
     const _0xchkBan = (_0xusr) => {
       onValue(ref(_0xdb, `bannedUsers/${_0xusr}`), (_0xsnap) => {
         _0xban = _0xsnap.val() === true;
         _0xupdInp();
-      }, (_0xe) => alert('Error checking ban: ' + _0xe.message));
+      }, (_0xe) => alert('Error checking ban status: ' + _0xe.message));
     };
 
-    // Update input state
+    // Update message input state
     const _0xupdInp = () => {
       const _0xmsgInp = document.getElementById('msg');
       const _0xsendBtn = document.querySelector('.message-input button');
@@ -340,23 +156,22 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       if (_0xban || _0xfrz || _0xmute) {
         _0xmsgInp.disabled = true;
         _0xsendBtn.disabled = true;
-        if (_0xban) alert('You are banned!');
+        if (_0xban) alert('You are banned from the chat.');
         else if (_0xfrz) alert('Chat Crashed! 😱 Wait it out!');
-        else if (_0xmute) alert('Chat is muted!');
+        else if (_0xmute) alert('Chat is muted! Wait for the admin to unmute!');
       } else {
         _0xmsgInp.disabled = false;
         _0xsendBtn.disabled = false;
       }
     };
 
-    // Check events
+    // Check event states
     onValue(_0xevts, (_0xsnap) => {
       const _0xev = _0xsnap.val() || {};
       _0xfrz = _0xev.chatFreeze?.active && _0xev.chatFreeze.endTime > Date.now();
       _0xmute = _0xev.globalMute?.active && _0xev.globalMute.endTime > Date.now();
       _0xupdInp();
-      const _0xalert = document.getElementById('crash-alert');
-      if (_0xalert) _0xalert.style.display = _0xfrz ? 'block' : 'none';
+      document.getElementById('crash-alert').style.display = _0xfrz ? 'block' : 'none';
     }, (_0xe) => alert('Error checking events: ' + _0xe.message));
 
     // Send message
@@ -390,7 +205,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       if (!_0xadm) return;
       const _0xbanInp = document.getElementById('ban-input')?.value?.trim();
       if (!_0xbanInp) {
-        alert('Enter a display name to ban');
+        alert('Please enter a display name to ban');
         return;
       }
       _0xfindUsr(_0xbanInp, (_0xusr) => {
@@ -408,7 +223,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       if (!_0xadm) return;
       const _0xunbanInp = document.getElementById('unban-input')?.value?.trim();
       if (!_0xunbanInp) {
-        alert('Enter a display name to unban');
+        alert('Please enter a display name to unban');
         return;
       }
       _0xfindUsr(_0xunbanInp, (_0xusr) => {
@@ -435,7 +250,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       const _0xglbInp = document.getElementById('global-input');
       const _0xstySel = document.getElementById('global-style');
       if (!_0xglbInp?.value?.trim()) {
-        alert('Enter a global message');
+        alert('Please enter a global message');
         return;
       }
       push(_0xmsgs, {
@@ -455,7 +270,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       const _0xroleInp = document.getElementById('role-input')?.value?.trim();
       const _0xroleSel = document.getElementById('role-select')?.value;
       if (!_0xroleInp || !_0xroleSel) {
-        alert('Enter a display name and select a role');
+        alert('Please enter a display name and select a role');
         return;
       }
       _0xfindUsr(_0xroleInp, (_0xusr) => {
@@ -493,7 +308,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       const _0xbadgeSel = document.getElementById('badge-select')?.value;
       const _0xtmp = document.getElementById('badge-temporary')?.checked;
       if (!_0xbadgeInp || !_0xbadgeSel) {
-        alert('Enter a display name and select a badge');
+        alert('Please enter a display name and select a badge');
         return;
       }
       _0xfindUsr(_0xbadgeInp, (_0xusr) => {
@@ -538,7 +353,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       const _0xremInp = document.getElementById('remove-badge-input')?.value?.trim();
       const _0xremSel = document.getElementById('remove-badge-select')?.value;
       if (!_0xremInp || !_0xremSel) {
-        alert('Enter a display name and select a badge to remove');
+        alert('Please enter a display name and select a badge to remove');
         return;
       }
       _0xfindUsr(_0xremInp, (_0xusr) => {
@@ -562,11 +377,11 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       });
     };
 
-    window._0x8e9f = function() { // Clear badges
+    window._0x8e9f = function() { // Clear user badges
       if (!_0xadm) return;
       const _0xclrInp = document.getElementById('clear-badges-input')?.value?.trim();
       if (!_0xclrInp) {
-        alert('Enter a display name to clear badges');
+        alert('Please enter a display name to clear badges');
         return;
       }
       if (confirm(`Clear all badges for ${_0xclrInp}?`)) {
@@ -634,7 +449,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       const _0xmassSel = document.getElementById('mass-badge-select')?.value;
       const _0xtmp = document.getElementById('mass-badge-temporary')?.checked;
       if (!_0xmassInp || !_0xmassSel) {
-        alert('Enter display names (comma-separated) and select a badge');
+        alert('Please enter display names (comma-separated) and select a badge');
         return;
       }
       const _0xnames = _0xmassInp.split(',').map(_0xn => _0xn.trim()).filter(_0xn => _0xn);
@@ -718,7 +533,8 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       if (_0xpnl) _0xpnl.style.display = _0xpnl.style.display === 'none' ? 'block' : 'none';
     };
 
-    window._0x6d3f = function() { // Show profile
+    // Show profile
+    window._0x6d3f = function() {
       if (!_0xcurUsr) {
         alert('Please enter a username');
         return;
@@ -746,6 +562,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       if (_0xmod) _0xmod.style.display = 'none';
     };
 
+    // Find user by display name
     const _0xfindUsr = (_0xdsp, _0xcb) => {
       onValue(_0xusrs, (_0xsnap) => {
         let _0xusr = null;
@@ -758,6 +575,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       }, { onlyOnce: true }, (_0xe) => alert('Error finding user: ' + _0xe.message));
     };
 
+    // Display messages
     onChildAdded(_0xmsgs, (_0xsnap) => {
       const _0xmsg = _0xsnap.val();
       const _0xlist = document.getElementById('messages');
@@ -796,6 +614,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       }
     }, (_0xe) => alert('Error listening to messages: ' + _0xe.message));
 
+    // Display banned users
     onValue(_0xbans, (_0xsnap) => {
       const _0xbanList = document.getElementById('banned-users');
       if (_0xbanList) {
@@ -813,6 +632,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       }
     }, (_0xe) => alert('Error fetching banned users: ' + _0xe.message));
 
+    // Display badge leaderboard
     const _0xupdLdr = () => {
       const _0xldr = document.getElementById('badge-leaderboard');
       if (!_0xldr) return;
@@ -833,6 +653,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
       }, { onlyOnce: true }, (_0xe) => alert('Error updating leaderboard: ' + _0xe.message));
     };
 
+    // Enter key for messages
     document.addEventListener('DOMContentLoaded', () => {
       const _0xmsgInp = document.getElementById('msg');
       if (_0xmsgInp) {
@@ -949,89 +770,69 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
   }
 
   #admin-panel {
-    width: 300px;
-    background: rgba(0, 0, 0, 0.9);
-    padding: 10px;
-    border-left: 1px solid #00f;
+    width: 320px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-left: 1px solid #333;
     display: none;
-    font-size: 14px;
   }
 
   #admin-btn {
     position: fixed;
     top: 10px;
     left: 10px;
-    padding: 8px;
+    padding: 10px;
     background: linear-gradient(45deg, #ff4444, #ff0000);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
   }
 
-  #admin-password, #admin-controls details {
-    margin-bottom: 10px;
-    border: 1px solid #00f;
-    border-radius: 6px;
-    padding: 5px;
+  #admin-password, #admin-controls section {
+    margin-bottom: 15px;
   }
 
   #admin-password input, #admin-controls input, #admin-controls select {
     width: 100%;
-    padding: 6px;
-    margin-bottom: 5px;
-    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
     border: none;
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    font-size: 14px;
   }
 
   #admin-controls button {
     width: 100%;
-    padding: 6px;
-    margin-bottom: 5px;
-    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
     background: linear-gradient(45deg, #667eea, #00ff00);
     color: white;
     border: none;
     cursor: pointer;
-    transition: box-shadow 0.2s;
-    font-size: 14px;
+    transition: transform 0.2s;
   }
 
   #admin-controls button:hover {
-    box-shadow: 0 0 8px #00ff00;
-  }
-
-  #admin-controls summary {
-    cursor: pointer;
-    padding: 5px;
-    background: rgba(0, 0, 255, 0.2);
-    border-radius: 6px;
-    font-weight: bold;
-  }
-
-  #admin-controls summary:hover {
-    background: rgba(0, 0, 255, 0.3);
+    transform: scale(1.02);
   }
 
   #banned-users, #badge-leaderboard {
     list-style: none;
     padding: 0;
-    max-height: 80px;
+    max-height: 100px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 5px;
   }
 
   #banned-users li, #badge-leaderboard li {
     padding: 5px;
     border-bottom: 1px solid #333;
-    font-size: 12px;
   }
 
   #crash-alert {
@@ -1042,12 +843,12 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
     transform: translate(-50%, -50%);
     background: linear-gradient(45deg, #ff4444, #ff0000);
     color: white;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 24px;
     font-weight: bold;
     z-index: 1000;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
   }
 
   #profile-modal {
@@ -1057,22 +858,20 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.9);
-    padding: 15px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 10px;
     z-index: 1000;
     color: white;
-    max-width: 280px;
-    font-size: 14px;
+    max-width: 300px;
   }
 
   #profile-modal button {
     background: linear-gradient(45deg, #667eea, #00ff00);
     border: none;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 8px;
     cursor: pointer;
-    margin-top: 8px;
-    font-size: 14px;
+    margin-top: 10px;
   }
 
   .global-red-bold { color: red; font-weight: bold; }
@@ -1112,6 +911,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
 </head>
 
 <body>
+  <!-- Login Screen -->
   <div id="login-screen">
     <h2>Chat App</h2>
     <input id="username-input" placeholder="Username (anything goes)" type="text">
@@ -1119,6 +919,7 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
     <button onclick="_0x7c8d()">Enter Chat</button>
   </div>
 
+  <!-- Chat Container -->
   <div id="chat-container">
     <div id="messages-container">
       <ul id="messages"></ul>
@@ -1134,23 +935,23 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
         <button onclick="_0x1a2b()">Verify</button>
       </div>
       <div id="admin-controls" style="display: none;">
-        <details>
-          <summary>Ban Controls</summary>
+        <section>
+          <h3>Ban Controls</h3>
           <input id="ban-input" placeholder="Display name to ban">
           <button onclick="_0x9b1c()">Ban</button>
           <input id="unban-input" placeholder="Display name to unban">
           <button onclick="_0x2d5e()">Unban</button>
           <h4>Banned Users</h4>
           <ul id="banned-users"></ul>
-        </details>
-        <details>
-          <summary>Chat Controls</summary>
+        </section>
+        <section>
+          <h3>Chat Controls</h3>
           <button onclick="_0x6f7a()">Clear Chat</button>
           <button onclick="_0x2b6c()">Freeze Chat</button>
           <button onclick="_0x7d2a()">Global Mute (1 min)</button>
-        </details>
-        <details>
-          <summary>Global Message</summary>
+        </section>
+        <section>
+          <h3>Global Message</h3>
           <input id="global-input" placeholder="Global message">
           <select id="global-style">
             <option value="red-bold">Red Bold</option>
@@ -1159,9 +960,9 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
             <option value="rainbow-shake">Rainbow Shake</option>
           </select>
           <button onclick="_0x8c3d()">Send Global</button>
-        </details>
-        <details>
-          <summary>Role Assignment</summary>
+        </section>
+        <section>
+          <h3>Role Assignment</h3>
           <input id="role-input" placeholder="Display name for role">
           <select id="role-select">
             <option value="vip">VIP (Gold)</option>
@@ -1169,9 +970,9 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
             <option value="chaos-lord">Chaos Lord (Red)</option>
           </select>
           <button onclick="_0x4b9e()">Assign Role</button>
-        </details>
-        <details>
-          <summary>Badge Assignment</summary>
+        </section>
+        <section>
+          <h3>Badge Assignment</h3>
           <input id="badge-input" placeholder="Display name for badge">
           <select id="badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -1187,9 +988,9 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
           </select>
           <label><input type="checkbox" id="badge-temporary"> Temporary (1 hour)</label>
           <button onclick="_0x5a2f()">Award Badge</button>
-        </details>
-        <details>
-          <summary>Mass Badge Award</summary>
+        </section>
+        <section>
+          <h3>Mass Badge Award</h3>
           <input id="mass-badge-input" placeholder="Display names (comma-separated)">
           <select id="mass-badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -1205,9 +1006,9 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
           </select>
           <label><input type="checkbox" id="mass-badge-temporary"> Temporary (1 hour)</label>
           <button onclick="_0x9f1e()">Mass Award</button>
-        </details>
-        <details>
-          <summary>Badge Removal</summary>
+        </section>
+        <section>
+          <h3>Badge Removal</h3>
           <input id="remove-badge-input" placeholder="Display name">
           <select id="remove-badge-select">
             <option value="legendary-troll">Legendary Troll</option>
@@ -1224,17 +1025,22 @@ This `index.html` fixes the false DevTools redirect, addresses "PERMISSION_DENIE
           <button onclick="_0x3c7b()">Remove Badge</button>
           <input id="clear-badges-input" placeholder="Display name to clear all badges">
           <button onclick="_0x8e9f()">Clear All Badges</button>
-        </details>
-        <details>
-          <summary>Badge Leaderboard</summary>
+        </section>
+        <section>
+          <h3>Badge Leaderboard</h3>
           <ul id="badge-leaderboard"></ul>
-        </details>
+        </section>
       </div>
     </div>
   </div>
 
+  <!-- Admin Button -->
   <button id="admin-btn" onclick="_0x4e8a()">Admin</button>
+
+  <!-- Crash Alert -->
   <div id="crash-alert">Chat Crashed! 😱</div>
+
+  <!-- Profile Modal -->
   <div id="profile-modal">
     <h3>Your Badges</h3>
     <ul id="badge-list"></ul>
