@@ -23,7 +23,8 @@
   <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Brainrot Rizzler Game</h1>
     <button id="brainrotButton" class="w-full py-4 text-xl font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-transform duration-200">Click for Brainrot!</button>
-    <div id="output" class="mt-4 text-2xl text-center text-gray-800"></div>
+    <div id="output" class="mt-4 text-2xl text-center text-gray-800">What's your brainrot level?</div>
+    <div id="warning" class="mt-2 text-lg text-center text-red-600 hidden"></div>
     <div id="level" class="mt-2 text-xl font-bold text-center text-red-500">Level: None</div>
     <div id="clickCount" class="mt-2 text-lg text-center text-gray-600">Clicks: 0</div>
     <div id="rizzPoints" class="mt-2 text-lg text-center text-gray-600">Rizz Points: 0</div>
@@ -105,6 +106,7 @@
 
     const button = document.getElementById('brainrotButton');
     const output = document.getElementById('output');
+    const warning = document.getElementById('warning');
     const levelDisplay = document.getElementById('level');
     const clickCountDisplay = document.getElementById('clickCount');
     const rizzPointsDisplay = document.getElementById('rizzPoints');
@@ -118,6 +120,8 @@
     let clickCount = 0;
     let rizzPoints = 0;
     let rizzPerClick = 1;
+    let lastClickTime = 0;
+    let clickTimes = [];
 
     function updateLevel() {
       let level = 'None';
@@ -147,7 +151,39 @@
       });
     }
 
+    function showWarning(message) {
+      warning.innerText = message;
+      warning.classList.remove('hidden');
+      setTimeout(() => warning.classList.add('hidden'), 3000);
+    }
+
+    function detectAutoclicker() {
+      const now = Date.now();
+      clickTimes.push(now);
+      if (clickTimes.length > 5) {
+        clickTimes.shift();
+      }
+      if (clickTimes.length >= 2) {
+        const timeDiff = clickTimes[clickTimes.length - 1] - clickTimes[clickTimes.length - 2];
+        if (timeDiff < 100) { // Less than 100ms between clicks
+          clickCount = 0;
+          rizzPoints = 0;
+          rizzPerClick = 1;
+          upgradeButtons.forEach(upgrade => (upgrade.purchased = false));
+          output.innerText = "Autoclicker detected! Progress reset.";
+          clickCountDisplay.innerText = 'Clicks: 0';
+          rizzPointsDisplay.innerText = 'Rizz Points: 0';
+          updateLevel();
+          updateUpgrades();
+          showWarning("No autoclickers allowed, Ohio vibes only!");
+          return true;
+        }
+      }
+      return false;
+    }
+
     button.addEventListener('click', () => {
+      if (detectAutoclicker()) return;
       clickCount++;
       rizzPoints += rizzPerClick;
       const randomPhrase = brainrotPhrases[Math.floor(Math.random() * brainrotPhrases.length)];
@@ -171,6 +207,7 @@
           upgrade.purchased = true;
           rizzPointsDisplay.innerText = `Rizz Points: ${rizzPoints}`;
           updateUpgrades();
+          showWarning(`Purchased ${upgrade.button.previousElementSibling.innerText}!`);
         }
       });
     });
@@ -179,12 +216,14 @@
       clickCount = 0;
       rizzPoints = 0;
       rizzPerClick = 1;
+      clickTimes = [];
       upgradeButtons.forEach(upgrade => (upgrade.purchased = false));
       output.innerText = "What's your brainrot level?";
       clickCountDisplay.innerText = 'Clicks: 0';
       rizzPointsDisplay.innerText = 'Rizz Points: 0';
       updateLevel();
       updateUpgrades();
+      showWarning("Progress reset, start fresh!");
     });
 
     updateLevel();
