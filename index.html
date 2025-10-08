@@ -7,12 +7,11 @@
 
 <!-- Firebase SDK -->
 <script type="module">
-  // Import Firebase modular SDK
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
   // Firebase config
-  const _0xcfg = {
+  const firebaseConfig = {
     apiKey: "AIzaSyB6jDSHBED66rlb5MWgV83s91cNuX51OlY",
     authDomain: "chat-v4-da99c.firebaseapp.com",
     databaseURL: "https://chat-v4-da99c-default-rtdb.firebaseio.com",
@@ -23,298 +22,227 @@
   };
 
   // Initialize Firebase
-  try {
-    const _0xapp = initializeApp(_0xcfg);
-    const _0xdb = getDatabase(_0xapp);
-    const _0xmsgs = ref(_0xdb, "messages");
-    const _0xbans = ref(_0xdb, "bannedUsers");
-    const _0xroles = ref(_0xdb, "roles");
-    const _0xevts = ref(_0xdb, "events");
-    const _0xusrs = ref(_0xdb, "users");
-    const _0xbdgs = ref(_0xdb, "badges");
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "messages");
+  const bannedRef = ref(db, "bannedUsers");
+  const rolesRef = ref(db, "roles");
+  const eventsRef = ref(db, "events");
+  const usersRef = ref(db, "users");
+  const badgesRef = ref(db, "badges");
+  const badgeAwardsRef = ref(db, "badgeAwards");
 
-    let _0xcurUsr = null;
-    let _0xcurDsp = '';
-    let _0xadm = false;
-    let _0xban = false;
-    let _0xfrz = false;
-    let _0xmute = false;
+  let currentUser = null;
+  let currentDisplayName = '';
+  let isAdmin = false;
+  let isBanned = false;
+  let isChatFrozen = false;
+  let isMuted = false;
 
-    // Anti-tampering: Disable console
-    const _0xcl = console;
-    _0xcl.log = _0xcl.error = _0xcl.warn = _0xcl.info = () => {};
+  // Login
+  window.login = async function() {
+    const username = document.getElementById('username-input').value.trim();
+    const displayName = document.getElementById('display-name-input').value.trim() || username;
+    if (!username) {
+      alert('Please enter a username');
+      return;
+    }
+    const userRef = ref(db, `users/${username}`);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      alert('Username already taken');
+      return;
+    }
+    await set(userRef, { displayName });
+    await remove(ref(db, `badges/${username}`)); // Clear badges on new login
+    currentUser = username;
+    currentDisplayName = displayName;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('chat-container').style.display = 'flex';
+    checkBanned(username);
+  };
 
-    // Anti-tampering: Detect DevTools with timing-based check
-    let _0xdev = false;
-    const _0xchkDev = () => {
-      const _0xstart = performance.now();
-      let _0xtrap = 0;
-      for (let _0xi = 0; _0xi < 1000; _0xi++) _0xtrap += Math.random();
-      const _0xend = performance.now();
-      const _0xtime = _0xend - _0xstart;
-      if (_0xtime > 50) {
-        if (!_0xdev) {
-          _0xdev = true;
-          const _0xwarn = document.createElement('div');
-          _0xwarn.style.position = 'fixed';
-          _0xwarn.style.top = '50%';
-          _0xwarn.style.left = '50%';
-          _0xwarn.style.transform = 'translate(-50%, -50%)';
-          _0xwarn.style.background = 'linear-gradient(45deg, #ff0000, #ff4444)';
-          _0xwarn.style.color = 'white';
-          _0xwarn.style.padding = '20px';
-          _0xwarn.style.borderRadius = '10px';
-          _0xwarn.style.zIndex = '9999';
-          _0xwarn.style.fontSize = '18px';
-          _0xwarn.style.fontWeight = 'bold';
-          _0xwarn.style.textAlign = 'center';
-          _0xwarn.textContent = 'Inspecting is forbidden! You will be redirected.';
-          document.body.appendChild(_0xwarn);
-          setTimeout(() => {
-            window.location.href = 'about:blank';
-          }, 2000);
-        }
-      }
-    };
-    setInterval(_0xchkDev, 1000);
+  // Check if user is banned
+  function checkBanned(username) {
+    onValue(ref(db, `bannedUsers/${username}`), (snapshot) => {
+      isBanned = snapshot.val() === true;
+      updateInputState();
+    }, (error) => console.error('Error checking ban status:', error));
+  }
 
-    // Anti-tampering: Detect DOM tampering
-    const _0xobs = new MutationObserver((muts) => {
-      muts.forEach(mut => {
-        if (mut.target.id === 'admin-panel' || mut.target.id === 'admin-controls') {
-          window.location.href = 'about:blank';
-        }
-      });
+  // Update message input state
+  function updateInputState() {
+    const msgInput = document.getElementById('msg');
+    const sendBtn = document.querySelector('.message-input button');
+    if (isBanned || isChatFrozen || isMuted) {
+      msgInput.disabled = true;
+      sendBtn.disabled = true;
+      if (isBanned) alert('You are banned from the chat.');
+      if (isChatFrozen && !isBanned) alert('Chat Crashed! 😱 Wait it out!');
+      if (isMuted && !isBanned && !isChatFrozen) alert('Chat is muted! Wait for the admin to unmute!');
+    } else {
+      msgInput.disabled = false;
+      sendBtn.disabled = false;
+    }
+  }
+
+  // Check event states
+  onValue(eventsRef, (snapshot) => {
+    const events = snapshot.val() || {};
+    isChatFrozen = events.chatFreeze?.active && events.chatFreeze.endTime > Date.now();
+    isMuted = events.globalMute?.active && events.globalMute.endTime > Date.now();
+    updateInputState();
+    document.getElementById('crash-alert').style.display = isChatFrozen ? 'block' : 'none';
+  });
+
+  // Send message
+  window.sendMessage = function() {
+    const input = document.getElementById('msg');
+    if (!input || !input.value.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+    if (!currentUser || !currentDisplayName) {
+      alert('Please enter a username');
+      return;
+    }
+    if (isBanned || isChatFrozen || isMuted) {
+      alert(isBanned ? 'You are banned.' : isChatFrozen ? 'Chat is frozen!' : 'Chat is muted!');
+      return;
+    }
+    push(messagesRef, {
+      username: currentUser,
+      displayName: currentDisplayName,
+      text: input.value.trim(),
+      timestamp: Date.now(),
+      isGlobal: false
+    }).then(() => {
+      input.value = '';
+    }).catch((error) => {
+      console.error('Error sending message:', error);
+      alert('Failed to send message: ' + error.message);
     });
-    _0xobs.observe(document.body, { childList: true, subtree: true });
+  };
 
-    // Obfuscation functions
-    const _0xdef = (_0xa) => _0xa.map(_0xi => String.fromCharCode(_0xi)).join('');
-    const _0xdummy = (_0xs) => {
-      let _0xh = 0;
-      for (let _0xi = 0; _0xi < _0xs.length; _0xi++) _0xh = (_0xh << 5) - _0xh + _0xs.charCodeAt(_0xi);
-      return (_0xh & 0xFF) % 100;
-    };
-
-    // Admin verification
-    window._0x1a2b = function() {
-      const _0xcode = document.getElementById('admin-code')?.value?.trim() || '';
-      const _0xa1 = [49, 49, 55];
-      const _0xa2 = [49, 49, 55];
-      const _0xdat = _0xa1.concat(_0xa2);
-      const _0xfake = [99, 99, 99, 99];
-      const _0xtmp = Math.random() * 100 + (_0xfake[0] % 10);
-      _0xdummy('decoy');
-      eval(`if (_0xtmp > 0 && _0xcode === _0xdef(_0xdat)) {
-        _0xadm = true;
-        document.getElementById('admin-password').style.display = 'none';
-        document.getElementById('admin-controls').style.display = 'block';
+  // Admin functions
+  window.banUser = function() {
+    if (!isAdmin) return;
+    const banInput = document.getElementById('ban-input').value.trim();
+    if (!banInput) {
+      alert('Please enter a display name to ban');
+      return;
+    }
+    findUserByDisplayName(banInput, (username) => {
+      if (username) {
+        set(ref(db, `bannedUsers/${username}`), true)
+          .then(() => { banInput.value = ''; })
+          .catch((error) => console.error('Error banning user:', error));
       } else {
-        alert('Wrong code');
-      }`);
-    };
-
-    // Login
-    window._0x7c8d = async function() {
-      const _0xusr = document.getElementById('username-input')?.value?.trim();
-      const _0xdsp = document.getElementById('display-name-input')?.value?.trim() || _0xusr;
-      if (!_0xusr) {
-        alert('Please enter a username');
-        return;
+        alert('User not found');
       }
-      try {
-        const _0xusrRef = ref(_0xdb, `users/${_0xusr}`);
-        const _0xsnap = await get(_0xusrRef);
-        if (_0xsnap.exists()) {
-          alert('Username already taken');
-          return;
-        }
-        await set(_0xusrRef, { displayName: _0xdsp });
-        await remove(ref(_0xdb, `badges/${_0xusr}`));
-        _0xcurUsr = _0xusr;
-        _0xcurDsp = _0xdsp;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('chat-container').style.display = 'flex';
-        _0xchkBan(_0xusr);
-      } catch (_0xe) {
-        alert('Login failed: ' + _0xe.message);
-      }
-    };
+    });
+  };
 
-    // Check if user is banned
-    const _0xchkBan = (_0xusr) => {
-      onValue(ref(_0xdb, `bannedUsers/${_0xusr}`), (_0xsnap) => {
-        _0xban = _0xsnap.val() === true;
-        _0xupdInp();
-      }, (_0xe) => alert('Error checking ban status: ' + _0xe.message));
-    };
-
-    // Update message input state
-    const _0xupdInp = () => {
-      const _0xmsgInp = document.getElementById('msg');
-      const _0xsendBtn = document.querySelector('.message-input button');
-      if (!_0xmsgInp || !_0xsendBtn) return;
-      if (_0xban || _0xfrz || _0xmute) {
-        _0xmsgInp.disabled = true;
-        _0xsendBtn.disabled = true;
-        if (_0xban) alert('You are banned from the chat.');
-        else if (_0xfrz) alert('Chat Crashed! 😱 Wait it out!');
-        else if (_0xmute) alert('Chat is muted! Wait for the admin to unmute!');
+  window.unbanUser = function() {
+    if (!isAdmin) return;
+    const unbanInput = document.getElementById('unban-input').value.trim();
+    if (!unbanInput) {
+      alert('Please enter a display name to unban');
+      return;
+    }
+    findUserByDisplayName(unbanInput, (username) => {
+      if (username) {
+        remove(ref(db, `bannedUsers/${username}`))
+          .then(() => { unbanInput.value = ''; })
+          .catch((error) => console.error('Error unbanning user:', error));
       } else {
-        _0xmsgInp.disabled = false;
-        _0xsendBtn.disabled = false;
+        alert('User not found');
       }
-    };
+    });
+  };
 
-    // Check event states
-    onValue(_0xevts, (_0xsnap) => {
-      const _0xev = _0xsnap.val() || {};
-      _0xfrz = _0xev.chatFreeze?.active && _0xev.chatFreeze.endTime > Date.now();
-      _0xmute = _0xev.globalMute?.active && _0xev.globalMute.endTime > Date.now();
-      _0xupdInp();
-      document.getElementById('crash-alert').style.display = _0xfrz ? 'block' : 'none';
-    }, (_0xe) => alert('Error checking events: ' + _0xe.message));
+  window.clearChat = function() {
+    if (!isAdmin) return;
+    if (confirm('Clear all messages?')) {
+      remove(messagesRef)
+        .catch((error) => console.error('Error clearing chat:', error));
+    }
+  };
 
-    // Send message
-    window._0x3e4f = function() {
-      const _0xinp = document.getElementById('msg');
-      if (!_0xinp || !_0xinp.value.trim()) {
-        alert('Please enter a message');
+  window.sendGlobalMessage = function() {
+    if (!isAdmin) return;
+    const globalInput = document.getElementById('global-input');
+    const styleSelect = document.getElementById('global-style');
+    if (!globalInput.value.trim()) {
+      alert('Please enter a global message');
+      return;
+    }
+    push(messagesRef, {
+      username: 'admin',
+      displayName: 'ADMIN',
+      text: globalInput.value.trim(),
+      timestamp: Date.now(),
+      isGlobal: true,
+      style: styleSelect.value
+    }).then(() => {
+      globalInput.value = '';
+    }).catch((error) => console.error('Error sending global message:', error));
+  };
+
+  window.assignRole = function() {
+    if (!isAdmin) return;
+    const roleInput = document.getElementById('role-input').value.trim();
+    const roleSelect = document.getElementById('role-select').value;
+    if (!roleInput) {
+      alert('Please enter a display name and select a role');
+      return;
+    }
+    findUserByDisplayName(roleInput, (username) => {
+      if (username) {
+        const roles = {
+          'vip': { name: 'VIP', color: 'gold', emoji: '👑' },
+          'jester': { name: 'Jester', color: 'linear-gradient(45deg, red, blue, green)', emoji: '🤡' },
+          'chaos-lord': { name: 'Chaos Lord', color: '#ff0000', emoji: '😈' }
+        };
+        set(ref(db, `roles/${username}`), {
+          role: roles[roleSelect].name,
+          color: roles[roleSelect].color,
+          emoji: roles[roleSelect].emoji,
+          expires: Date.now() + 60 * 60 * 1000
+        }).then(() => {
+          push(messagesRef, {
+            username: 'admin',
+            displayName: 'ADMIN',
+            text: `${roleInput} is now a ${roles[roleSelect].name}! ${roles[roleSelect].emoji}`,
+            timestamp: Date.now(),
+            isGlobal: true,
+            style: 'red-bold'
+          });
+          roleInput.value = '';
+        }).catch((error) => console.error('Error assigning role:', error));
+      } else {
+        alert('User not found');
+      }
+    });
+  };
+
+  window.awardBadge = function() {
+    if (!isAdmin) return;
+    const badgeInput = document.getElementById('badge-input').value.trim();
+    const badgeSelect = document.getElementById('badge-select').value;
+    const isTemporary = document.getElementById('badge-temporary').checked;
+    if (!badgeInput) {
+      alert('Please enter a display name and select a badge');
+      return;
+    }
+    checkDailyBadgeLimit((canAward) => {
+      if (!canAward) {
+        alert('Daily badge limit (5) reached!');
         return;
       }
-      if (!_0xcurUsr || !_0xcurDsp) {
-        alert('Please enter a username');
-        return;
-      }
-      if (_0xban || _0xfrz || _0xmute) {
-        alert(_0xban ? 'You are banned.' : _0xfrz ? 'Chat is frozen!' : 'Chat is muted!');
-        return;
-      }
-      push(_0xmsgs, {
-        username: _0xcurUsr,
-        displayName: _0xcurDsp,
-        text: _0xinp.value.trim(),
-        timestamp: Date.now(),
-        isGlobal: false
-      }).then(() => {
-        _0xinp.value = '';
-      }).catch((_0xe) => alert('Failed to send message: ' + _0xe.message));
-    };
-
-    // Admin functions
-    window._0x9b1c = function() {
-      if (!_0xadm) return;
-      const _0xbanInp = document.getElementById('ban-input')?.value?.trim();
-      if (!_0xbanInp) {
-        alert('Please enter a display name to ban');
-        return;
-      }
-      _0xfindUsr(_0xbanInp, (_0xusr) => {
-        if (_0xusr) {
-          set(ref(_0xdb, `bannedUsers/${_0xusr}`), true)
-            .then(() => { _0xbanInp.value = ''; })
-            .catch((_0xe) => alert('Error banning user: ' + _0xe.message));
-        } else {
-          alert('User not found');
-        }
-      });
-    };
-
-    window._0x2d5e = function() {
-      if (!_0xadm) return;
-      const _0xunbanInp = document.getElementById('unban-input')?.value?.trim();
-      if (!_0xunbanInp) {
-        alert('Please enter a display name to unban');
-        return;
-      }
-      _0xfindUsr(_0xunbanInp, (_0xusr) => {
-        if (_0xusr) {
-          remove(ref(_0xdb, `bannedUsers/${_0xusr}`))
-            .then(() => { _0xunbanInp.value = ''; })
-            .catch((_0xe) => alert('Error unbanning user: ' + _0xe.message));
-        } else {
-          alert('User not found');
-        }
-      });
-    };
-
-    window._0x6f7a = function() {
-      if (!_0xadm) return;
-      if (confirm('Clear all messages?')) {
-        remove(_0xmsgs)
-          .catch((_0xe) => alert('Error clearing chat: ' + _0xe.message));
-      }
-    };
-
-    window._0x8c3d = function() {
-      if (!_0xadm) return;
-      const _0xglbInp = document.getElementById('global-input');
-      const _0xstySel = document.getElementById('global-style');
-      if (!_0xglbInp?.value?.trim()) {
-        alert('Please enter a global message');
-        return;
-      }
-      push(_0xmsgs, {
-        username: 'admin',
-        displayName: 'ADMIN',
-        text: _0xglbInp.value.trim(),
-        timestamp: Date.now(),
-        isGlobal: true,
-        style: _0xstySel?.value || 'red-bold'
-      }).then(() => {
-        _0xglbInp.value = '';
-      }).catch((_0xe) => alert('Failed to send global message: ' + _0xe.message));
-    };
-
-    window._0x4b9e = function() {
-      if (!_0xadm) return;
-      const _0xroleInp = document.getElementById('role-input')?.value?.trim();
-      const _0xroleSel = document.getElementById('role-select')?.value;
-      if (!_0xroleInp || !_0xroleSel) {
-        alert('Please enter a display name and select a role');
-        return;
-      }
-      _0xfindUsr(_0xroleInp, (_0xusr) => {
-        if (_0xusr) {
-          const _0xroles = {
-            'vip': { name: 'VIP', color: 'gold', emoji: '👑' },
-            'jester': { name: 'Jester', color: 'linear-gradient(45deg, red, blue, green)', emoji: '🤡' },
-            'chaos-lord': { name: 'Chaos Lord', color: '#ff0000', emoji: '😈' }
-          };
-          set(ref(_0xdb, `roles/${_0xusr}`), {
-            role: _0xroles[_0xroleSel].name,
-            color: _0xroles[_0xroleSel].color,
-            emoji: _0xroles[_0xroleSel].emoji,
-            expires: Date.now() + 60 * 60 * 1000
-          }).then(() => {
-            push(_0xmsgs, {
-              username: 'admin',
-              displayName: 'ADMIN',
-              text: `${_0xroleInp} is now a ${_0xroles[_0xroleSel].name}! ${_0xroles[_0xroleSel].emoji}`,
-              timestamp: Date.now(),
-              isGlobal: true,
-              style: 'red-bold'
-            });
-            _0xroleInp.value = '';
-          }).catch((_0xe) => alert('Error assigning role: ' + _0xe.message));
-        } else {
-          alert('User not found');
-        }
-      });
-    };
-
-    window._0x5a2f = function() {
-      if (!_0xadm) return;
-      const _0xbadgeInp = document.getElementById('badge-input')?.value?.trim();
-      const _0xbadgeSel = document.getElementById('badge-select')?.value;
-      const _0xtmp = document.getElementById('badge-temporary')?.checked;
-      if (!_0xbadgeInp || !_0xbadgeSel) {
-        alert('Please enter a display name and select a badge');
-        return;
-      }
-      _0xfindUsr(_0xbadgeInp, (_0xusr) => {
-        if (_0xusr) {
-          const _0xbdgs = {
+      findUserByDisplayName(badgeInput, (username) => {
+        if (username) {
+          const badges = {
             'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
             'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
             'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
@@ -326,139 +254,153 @@
             'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
             'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
           };
-          const _0xbRef = ref(_0xdb, `badges/${_0xusr}/${_0xbadgeSel}`);
-          set(_0xbRef, {
-            badge: _0xbdgs[_0xbadgeSel].name,
-            emoji: _0xbdgs[_0xbadgeSel].emoji,
-            style: _0xbdgs[_0xbadgeSel].style,
-            expires: _0xtmp ? Date.now() + 60 * 60 * 1000 : null
+          const badgeRef = ref(db, `badges/${username}/${badgeSelect}`);
+          set(badgeRef, {
+            badge: badges[badgeSelect].name,
+            emoji: badges[badgeSelect].emoji,
+            style: badges[badgeSelect].style,
+            expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
           }).then(() => {
-            push(_0xmsgs, {
+            const date = new Date().toISOString().split('T')[0];
+            const awardRef = ref(db, `badgeAwards/${date}`);
+            onValue(awardRef, (snapshot) => {
+              const data = snapshot.val() || { count: 0, awards: [] };
+              data.count += 1;
+              data.awards.push({ username, badge: badges[badgeSelect].name, timestamp: Date.now() });
+              set(awardRef, data);
+            }, { onlyOnce: true });
+            push(messagesRef, {
               username: 'admin',
               displayName: 'ADMIN',
-              text: `${_0xbadgeInp} earned ${_0xbdgs[_0xbadgeSel].name}! ${_0xbdgs[_0xbadgeSel].emoji}`,
+              text: `${badgeInput} earned ${badges[badgeSelect].name}! ${badges[badgeSelect].emoji}`,
               timestamp: Date.now(),
               isGlobal: true,
               style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
             });
-            _0xbadgeInp.value = '';
-          }).catch((_0xe) => alert('Error awarding badge: ' + _0xe.message));
+            badgeInput.value = '';
+          }).catch((error) => console.error('Error awarding badge:', error));
         } else {
           alert('User not found');
         }
       });
-    };
+    });
+  };
 
-    window._0x3c7b = function() {
-      if (!_0xadm) return;
-      const _0xremInp = document.getElementById('remove-badge-input')?.value?.trim();
-      const _0xremSel = document.getElementById('remove-badge-select')?.value;
-      if (!_0xremInp || !_0xremSel) {
-        alert('Please enter a display name and select a badge to remove');
-        return;
+  window.removeBadge = function() {
+    if (!isAdmin) return;
+    const removeInput = document.getElementById('remove-badge-input').value.trim();
+    const removeSelect = document.getElementById('remove-badge-select').value;
+    if (!removeInput || !removeSelect) {
+      alert('Please enter a display name and select a badge to remove');
+      return;
+    }
+    findUserByDisplayName(removeInput, (username) => {
+      if (username) {
+        remove(ref(db, `badges/${username}/${removeSelect}`))
+          .then(() => {
+            push(messagesRef, {
+              username: 'admin',
+              displayName: 'ADMIN',
+              text: `${removeInput} lost their ${removeSelect.replace('-', ' ')} badge! 😢`,
+              timestamp: Date.now(),
+              isGlobal: true,
+              style: 'red-bold'
+            });
+            removeInput.value = '';
+          })
+          .catch((error) => console.error('Error removing badge:', error));
+      } else {
+        alert('User not found');
       }
-      _0xfindUsr(_0xremInp, (_0xusr) => {
-        if (_0xusr) {
-          remove(ref(_0xdb, `badges/${_0xusr}/${_0xremSel}`))
+    });
+  };
+
+  window.clearUserBadges = function() {
+    if (!isAdmin) return;
+    const clearInput = document.getElementById('clear-badges-input').value.trim();
+    if (!clearInput) {
+      alert('Please enter a display name to clear badges');
+      return;
+    }
+    if (confirm(`Clear all badges for ${clearInput}?`)) {
+      findUserByDisplayName(clearInput, (username) => {
+        if (username) {
+          remove(ref(db, `badges/${username}`))
             .then(() => {
-              push(_0xmsgs, {
+              push(messagesRef, {
                 username: 'admin',
                 displayName: 'ADMIN',
-                text: `${_0xremInp} lost their ${_0xremSel.replace('-', ' ')} badge! 😢`,
+                text: `${clearInput}'s badges wiped! 😱`,
                 timestamp: Date.now(),
                 isGlobal: true,
                 style: 'red-bold'
               });
-              _0xremInp.value = '';
+              clearInput.value = '';
             })
-            .catch((_0xe) => alert('Error removing badge: ' + _0xe.message));
+            .catch((error) => console.error('Error clearing badges:', error));
         } else {
           alert('User not found');
         }
       });
-    };
+    }
+  };
 
-    window._0x8e9f = function() {
-      if (!_0xadm) return;
-      const _0xclrInp = document.getElementById('clear-badges-input')?.value?.trim();
-      if (!_0xclrInp) {
-        alert('Please enter a display name to clear badges');
-        return;
-      }
-      if (confirm(`Clear all badges for ${_0xclrInp}?`)) {
-        _0xfindUsr(_0xclrInp, (_0xusr) => {
-          if (_0xusr) {
-            remove(ref(_0xdb, `badges/${_0xusr}`))
-              .then(() => {
-                push(_0xmsgs, {
-                  username: 'admin',
-                  displayName: 'ADMIN',
-                  text: `${_0xclrInp}'s badges wiped! 😱`,
-                  timestamp: Date.now(),
-                  isGlobal: true,
-                  style: 'red-bold'
-                });
-                _0xclrInp.value = '';
-              })
-              .catch((_0xe) => alert('Error clearing badges: ' + _0xe.message));
-          } else {
-            alert('User not found');
-          }
+  window.globalMute = function() {
+    if (!isAdmin) return;
+    if (isMuted) {
+      alert('Chat is already muted!');
+      return;
+    }
+    isMuted = true;
+    set(ref(db, 'events/globalMute'), { active: true, endTime: Date.now() + 60 * 1000 })
+      .then(() => {
+        push(messagesRef, {
+          username: 'admin',
+          displayName: 'ADMIN',
+          text: '🔇 CHAT MUTED for 1 minute! Only admins can talk!',
+          timestamp: Date.now(),
+          isGlobal: true,
+          style: 'neon-flash'
         });
-      }
-    };
-
-    window._0x7d2a = function() {
-      if (!_0xadm) return;
-      if (_0xmute) {
-        alert('Chat is already muted!');
-        return;
-      }
-      _0xmute = true;
-      set(ref(_0xdb, 'events/globalMute'), { active: true, endTime: Date.now() + 60 * 1000 })
+      })
+      .catch((error) => console.error('Error muting chat:', error));
+    setTimeout(() => {
+      isMuted = false;
+      set(ref(db, 'events/globalMute'), { active: false })
         .then(() => {
-          push(_0xmsgs, {
+          push(messagesRef, {
             username: 'admin',
             displayName: 'ADMIN',
-            text: '🔇 CHAT MUTED for 1 minute! Only admins can talk!',
+            text: '🔊 Chat unmuted! Let the chaos resume!',
             timestamp: Date.now(),
             isGlobal: true,
-            style: 'neon-flash'
+            style: 'rainbow-shake'
           });
         })
-        .catch((_0xe) => alert('Error muting chat: ' + _0xe.message));
-      setTimeout(() => {
-        _0xmute = false;
-        set(ref(_0xdb, 'events/globalMute'), { active: false })
-          .then(() => {
-            push(_0xmsgs, {
-              username: 'admin',
-              displayName: 'ADMIN',
-              text: '🔊 Chat unmuted! Let the chaos resume!',
-              timestamp: Date.now(),
-              isGlobal: true,
-              style: 'rainbow-shake'
-            });
-          })
-          .catch((_0xe) => alert('Error unmuting chat: ' + _0xe.message));
-      }, 60 * 1000);
-    };
+        .catch((error) => console.error('Error unmuting chat:', error));
+    }, 60 * 1000);
+  };
 
-    window._0x9f1e = function() {
-      if (!_0xadm) return;
-      const _0xmassInp = document.getElementById('mass-badge-input')?.value?.trim();
-      const _0xmassSel = document.getElementById('mass-badge-select')?.value;
-      const _0xtmp = document.getElementById('mass-badge-temporary')?.checked;
-      if (!_0xmassInp || !_0xmassSel) {
-        alert('Please enter display names (comma-separated) and select a badge');
+  window.massBadgeAward = function() {
+    if (!isAdmin) return;
+    const massInput = document.getElementById('mass-badge-input').value.trim();
+    const massSelect = document.getElementById('mass-badge-select').value;
+    const isTemporary = document.getElementById('mass-badge-temporary').checked;
+    if (!massInput) {
+      alert('Please enter display names (comma-separated)');
+      return;
+    }
+    const displayNames = massInput.split(',').map(name => name.trim()).filter(name => name);
+    checkDailyBadgeLimit((canAward, remaining) => {
+      if (displayNames.length > remaining) {
+        alert(`Only ${remaining} badges can be awarded today!`);
         return;
       }
-      const _0xnames = _0xmassInp.split(',').map(_0xn => _0xn.trim()).filter(_0xn => _0xn);
-      _0xnames.forEach((_0xname, _0xi) => {
+      displayNames.forEach((displayName, index) => {
         setTimeout(() => {
-          _0xfindUsr(_0xname, (_0xusr) => {
-            if (_0xusr) {
-              const _0xbdgs = {
+          findUserByDisplayName(displayName, (username) => {
+            if (username) {
+              const badges = {
                 'legendary-troll': { name: 'Legendary Troll', emoji: '🏆', style: 'legendary-troll' },
                 'meme-overlord': { name: 'Meme Overlord', emoji: '👁️‍🗨️', style: 'meme-overlord' },
                 'chaos-titan': { name: 'Chaos Titan', emoji: '😈', style: 'chaos-titan' },
@@ -470,203 +412,226 @@
                 'galaxy-brain': { name: 'Galaxy Brain', emoji: '🧠', style: 'galaxy-brain' },
                 'yeet-lord': { name: 'Yeet Lord', emoji: '🚀', style: 'yeet-lord' }
               };
-              const _0xbRef = ref(_0xdb, `badges/${_0xusr}/${_0xmassSel}`);
-              set(_0xbRef, {
-                badge: _0xbdgs[_0xmassSel].name,
-                emoji: _0xbdgs[_0xmassSel].emoji,
-                style: _0xbdgs[_0xmassSel].style,
-                expires: _0xtmp ? Date.now() + 60 * 60 * 1000 : null
+              const badgeRef = ref(db, `badges/${username}/${massSelect}`);
+              set(badgeRef, {
+                badge: badges[massSelect].name,
+                emoji: badges[massSelect].emoji,
+                style: badges[massSelect].style,
+                expires: isTemporary ? Date.now() + 60 * 60 * 1000 : null
               }).then(() => {
-                push(_0xmsgs, {
+                const date = new Date().toISOString().split('T')[0];
+                const awardRef = ref(db, `badgeAwards/${date}`);
+                onValue(awardRef, (snapshot) => {
+                  const data = snapshot.val() || { count: 0, awards: [] };
+                  data.count += 1;
+                  data.awards.push({ username, badge: badges[massSelect].name, timestamp: Date.now() });
+                  set(awardRef, data);
+                }, { onlyOnce: true });
+                push(messagesRef, {
                   username: 'admin',
                   displayName: 'ADMIN',
-                  text: `${_0xname} earned ${_0xbdgs[_0xmassSel].name}! ${_0xbdgs[_0xmassSel].emoji}`,
+                  text: `${displayName} earned ${badges[massSelect].name}! ${badges[massSelect].emoji}`,
                   timestamp: Date.now(),
                   isGlobal: true,
                   style: ['red-bold', 'neon-flash', 'blue-italic', 'rainbow-shake'][Math.floor(Math.random() * 4)]
                 });
-              }).catch((_0xe) => alert('Error awarding badge: ' + _0xe.message));
+              }).catch((error) => console.error('Error awarding badge:', error));
             }
           });
-        }, _0xi * 1000);
+        }, index * 1000); // Stagger to avoid rate limits
       });
-      _0xmassInp.value = '';
-    };
+      massInput.value = '';
+    });
+  };
 
-    window._0x2b6c = function() {
-      if (!_0xadm) return;
-      if (_0xfrz) {
-        alert('Chat is already frozen!');
-        return;
-      }
-      _0xfrz = true;
-      set(ref(_0xdb, 'events/chatFreeze'), { active: true, endTime: Date.now() + 30 * 1000 })
+  window.freezeChat = function() {
+    if (!isAdmin) return;
+    if (isChatFrozen) {
+      alert('Chat is already frozen!');
+      return;
+    }
+    isChatFrozen = true;
+    set(ref(db, 'events/chatFreeze'), { active: true, endTime: Date.now() + 30 * 1000 })
+      .then(() => {
+        push(messagesRef, {
+          username: 'admin',
+          displayName: 'ADMIN',
+          text: '😱 CHAT CRASHED! Frozen for 30 seconds!',
+          timestamp: Date.now(),
+          isGlobal: true,
+          style: 'neon-flash'
+        });
+      })
+      .catch((error) => console.error('Error freezing chat:', error));
+    setTimeout(() => {
+      isChatFrozen = false;
+      set(ref(db, 'events/chatFreeze'), { active: false })
         .then(() => {
-          push(_0xmsgs, {
+          push(messagesRef, {
             username: 'admin',
             displayName: 'ADMIN',
-            text: '😱 CHAT CRASHED! Frozen for 30 seconds!',
+            text: '😂 Chat unfrozen! Gotcha!',
             timestamp: Date.now(),
             isGlobal: true,
-            style: 'neon-flash'
+            style: 'rainbow-shake'
           });
         })
-        .catch((_0xe) => alert('Error freezing chat: ' + _0xe.message));
-      setTimeout(() => {
-        _0xfrz = false;
-        set(ref(_0xdb, 'events/chatFreeze'), { active: false })
-          .then(() => {
-            push(_0xmsgs, {
-              username: 'admin',
-              displayName: 'ADMIN',
-              text: '😂 Chat unfrozen! Gotcha!',
-              timestamp: Date.now(),
-              isGlobal: true,
-              style: 'rainbow-shake'
-            });
-          })
-          .catch((_0xe) => alert('Error unfreezing chat: ' + _0xe.message));
-      }, 30 * 1000);
-    };
+        .catch((error) => console.error('Error unfreezing chat:', error));
+    }, 30 * 1000);
+  };
 
-    window._0x4e8a = function() {
-      const _0xpnl = document.getElementById('admin-panel');
-      if (_0xpnl) _0xpnl.style.display = _0xpnl.style.display === 'none' ? 'block' : 'none';
-    };
+  window.verifyAdmin = function(code) {
+    if (code === '1010') {
+      isAdmin = true;
+      document.getElementById('admin-password').style.display = 'none';
+      document.getElementById('admin-controls').style.display = 'block';
+    } else {
+      alert('Wrong code');
+    }
+  };
 
-    // Show profile
-    window._0x6d3f = function() {
-      if (!_0xcurUsr) {
-        alert('Please enter a username');
-        return;
-      }
-      const _0xmod = document.getElementById('profile-modal');
-      const _0xbList = document.getElementById('badge-list');
-      if (!_0xmod || !_0xbList) return;
-      _0xbList.innerHTML = '';
-      onValue(ref(_0xdb, `badges/${_0xcurUsr}`), (_0xsnap) => {
-        const _0xbdgs = _0xsnap.val() || {};
-        Object.values(_0xbdgs).forEach(_0xb => {
-          if (!_0xb.expires || _0xb.expires > Date.now()) {
-            const _0xli = document.createElement('li');
-            _0xli.textContent = `${_0xb.emoji} ${_0xb.badge}`;
-            _0xli.className = `badge-${_0xb.style}`;
-            _0xbList.appendChild(_0xli);
-          }
-        });
-        _0xmod.style.display = 'block';
-      }, { onlyOnce: true }, (_0xe) => alert('Error fetching badges: ' + _0xe.message));
-    };
+  window.toggleAdminPanel = function() {
+    const panel = document.getElementById('admin-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  };
 
-    window._0x9c4b = function() {
-      const _0xmod = document.getElementById('profile-modal');
-      if (_0xmod) _0xmod.style.display = 'none';
-    };
-
-    // Find user by display name
-    const _0xfindUsr = (_0xdsp, _0xcb) => {
-      onValue(_0xusrs, (_0xsnap) => {
-        let _0xusr = null;
-        _0xsnap.forEach((_0xchild) => {
-          if (_0xchild.val().displayName === _0xdsp) {
-            _0xusr = _0xchild.key;
-          }
-        });
-        _0xcb(_0xusr);
-      }, { onlyOnce: true }, (_0xe) => alert('Error finding user: ' + _0xe.message));
-    };
-
-    // Display messages
-    onChildAdded(_0xmsgs, (_0xsnap) => {
-      const _0xmsg = _0xsnap.val();
-      const _0xlist = document.getElementById('messages');
-      if (_0xlist && _0xmsg?.text && _0xmsg.displayName) {
-        const _0xli = document.createElement('li');
-        let _0xmsgTxt = `${_0xmsg.displayName}: ${_0xmsg.text}`;
-        
-        if (_0xmsg.isGlobal) {
-          _0xli.className = `global-${_0xmsg.style || 'red-bold'}`;
-          _0xli.textContent = _0xmsgTxt;
-        } else {
-          onValue(ref(_0xdb, `roles/${_0xmsg.username}`), (_0xroleSnap) => {
-            const _0xrole = _0xroleSnap.val();
-            if (_0xrole && _0xrole.expires > Date.now()) {
-              _0xli.style.color = _0xrole.color;
-              _0xli.style.background = _0xrole.color.includes('gradient') ? _0xrole.color : 'transparent';
-              _0xmsgTxt = `${_0xrole.emoji} ${_0xmsg.displayName}: ${_0xmsg.text}`;
-            }
-            onValue(ref(_0xdb, `badges/${_0xmsg.username}`), (_0xbSnap) => {
-              const _0xbdgs = _0xbSnap.val() || {};
-              const _0xactBdgs = Object.values(_0xbdgs).filter(_0xb => !_0xb.expires || _0xb.expires > Date.now());
-              if (_0xactBdgs.length > 0) {
-                const _0xb = _0xactBdgs[_0xactBdgs.length - 1];
-                _0xli.className = `badge-${_0xb.style}`;
-                _0xmsgTxt = `${_0xb.emoji} ${_0xmsg.displayName}: ${_0xmsg.text}`;
-              }
-              _0xli.textContent = _0xmsgTxt;
-            }, { onlyOnce: true });
-          }, { onlyOnce: true });
+  // Show profile
+  window.showProfile = function() {
+    if (!currentUser) {
+      alert('Please enter a username');
+      return;
+    }
+    const profileModal = document.getElementById('profile-modal');
+    const badgeList = document.getElementById('badge-list');
+    badgeList.innerHTML = '';
+    onValue(ref(db, `badges/${currentUser}`), (snapshot) => {
+      const badges = snapshot.val() || {};
+      Object.values(badges).forEach(badge => {
+        if (!badge.expires || badge.expires > Date.now()) {
+          const li = document.createElement('li');
+          li.textContent = `${badge.emoji} ${badge.badge}`;
+          li.className = `badge-${badge.style}`;
+          badgeList.appendChild(li);
         }
-        
-        _0xli.style.padding = '8px';
-        _0xli.style.borderBottom = '1px solid #ccc';
-        _0xlist.appendChild(_0xli);
-        _0xlist.scrollTop = _0xlist.scrollHeight;
-      }
-    }, (_0xe) => alert('Error listening to messages: ' + _0xe.message));
+      });
+      profileModal.style.display = 'block';
+    }, { onlyOnce: true });
+  };
 
-    // Display banned users
-    onValue(_0xbans, (_0xsnap) => {
-      const _0xbanList = document.getElementById('banned-users');
-      if (_0xbanList) {
-        _0xbanList.innerHTML = '';
-        _0xsnap.forEach((_0xchild) => {
-          onValue(ref(_0xdb, `users/${_0xchild.key}`), (_0xusrSnap) => {
-            const _0xusr = _0xusrSnap.val();
-            if (_0xusr) {
-              const _0xli = document.createElement('li');
-              _0xli.textContent = _0xusr.displayName;
-              _0xbanList.appendChild(_0xli);
-            }
-          }, { onlyOnce: true });
-        });
-      }
-    }, (_0xe) => alert('Error fetching banned users: ' + _0xe.message));
+  window.closeProfile = function() {
+    document.getElementById('profile-modal').style.display = 'none';
+  };
 
-    // Display badge leaderboard
-    const _0xupdLdr = () => {
-      const _0xldr = document.getElementById('badge-leaderboard');
-      if (!_0xldr) return;
-      onValue(_0xbdgs, (_0xsnap) => {
-        const _0xcounts = [];
-        _0xsnap.forEach((_0xusrSnap) => {
-          const _0xbdgs = _0xusrSnap.val() || {};
-          const _0xcnt = Object.values(_0xbdgs).filter(_0xb => !_0xb.expires || _0xb.expires > Date.now()).length;
-          onValue(ref(_0xdb, `users/${_0xusrSnap.key}`), (_0xusrSnap2) => {
-            const _0xusr = _0xusrSnap2.val();
-            if (_0xusr) {
-              _0xcounts.push({ displayName: _0xusr.displayName, count: _0xcnt });
-            }
-          }, { onlyOnce: true });
-        });
-        _0xcounts.sort((_0xa, _0xb) => _0xb.count - _0xa.count);
-        _0xldr.innerHTML = _0xcounts.slice(0, 3).map(_0xc => `<li>${_0xc.displayName}: ${_0xc.count} badges</li>`).join('');
-      }, { onlyOnce: true }, (_0xe) => alert('Error updating leaderboard: ' + _0xe.message));
-    };
-
-    // Enter key for messages
-    document.addEventListener('DOMContentLoaded', () => {
-      const _0xmsgInp = document.getElementById('msg');
-      if (_0xmsgInp) {
-        _0xmsgInp.addEventListener('keypress', (_0xe) => {
-          if (_0xe.key === 'Enter') _0x3e4f();
-        });
-      }
-      _0xupdLdr();
-    });
-  } catch (_0xe) {
-    alert('Failed to initialize Firebase: ' + _0xe.message);
+  // Find user by display name
+  function findUserByDisplayName(displayName, callback) {
+    onValue(usersRef, (snapshot) => {
+      let foundUsername = null;
+      snapshot.forEach((child) => {
+        if (child.val().displayName === displayName) {
+          foundUsername = child.key;
+        }
+      });
+      callback(foundUsername);
+    }, { onlyOnce: true });
   }
+
+  // Check daily badge limit
+  function checkDailyBadgeLimit(callback) {
+    const date = new Date().toISOString().split('T')[0];
+    onValue(ref(db, `badgeAwards/${date}`), (snapshot) => {
+      const data = snapshot.val() || { count: 0 };
+      callback(data.count < 5, 5 - data.count);
+    }, { onlyOnce: true });
+  }
+
+  // Display messages
+  onChildAdded(messagesRef, (snapshot) => {
+    const msg = snapshot.val();
+    const list = document.getElementById('messages');
+    if (list && msg?.text && msg.displayName) {
+      const li = document.createElement('li');
+      let messageText = `${msg.displayName}: ${msg.text}`;
+      
+      if (msg.isGlobal) {
+        li.className = `global-${msg.style || 'red-bold'}`;
+      } else {
+        onValue(ref(db, `roles/${msg.username}`), (roleSnapshot) => {
+          const role = roleSnapshot.val();
+          if (role && role.expires > Date.now()) {
+            li.style.color = role.color;
+            li.style.background = role.color.includes('gradient') ? role.color : 'transparent';
+            messageText = `${role.emoji} ${msg.displayName}: ${msg.text}`;
+          }
+        }, { onlyOnce: true });
+        onValue(ref(db, `badges/${msg.username}`), (badgeSnapshot) => {
+          const badges = badgeSnapshot.val() || {};
+          const activeBadges = Object.values(badges).filter(b => !b.expires || b.expires > Date.now());
+          if (activeBadges.length > 0) {
+            const badge = activeBadges[activeBadges.length - 1]; // Latest badge
+            li.className = `badge-${badge.style}`;
+            messageText = `${badge.emoji} ${msg.displayName}: ${msg.text}`;
+          }
+          li.textContent = messageText;
+        }, { onlyOnce: true });
+      }
+      
+      li.style.padding = '8px';
+      li.style.borderBottom = '1px solid #ccc';
+      list.appendChild(li);
+      list.scrollTop = list.scrollHeight;
+    }
+  });
+
+  // Display banned users
+  onValue(bannedRef, (snapshot) => {
+    const bannedList = document.getElementById('banned-users');
+    if (bannedList) {
+      bannedList.innerHTML = '';
+      snapshot.forEach((child) => {
+        onValue(ref(db, `users/${child.key}`), (userSnapshot) => {
+          const user = userSnapshot.val();
+          if (user) {
+            const li = document.createElement('li');
+            li.textContent = user.displayName;
+            bannedList.appendChild(li);
+          }
+        }, { onlyOnce: true });
+      });
+    }
+  });
+
+  // Display badge leaderboard
+  function updateBadgeLeaderboard() {
+    const leaderboard = document.getElementById('badge-leaderboard');
+    if (!leaderboard) return;
+    onValue(badgesRef, (snapshot) => {
+      const badgeCounts = [];
+      snapshot.forEach((userSnapshot) => {
+        const badges = userSnapshot.val() || {};
+        const count = Object.values(badges).filter(b => !b.expires || b.expires > Date.now()).length;
+        onValue(ref(db, `users/${userSnapshot.key}`), (userSnapshot) => {
+          const user = userSnapshot.val();
+          if (user) {
+            badgeCounts.push({ displayName: user.displayName, count });
+          }
+        }, { onlyOnce: true });
+      });
+      badgeCounts.sort((a, b) => b.count - a.count);
+      leaderboard.innerHTML = badgeCounts.slice(0, 3).map(c => `<li>${c.displayName}: ${c.count} badges</li>`).join('');
+    }, { onlyOnce: true });
+  }
+
+  // Enter key for messages
+  document.addEventListener('DOMContentLoaded', () => {
+    const msgInput = document.getElementById('msg');
+    if (msgInput) {
+      msgInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    }
+    updateBadgeLeaderboard();
+  });
+
 </script>
 
 <style>
@@ -875,11 +840,13 @@
     margin-top: 10px;
   }
 
+  /* Global Message Styles */
   .global-red-bold { color: red; font-weight: bold; }
   .global-neon-flash { color: #00ff00; animation: neonFlash 1s infinite; }
   .global-blue-italic { color: blue; font-style: italic; }
   .global-rainbow-shake { animation: rainbowShake 0.5s infinite; }
 
+  /* Badge Styles */
   .badge-legendary-troll { color: gold; text-shadow: 0 0 5px yellow; }
   .badge-meme-overlord { color: #00ff00; animation: pulse 1s infinite; }
   .badge-chaos-titan { color: #ff0000; font-weight: bold; animation: shake 0.5s infinite; }
@@ -891,6 +858,7 @@
   .badge-galaxy-brain { background: linear-gradient(45deg, red, blue, green); -webkit-background-clip: text; color: transparent; animation: zoom 1s infinite; }
   .badge-yeet-lord { color: #ffff00; font-weight: bold; animation: jump 0.5s infinite; }
 
+  /* Animations */
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes neonFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes rainbowShake {
@@ -917,7 +885,7 @@
     <h2>Chat App</h2>
     <input id="username-input" placeholder="Username (anything goes)" type="text">
     <input id="display-name-input" placeholder="Display Name (optional)" type="text">
-    <button onclick="_0x7c8d()">Enter Chat</button>
+    <button onclick="login()">Enter Chat</button>
   </div>
 
   <!-- Chat Container -->
@@ -926,30 +894,30 @@
       <ul id="messages"></ul>
       <div class="message-input">
         <input id="msg" placeholder="Type your message..." />
-        <button onclick="_0x3e4f()">Send</button>
-        <button onclick="_0x6d3f()">Profile</button>
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="showProfile()">Profile</button>
       </div>
     </div>
     <div id="admin-panel">
       <div id="admin-password">
         <input type="password" id="admin-code" placeholder="Enter admin code">
-        <button onclick="_0x1a2b()">Verify</button>
+        <button onclick="verifyAdmin(document.getElementById('admin-code').value)">Verify</button>
       </div>
       <div id="admin-controls" style="display: none;">
         <section>
           <h3>Ban Controls</h3>
           <input id="ban-input" placeholder="Display name to ban">
-          <button onclick="_0x9b1c()">Ban</button>
+          <button onclick="banUser()">Ban</button>
           <input id="unban-input" placeholder="Display name to unban">
-          <button onclick="_0x2d5e()">Unban</button>
+          <button onclick="unbanUser()">Unban</button>
           <h4>Banned Users</h4>
           <ul id="banned-users"></ul>
         </section>
         <section>
           <h3>Chat Controls</h3>
-          <button onclick="_0x6f7a()">Clear Chat</button>
-          <button onclick="_0x2b6c()">Freeze Chat</button>
-          <button onclick="_0x7d2a()">Global Mute (1 min)</button>
+          <button onclick="clearChat()">Clear Chat</button>
+          <button onclick="freezeChat()">Freeze Chat</button>
+          <button onclick="globalMute()">Global Mute (1 min)</button>
         </section>
         <section>
           <h3>Global Message</h3>
@@ -960,7 +928,7 @@
             <option value="blue-italic">Blue Italic</option>
             <option value="rainbow-shake">Rainbow Shake</option>
           </select>
-          <button onclick="_0x8c3d()">Send Global</button>
+          <button onclick="sendGlobalMessage()">Send Global</button>
         </section>
         <section>
           <h3>Role Assignment</h3>
@@ -970,7 +938,7 @@
             <option value="jester">Jester (Rainbow)</option>
             <option value="chaos-lord">Chaos Lord (Red)</option>
           </select>
-          <button onclick="_0x4b9e()">Assign Role</button>
+          <button onclick="assignRole()">Assign Role</button>
         </section>
         <section>
           <h3>Badge Assignment</h3>
@@ -988,7 +956,7 @@
             <option value="yeet-lord">Yeet Lord</option>
           </select>
           <label><input type="checkbox" id="badge-temporary"> Temporary (1 hour)</label>
-          <button onclick="_0x5a2f()">Award Badge</button>
+          <button onclick="awardBadge()">Award Badge</button>
         </section>
         <section>
           <h3>Mass Badge Award</h3>
@@ -1006,7 +974,7 @@
             <option value="yeet-lord">Yeet Lord</option>
           </select>
           <label><input type="checkbox" id="mass-badge-temporary"> Temporary (1 hour)</label>
-          <button onclick="_0x9f1e()">Mass Award</button>
+          <button onclick="massBadgeAward()">Mass Award</button>
         </section>
         <section>
           <h3>Badge Removal</h3>
@@ -1023,9 +991,9 @@
             <option value="galaxy-brain">Galaxy Brain</option>
             <option value="yeet-lord">Yeet Lord</option>
           </select>
-          <button onclick="_0x3c7b()">Remove Badge</button>
+          <button onclick="removeBadge()">Remove Badge</button>
           <input id="clear-badges-input" placeholder="Display name to clear all badges">
-          <button onclick="_0x8e9f()">Clear All Badges</button>
+          <button onclick="clearUserBadges()">Clear All Badges</button>
         </section>
         <section>
           <h3>Badge Leaderboard</h3>
@@ -1036,7 +1004,7 @@
   </div>
 
   <!-- Admin Button -->
-  <button id="admin-btn" onclick="_0x4e8a()">Admin</button>
+  <button id="admin-btn" onclick="toggleAdminPanel()">Admin</button>
 
   <!-- Crash Alert -->
   <div id="crash-alert">Chat Crashed! 😱</div>
@@ -1045,7 +1013,7 @@
   <div id="profile-modal">
     <h3>Your Badges</h3>
     <ul id="badge-list"></ul>
-    <button onclick="_0x9c4b()">Close</button>
+    <button onclick="closeProfile()">Close</button>
   </div>
 </body>
 </html>
