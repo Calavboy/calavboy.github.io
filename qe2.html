@@ -3,54 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brainrot Button Game</title>
+  <title>Brainrot Rizzler Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
     }
-    #brainrotButton {
-      padding: 20px 40px;
-      font-size: 24px;
-      cursor: pointer;
-      background-color: #ff4d4d;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      transition: transform 0.2s;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    #brainrotButton:hover {
-      transform: scale(1.1);
-    }
-    #output {
-      margin-top: 20px;
-      font-size: 28px;
-      color: #333;
-      text-align: center;
-      max-width: 80%;
-    }
-    #clickCount {
-      margin-top: 10px;
-      font-size: 18px;
-      color: #666;
-    }
+    .pulse { animation: pulse 0.3s ease-in-out; }
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
   </style>
 </head>
-<body>
-  <button id="brainrotButton">Click for Brainrot!</button>
-  <div id="output">What's your brainrot level?</div>
-  <div id="clickCount">Clicks: 0</div>
+<body class="bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+  <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Brainrot Rizzler Game</h1>
+    <button id="brainrotButton" class="w-full py-4 text-xl font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-transform duration-200">Click for Brainrot!</button>
+    <div id="output" class="mt-4 text-2xl text-center text-gray-800"></div>
+    <div id="level" class="mt-2 text-xl font-bold text-center text-red-500">Level: None</div>
+    <div id="clickCount" class="mt-2 text-lg text-center text-gray-600">Clicks: 0</div>
+    <div id="rizzPoints" class="mt-2 text-lg text-center text-gray-600">Rizz Points: 0</div>
+    
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-800">Upgrades</h2>
+      <div id="upgrades" class="mt-2 space-y-2">
+        <div class="flex justify-between items-center">
+          <span>Mega Rizz Boost (+1 per click)</span>
+          <button id="upgrade1" class="py-1 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400" disabled>Cost: 50 Rizz</button>
+        </div>
+        <div class="flex justify-between items-center">
+          <span>Sigma Drip (+2 per click)</span>
+          <button id="upgrade2" class="py-1 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400" disabled>Cost: 100 Rizz</button>
+        </div>
+        <div class="flex justify-between items-center">
+          <span>Skibidi Aura (+5 per click)</span>
+          <button id="upgrade3" class="py-1 px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400" disabled>Cost: 200 Rizz</button>
+        </div>
+      </div>
+    </div>
+    
+    <button id="resetButton" class="mt-4 w-full py-2 text-lg font-semibold text-white bg-gray-500 rounded-lg hover:bg-gray-600">Reset Brainrot</button>
+  </div>
+
   <script>
     const brainrotPhrases = [
       "Skibidi toilet got me acting unwise 😭",
       "Ohio energy only 🚫",
-      " GYATT algorithm hittin' different fr",
+      "GYATT algorithm hittin' different fr",
       "Rizzler vibes detected 👀",
       "Sigma male grindset 💪",
       "Low taper fade or BUST 💈",
@@ -62,19 +65,130 @@
       "Only in Ohio, fr 💸",
       "Edge lord energy ⚡",
       "Bussin' or nothin' 🔥",
-      "Brainrot terminal velocity 🌀"
+      "Brainrot terminal velocity 🌀",
+      "Delulu dreams in skibidi land 😵‍💫",
+      "Aura farming like a pro 🌟",
+      "Gyatt level 10 alert 🚨",
+      "Let him cook with that rizz 🍳",
+      "Vibe check failed, sus af 🕵️",
+      "No cap, this is bussin' 🧢",
+      "Mewing for infinite drip 💧",
+      "Fanum tax on your snacks 🍟",
+      "Sigma grindset, no simp 💯",
+      "Ohio brainrot hits different 🇺🇸",
+      "Looksmaxxing in goblin mode 🧟",
+      "Rizz up the egirl 💕",
+      "Skibidi toilet takeover 🚽",
+      "Negative aura detected ❌",
+      "Goated with the sauce 🐐",
+      "Did you pray today? 🙏",
+      "Glazing too hard, blud 😎",
+      "Doom scrolling all night 📱",
+      "Fine shyt gyatt vibes 👌",
+      "Sussy imposter among us 👽",
+      "Lowkey highkey bet 🤝",
+      "Huge W for the squad 🏆",
+      "Chat is this real? 🤔",
+      "Pookie talk only 🐻",
+      "Infinite money glitch unlocked 💰",
+      "It's giving brainrot core ✨",
+      "Glow-up with sigma energy 💥",
+      "Stan the skibidi toilet fanclub 📣",
+      "Ghosted by the rizzler 👻",
+      "Mid vibes, no flex 😒",
+      "Slaps harder than Ohio winters ❄️",
+      "UwU mewing activated 😺",
+      "Yass queen, bussin' gyatt 👑",
+      "Zesty sigma crashing out 🤪",
+      "Karen alert in Ohio 🚔"
     ];
+
     const button = document.getElementById('brainrotButton');
     const output = document.getElementById('output');
+    const levelDisplay = document.getElementById('level');
     const clickCountDisplay = document.getElementById('clickCount');
+    const rizzPointsDisplay = document.getElementById('rizzPoints');
+    const resetButton = document.getElementById('resetButton');
+    const upgradeButtons = [
+      { button: document.getElementById('upgrade1'), cost: 50, boost: 1, purchased: false },
+      { button: document.getElementById('upgrade2'), cost: 100, boost: 2, purchased: false },
+      { button: document.getElementById('upgrade3'), cost: 200, boost: 5, purchased: false }
+    ];
+
     let clickCount = 0;
+    let rizzPoints = 0;
+    let rizzPerClick = 1;
+
+    function updateLevel() {
+      let level = 'None';
+      let color = '#ef4444'; // Red
+      if (clickCount > 0 && clickCount <= 5) {
+        level = 'Mild Brainrot';
+        color = '#22c55e'; // Green
+      } else if (clickCount <= 10) {
+        level = 'Moderate Brainrot';
+        color = '#eab308'; // Yellow
+      } else if (clickCount <= 20) {
+        level = 'Severe Brainrot';
+        color = '#f97316'; // Orange
+      } else {
+        level = 'Terminal Brainrot';
+        color = '#b91c1c'; // Dark Red
+      }
+      levelDisplay.innerText = `Level: ${level}`;
+      button.style.backgroundColor = color;
+      return level;
+    }
+
+    function updateUpgrades() {
+      upgradeButtons.forEach(upgrade => {
+        upgrade.button.disabled = rizzPoints < upgrade.cost || upgrade.purchased;
+        upgrade.button.innerText = upgrade.purchased ? 'Purchased!' : `Cost: ${upgrade.cost} Rizz`;
+      });
+    }
 
     button.addEventListener('click', () => {
       clickCount++;
+      rizzPoints += rizzPerClick;
       const randomPhrase = brainrotPhrases[Math.floor(Math.random() * brainrotPhrases.length)];
       output.innerText = randomPhrase;
+      output.classList.remove('fade-in');
+      void output.offsetWidth;
+      output.classList.add('fade-in');
+      button.classList.add('pulse');
+      setTimeout(() => button.classList.remove('pulse'), 300);
       clickCountDisplay.innerText = `Clicks: ${clickCount}`;
+      rizzPointsDisplay.innerText = `Rizz Points: ${rizzPoints}`;
+      updateLevel();
+      updateUpgrades();
     });
+
+    upgradeButtons.forEach((upgrade, index) => {
+      upgrade.button.addEventListener('click', () => {
+        if (rizzPoints >= upgrade.cost && !upgrade.purchased) {
+          rizzPoints -= upgrade.cost;
+          rizzPerClick += upgrade.boost;
+          upgrade.purchased = true;
+          rizzPointsDisplay.innerText = `Rizz Points: ${rizzPoints}`;
+          updateUpgrades();
+        }
+      });
+    });
+
+    resetButton.addEventListener('click', () => {
+      clickCount = 0;
+      rizzPoints = 0;
+      rizzPerClick = 1;
+      upgradeButtons.forEach(upgrade => (upgrade.purchased = false));
+      output.innerText = "What's your brainrot level?";
+      clickCountDisplay.innerText = 'Clicks: 0';
+      rizzPointsDisplay.innerText = 'Rizz Points: 0';
+      updateLevel();
+      updateUpgrades();
+    });
+
+    updateLevel();
+    updateUpgrades();
   </script>
 </body>
 </html>
