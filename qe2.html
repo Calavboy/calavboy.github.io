@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brainrot Rizzler Game</title>
+  <title>3D Brainrot Rizzler Game</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     @keyframes pulse {
       0% { transform: scale(1); }
@@ -23,17 +24,49 @@
     .dark .bg-white\/90 {
       background-color: rgba(30, 30, 30, 0.9);
     }
-    .dark h1, .dark #output, .dark #level, .dark #clickCount, .dark #rizzPoints, .dark h2, .dark span {
+    .dark h1, .dark #output, .dark #level, .dark #clickCount, .dark #rizzPoints, .dark h2, .dark span, .dark label {
       color: #f0f0f0;
     }
     .dark #warning {
       color: #ffcccb;
     }
+    #three-canvas {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .tooltip {
+      position: relative;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .upgrade-available {
+      border: 2px solid #22c55e;
+      animation: pulse 1s infinite;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
   <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Brainrot Rizzler Game</h1>
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">3D Brainrot Rizzler Game</h1>
+    
+    <!-- 3D Canvas for the uploaded model -->
+    <div id="three-canvas"></div>
+    
     <button id="brainrotButton" class="w-full py-4 text-xl font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-transform duration-200">Click for Brainrot!</button>
     <div id="output" class="mt-4 text-2xl text-center text-gray-800">What's your brainrot level?</div>
     <div id="warning" class="mt-2 text-lg text-center text-red-600 hidden"></div>
@@ -44,17 +77,33 @@
     <div id="passiveRate" class="mt-2 text-lg text-center text-gray-600">Passive Rizz/sec: 0</div>
     
     <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-800">Daily Challenge</h2>
+      <div id="dailyChallenge" class="mt-2 text-sm text-gray-600"></div>
+    </div>
+    
+    <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-800">Upgrades</h2>
-      <div id="upgrades" class="mt-2 space-y-2 max-h-60 overflow-y-auto">
-        <!-- Upgrades will be dynamically added here -->
-      </div>
+      <div id="upgrades" class="mt-2 space-y-2 max-h-60 overflow-y-auto"></div>
+    </div>
+    
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-800">Purchase History</h2>
+      <div id="purchaseHistory" class="mt-2 text-sm text-gray-600 max-h-40 overflow-y-auto"></div>
     </div>
     
     <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-800">Achievements</h2>
-      <div id="achievements" class="mt-2 space-y-2">
-        <!-- Achievements will be listed here -->
-      </div>
+      <div id="achievements" class="mt-2 space-y-2"></div>
+    </div>
+    
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-800">Leaderboard</h2>
+      <div id="leaderboard" class="mt-2 space-y-2"></div>
+    </div>
+    
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-800">Customize Button</h2>
+      <input type="color" id="buttonColorPicker" class="mt-2 w-full h-10 rounded-lg">
     </div>
     
     <div class="mt-4 flex space-x-2">
@@ -77,12 +126,150 @@
   </div>
 
   <script>
+    // 3D Scene Setup
+    let scene, camera, renderer, model, mixer;
+    let animationId;
+
+    function init3D() {
+      const canvasContainer = document.getElementById('three-canvas');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+
+      camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      canvasContainer.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 5);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      // Create a simple 3D model representing the uploaded image (abstract wooden/brainrot figure)
+      // Since we can't load the actual image as 3D, we create a procedural model: a wooden-like figure with eyes and orbs
+      const group = new THREE.Group();
+
+      // Main body (wooden torso)
+      const bodyGeometry = new THREE.CylinderGeometry(1, 1.5, 3, 8);
+      const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown wood color
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.castShadow = true;
+      body.receiveShadow = true;
+      group.add(body);
+
+      // Head
+      const headGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+      const headMaterial = new THREE.MeshLambertMaterial({ color: 0xD2691E }); // Lighter wood
+      const head = new THREE.Mesh(headGeometry, headMaterial);
+      head.position.y = 2.5;
+      head.castShadow = true;
+      group.add(head);
+
+      // Eyes (based on the image description)
+      const eyeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+      const leftEye = new THREE.Mesh(eyeGeometry, new THREE.MeshLambertMaterial({ color: 0x000000 }));
+      leftEye.position.set(-0.4, 2.8, 1.1);
+      group.add(leftEye);
+
+      const rightEye = new THREE.Mesh(eyeGeometry, new THREE.MeshLambertMaterial({ color: 0x000000 }));
+      rightEye.position.set(0.4, 2.8, 1.1);
+      group.add(rightEye);
+
+      // Floating orbs (sun-like and black orb from image)
+      const orbGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+      const sunOrbMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.2 });
+      const sunOrb = new THREE.Mesh(orbGeometry, sunOrbMaterial);
+      sunOrb.position.set(3, 3, 0);
+      group.add(sunOrb);
+
+      const blackOrbMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+      const blackOrb = new THREE.Mesh(orbGeometry, blackOrbMaterial);
+      blackOrb.position.set(-3, 0, 0);
+      group.add(blackOrb);
+
+      // Legs (simple)
+      const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 8);
+      const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+      const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+      leftLeg.position.set(-0.5, -2, 0);
+      group.add(leftLeg);
+
+      const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+      rightLeg.position.set(0.5, -2, 0);
+      group.add(rightLeg);
+
+      // Arms
+      const armGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
+      const leftArm = new THREE.Mesh(armGeometry, legMaterial);
+      leftArm.position.set(-1.5, 0.5, 0);
+      leftArm.rotation.z = Math.PI / 4;
+      group.add(leftArm);
+
+      const rightArm = new THREE.Mesh(armGeometry, legMaterial);
+      rightArm.position.set(1.5, 0.5, 0);
+      rightArm.rotation.z = -Math.PI / 4;
+      group.add(rightArm);
+
+      model = group;
+      scene.add(model);
+
+      camera.position.z = 6;
+
+      // Animation mixer for rotation
+      mixer = new THREE.AnimationMixer(model);
+      // Simple rotation animation
+      const rotationClip = new THREE.AnimationClip('rotate', -1, [
+        new THREE.VectorKeyframeTrack('.rotation[y]', [0, 6.28], [0, Math.PI * 2])
+      ]);
+      const rotationAction = mixer.clipAction(rotationClip);
+      rotationAction.play();
+
+      // Render loop
+      function animate() {
+        requestAnimationFrame(animate);
+        mixer.update(0.01); // Slow rotation
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+      });
+    }
+
+    // Game Logic (same as before)
     const brainrotPhrases = [
       "Skibidi toilet got me acting unwise 😭",
       "Ohio energy only 🚫",
-      // ... (all previous phrases)
-      "Karen alert in Ohio 🚔"
-    ]; // Assume full list here
+      "Karen alert in Ohio 🚔",
+      "Rizzler vibes hittin' different fr 💯",
+      "Tralalero Tralala, Goddamn God and goddamn Allah! 💥",
+      "Bombardiro Crocodilo bombs the pizza factory! 🍕💣",
+      "Ballerina Cappuccina dances with espresso fury! ☕🩰",
+      "Trippi Troppi, too many trips to the gelato shop! 🍦",
+      "Tung Tung Tung Sahur hits with the bat at dawn! 🥁⚾",
+      "Brr Brr Patapim freezes the entire pasta party! ❄️🍝",
+      "Chimpanzini Bananini swings through the banana republic! 🍌🐒",
+      "Hipocactus, the spikiest hippo in the savanna! 🦛🌵",
+      "Blueberrinni Octopussini, eight arms of blueberry doom! 🐙🫐",
+      "Burbaloni Luliloli bubbles up the chaos! 🫧",
+      "Tracotocutulo Lirilì Larilà rhymes with disaster! 🎤",
+      "Bombombini Gusini, the explosive goose squad! 🪿💥",
+      "Capuccino Asashino sips and slices! ☕⚔️",
+      "Boneca Amvalabu dances the forbidden tango! 💃",
+      "Frullì Frullà blends the enemies into smoothies! 🥤",
+      "Protestatarii Brainrot protests the very existence! ✊",
+      "Assassino Boneca, the doll that kills quietly! 🪆🔪"
+    ];
 
     const button = document.getElementById('brainrotButton');
     const output = document.getElementById('output');
@@ -102,6 +289,10 @@
     const prestigeButton = document.getElementById('prestigeButton');
     const upgradesContainer = document.getElementById('upgrades');
     const achievementsContainer = document.getElementById('achievements');
+    const leaderboardContainer = document.getElementById('leaderboard');
+    const dailyChallengeDisplay = document.getElementById('dailyChallenge');
+    const buttonColorPicker = document.getElementById('buttonColorPicker');
+    const purchaseHistoryContainer = document.getElementById('purchaseHistory');
 
     let clickCount = 0;
     let rizzPoints = 0;
@@ -109,12 +300,17 @@
     let passiveRate = 0;
     let prestigeLevel = 0;
     let lastClickTime = 0;
-    let clickTimes = [];
     let fastClickCount = 0;
     let isAdmin = false;
-    let clickHistory = []; // For CPS
+    let clickHistory = [];
+    let dailyChallengeProgress = 0;
+    let dailyChallengeGoal = 0;
+    let dailyChallengeReward = 0;
+    let customButtonColor = '#ef4444';
+    let purchaseHistory = [];
     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let achievements = [
+
+    const achievements = [
       { name: 'First Click', unlocked: false, condition: () => clickCount >= 1 },
       { name: 'Brainrot Beginner', unlocked: false, condition: () => clickCount >= 10 },
       { name: 'Rizz Collector', unlocked: false, condition: () => rizzPoints >= 100 },
@@ -123,54 +319,97 @@
       { name: 'Fast Clicker', unlocked: false, condition: () => calculateCPS() >= 5 },
       { name: 'Prestige Pioneer', unlocked: false, condition: () => prestigeLevel >= 1 },
       { name: 'Infinite Rizz', unlocked: false, condition: () => rizzPoints >= 10000 },
-      { name: 'Custom Creator', unlocked: false, condition: () => brainrotPhrases.length > 50 }, // Assuming original ~50
-      { name: 'Dark Mode Dabbler', unlocked: false, condition: () => document.body.classList.contains('dark') }
+      { name: 'Custom Creator', unlocked: false, condition: () => brainrotPhrases.length > 50 },
+      { name: 'Dark Mode Dabbler', unlocked: false, condition: () => document.body.classList.contains('dark') },
+      { name: 'Daily Challenger', unlocked: false, condition: () => dailyChallengeProgress >= dailyChallengeGoal && dailyChallengeGoal > 0 },
+      { name: 'Italian Brainrot Master', unlocked: false, condition: () => brainrotPhrases.length >= 25 },
+      { name: '3D Visionary', unlocked: false, condition: () => clickCount >= 50 }
     ];
 
     const upgradeData = [
-      { name: 'Mega Rizz Boost', cost: 50, boost: 1, type: 'click' },
-      { name: 'Sigma Drip', cost: 100, boost: 2, type: 'click' },
-      { name: 'Skibidi Aura', cost: 200, boost: 5, type: 'click' },
-      { name: 'Gyatt Amplifier', cost: 500, boost: 10, type: 'click' },
-      { name: 'Mewing Master', cost: 1000, boost: 20, type: 'click' },
-      { name: 'Fanum Tax Evader', cost: 2000, boost: 50, type: 'click' },
-      { name: 'Ohio Overlord', cost: 5000, boost: 100, type: 'click' },
-      { name: 'Rizz God', cost: 10000, boost: 200, type: 'click' },
-      { name: 'Passive Sigma', cost: 300, boost: 1, type: 'passive' },
-      { name: 'Aura Farmer', cost: 600, boost: 2, type: 'passive' },
-      { name: 'Delulu Dreamer', cost: 1200, boost: 5, type: 'passive' },
-      { name: 'Vibe Checker', cost: 2500, boost: 10, type: 'passive' },
-      { name: 'Sus Booster', cost: 5000, boost: 20, type: 'passive' }
+      { name: 'Mega Rizz Boost', cost: 50, boost: 1, type: 'click', description: 'Increases Rizz per click by 1' },
+      { name: 'Sigma Drip', cost: 100, boost: 2, type: 'click', description: 'Boosts Rizz per click by 2' },
+      { name: 'Skibidi Aura', cost: 200, boost: 5, type: 'click', description: 'Amplifies Rizz per click by 5' },
+      { name: 'Gyatt Amplifier', cost: 500, boost: 10, type: 'click', description: 'Massive Rizz boost per click' },
+      { name: 'Mewing Master', cost: 1000, boost: 20, type: 'click', description: 'Elite Rizz gain per click' },
+      { name: 'Fanum Tax Evader', cost: 2000, boost: 50, type: 'click', description: 'Avoid taxes, gain big Rizz' },
+      { name: 'Ohio Overlord', cost: 5000, boost: 100, type: 'click', description: 'Rule Ohio with huge Rizz' },
+      { name: 'Rizz God', cost: 10000, boost: 200, type: 'click', description: 'God-tier Rizz per click' },
+      { name: 'Passive Sigma', cost: 300, boost: 1, type: 'passive', description: 'Earn 1 Rizz per second' },
+      { name: 'Aura Farmer', cost: 600, boost: 2, type: 'passive', description: 'Farm 2 Rizz per second' },
+      { name: 'Delulu Dreamer', cost: 1200, boost: 5, type: 'passive', description: 'Dreamy passive Rizz gain' },
+      { name: 'Vibe Checker', cost: 2500, boost: 10, type: 'passive', description: 'Check vibes, earn Rizz' },
+      { name: 'Sus Booster', cost: 5000, boost: 20, type: 'passive', description: 'Suspiciously high passive Rizz' }
     ];
 
     let upgradeButtons = [];
+    let leaderboard = [];
 
     function createUpgrades() {
+      console.log('Creating upgrades...');
       upgradesContainer.innerHTML = '';
+      upgradeButtons = [];
       upgradeData.forEach((data, index) => {
         const upgradeDiv = document.createElement('div');
         upgradeDiv.classList.add('flex', 'justify-between', 'items-center');
         const span = document.createElement('span');
         span.innerText = `${data.name} (+${data.boost} per ${data.type === 'click' ? 'click' : 'sec'})`;
+        span.classList.add('tooltip');
+        span.setAttribute('data-tooltip', data.description);
         const btn = document.createElement('button');
         btn.id = `upgrade${index + 1}`;
         btn.classList.add('py-1', 'px-3', 'bg-blue-500', 'text-white', 'rounded', 'hover:bg-blue-600', 'disabled:bg-gray-400');
         btn.disabled = true;
+        btn.innerText = `Cost: ${data.cost} Rizz`;
         upgradeDiv.appendChild(span);
         upgradeDiv.appendChild(btn);
         upgradesContainer.appendChild(upgradeDiv);
-        upgradeButtons.push({ button: btn, ...data, purchased: false });
+        const upgradeObj = { button: btn, ...data, purchased: false };
+        upgradeButtons.push(upgradeObj);
+
+        (function(idx) {
+          btn.addEventListener('click', () => {
+            console.log(`Upgrade button ${data.name} clicked. Rizz Points: ${rizzPoints}, Cost: ${data.cost}, Purchased: ${upgradeButtons[idx].purchased}`);
+            if (rizzPoints >= data.cost && !upgradeButtons[idx].purchased) {
+              if (confirm(`Purchase ${data.name} for ${data.cost} Rizz Points?`)) {
+                rizzPoints -= data.cost;
+                if (data.type === 'click') {
+                  rizzPerClick += data.boost;
+                  console.log(`Applied click upgrade: ${data.name}, New rizzPerClick: ${rizzPerClick}`);
+                } else {
+                  passiveRate += data.boost;
+                  console.log(`Applied passive upgrade: ${data.name}, New passiveRate: ${passiveRate}`);
+                }
+                upgradeButtons[idx].purchased = true;
+                purchaseHistory.push(`${new Date().toLocaleTimeString()}: Purchased ${data.name} for ${data.cost} Rizz`);
+                playBeep(660, 150);
+                updateDisplay();
+                saveProgress();
+                showWarning(`Purchased ${data.name}! +${data.boost} ${data.type} boost!`);
+              }
+            } else {
+              showWarning(`Cannot purchase ${data.name}: ${upgradeButtons[idx].purchased ? 'Already purchased' : 'Not enough Rizz Points'}`);
+            }
+          });
+        })(index);
       });
+      console.log(`Upgrades created: ${upgradeButtons.length} buttons`);
       updateUpgrades();
     }
 
-    function playBeep() {
+    function updatePurchaseHistory() {
+      purchaseHistoryContainer.innerHTML = purchaseHistory.length
+        ? purchaseHistory.map(entry => `<div class="text-sm text-gray-600">${entry}</div>`).join('')
+        : '<div class="text-sm text-gray-600">No purchases yet</div>';
+    }
+
+    function playBeep(frequency = 440, duration = 100) {
       const oscillator = audioCtx.createOscillator();
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
       oscillator.connect(audioCtx.destination);
       oscillator.start();
-      setTimeout(() => oscillator.stop(), 100);
+      setTimeout(() => oscillator.stop(), duration);
     }
 
     function calculateCPS() {
@@ -184,9 +423,49 @@
         if (!ach.unlocked && ach.condition()) {
           ach.unlocked = true;
           showWarning(`Achievement Unlocked: ${ach.name}!`);
+          playBeep(880, 200);
         }
       });
-      achievementsContainer.innerHTML = achievements.filter(ach => ach.unlocked).map(ach => `<div class="text-sm text-gray-600">${ach.name}</div>`).join('');
+      achievementsContainer.innerHTML = achievements
+        .filter(ach => ach.unlocked)
+        .map(ach => `<div class="text-sm text-gray-600">${ach.name}</div>`)
+        .join('');
+    }
+
+    function updateLeaderboard() {
+      const playerScore = { name: 'You', score: rizzPoints, date: new Date().toISOString() };
+      leaderboard = [...leaderboard.filter(s => s.name !== 'You'), playerScore]
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+      leaderboardContainer.innerHTML = leaderboard
+        .map((entry, index) => `<div class="text-sm text-gray-600">${index + 1}. ${entry.name}: ${entry.score} Rizz Points</div>`)
+        .join('');
+      localStorage.setItem('brainrotLeaderboard', JSON.stringify(leaderboard));
+    }
+
+    function generateDailyChallenge() {
+      const today = new Date().toDateString();
+      const savedDate = localStorage.getItem('dailyChallengeDate');
+      if (savedDate !== today) {
+        dailyChallengeGoal = Math.floor(Math.random() * 50) + 50;
+        dailyChallengeReward = dailyChallengeGoal * 10;
+        dailyChallengeProgress = 0;
+        localStorage.setItem('dailyChallengeDate', today);
+        localStorage.setItem('dailyChallengeGoal', dailyChallengeGoal);
+        localStorage.setItem('dailyChallengeReward', dailyChallengeReward);
+        localStorage.setItem('dailyChallengeProgress', dailyChallengeProgress);
+      } else {
+        dailyChallengeGoal = parseInt(localStorage.getItem('dailyChallengeGoal')) || 50;
+        dailyChallengeReward = parseInt(localStorage.getItem('dailyChallengeReward')) || 500;
+        dailyChallengeProgress = parseInt(localStorage.getItem('dailyChallengeProgress')) || 0;
+      }
+      updateDailyChallenge();
+    }
+
+    function updateDailyChallenge() {
+      dailyChallengeDisplay.innerText = dailyChallengeProgress >= dailyChallengeGoal
+        ? `Challenge Completed! Reward: ${dailyChallengeReward} Rizz Points`
+        : `Daily Challenge: Click ${dailyChallengeGoal} times (Progress: ${dailyChallengeProgress}/${dailyChallengeGoal})`;
     }
 
     function saveProgress() {
@@ -198,9 +477,13 @@
         prestigeLevel,
         purchasedUpgrades: upgradeButtons.map(u => u.purchased),
         brainrotPhrases,
-        isDark: document.body.classList.contains('dark')
+        isDark: document.body.classList.contains('dark'),
+        customButtonColor,
+        dailyChallengeProgress,
+        purchaseHistory
       };
       localStorage.setItem('brainrotSave', JSON.stringify(saveData));
+      updateLeaderboard();
     }
 
     function loadProgress() {
@@ -211,13 +494,23 @@
         rizzPerClick = saveData.rizzPerClick || 1;
         passiveRate = saveData.passiveRate || 0;
         prestigeLevel = saveData.prestigeLevel || 0;
-        if (saveData.purchasedUpgrades) {
-          saveData.purchasedUpgrades.forEach((p, i) => upgradeButtons[i].purchased = p);
+        customButtonColor = saveData.customButtonColor || '#ef4444';
+        dailyChallengeProgress = saveData.dailyChallengeProgress || 0;
+        purchaseHistory = saveData.purchaseHistory || [];
+        if (saveData.purchasedUpgrades && upgradeButtons.length === saveData.purchasedUpgrades.length) {
+          saveData.purchasedUpgrades.forEach((p, i) => {
+            if (upgradeButtons[i]) upgradeButtons[i].purchased = p;
+          });
         }
         if (saveData.brainrotPhrases) brainrotPhrases.splice(0, brainrotPhrases.length, ...saveData.brainrotPhrases);
         if (saveData.isDark) document.body.classList.add('dark');
-        updateDisplay();
+        button.style.backgroundColor = customButtonColor;
+        buttonColorPicker.value = customButtonColor;
       }
+      const savedLeaderboard = JSON.parse(localStorage.getItem('brainrotLeaderboard'));
+      if (savedLeaderboard) leaderboard = savedLeaderboard;
+      generateDailyChallenge();
+      updateDisplay();
     }
 
     function updateDisplay() {
@@ -228,33 +521,39 @@
       updateLevel();
       updateUpgrades();
       updateAchievements();
+      updateLeaderboard();
+      updateDailyChallenge();
+      updatePurchaseHistory();
       prestigeButton.disabled = clickCount < 1000;
     }
 
     function updateLevel() {
       let level = 'None';
-      let color = '#ef4444';
+      let color = customButtonColor;
       if (clickCount > 0 && clickCount <= 5) {
         level = 'Mild Brainrot';
-        color = '#22c55e';
       } else if (clickCount <= 10) {
         level = 'Moderate Brainrot';
-        color = '#eab308';
       } else if (clickCount <= 20) {
         level = 'Severe Brainrot';
-        color = '#f97316';
       } else {
         level = 'Terminal Brainrot';
-        color = '#b91c1c';
       }
       levelDisplay.innerText = `Level: ${level}`;
       button.style.backgroundColor = color;
+      button.style.setProperty('--tw-bg-opacity', '1');
+      button.classList.add('hover:bg-opacity-90');
     }
 
     function updateUpgrades() {
-      upgradeButtons.forEach(upgrade => {
+      upgradeButtons.forEach((upgrade, idx) => {
         upgrade.button.disabled = rizzPoints < upgrade.cost || upgrade.purchased;
         upgrade.button.innerText = upgrade.purchased ? 'Purchased!' : `Cost: ${upgrade.cost} Rizz`;
+        if (rizzPoints >= upgrade.cost && !upgrade.purchased) {
+          upgrade.button.parentElement.classList.add('upgrade-available');
+        } else {
+          upgrade.button.parentElement.classList.remove('upgrade-available');
+        }
       });
     }
 
@@ -262,6 +561,7 @@
       warning.innerText = message;
       warning.classList.remove('hidden');
       setTimeout(() => warning.classList.add('hidden'), 3000);
+      console.log('Warning:', message);
     }
 
     function detectAutoclicker(now) {
@@ -286,9 +586,10 @@
       rizzPoints = 0;
       rizzPerClick = 1 + prestigeLevel * 0.5;
       passiveRate = 0;
-      clickTimes = [];
       fastClickCount = 0;
       clickHistory = [];
+      dailyChallengeProgress = 0;
+      purchaseHistory = [];
       upgradeButtons.forEach(upgrade => upgrade.purchased = false);
       output.innerText = isCheat ? "Cheater! Reset." : "What's your brainrot level?";
       updateDisplay();
@@ -300,6 +601,13 @@
       if (detectAutoclicker(now)) return;
       clickCount++;
       rizzPoints += rizzPerClick;
+      if (dailyChallengeProgress < dailyChallengeGoal) {
+        dailyChallengeProgress++;
+        if (dailyChallengeProgress >= dailyChallengeGoal) {
+          rizzPoints += dailyChallengeReward;
+          showWarning(`Daily Challenge Completed! +${dailyChallengeReward} Rizz Points`);
+        }
+      }
       clickHistory.push(now);
       const randomPhrase = brainrotPhrases[Math.floor(Math.random() * brainrotPhrases.length)];
       output.innerText = randomPhrase;
@@ -308,41 +616,38 @@
       output.classList.add('fade-in');
       button.classList.add('pulse');
       setTimeout(() => button.classList.remove('pulse'), 300);
+      
+      // Animate the 3D model on click
+      if (model) {
+        model.rotation.y += Math.PI / 8; // Quick spin
+        model.scale.set(1.1, 1.1, 1.1);
+        setTimeout(() => model.scale.set(1, 1, 1), 200);
+      }
+      
       playBeep();
       updateDisplay();
       saveProgress();
     });
 
-    upgradeButtons.forEach((upgrade) => {
-      upgrade.button.addEventListener('click', () => {
-        if (rizzPoints >= upgrade.cost && !upgrade.purchased) {
-          rizzPoints -= upgrade.cost;
-          if (upgrade.type === 'click') {
-            rizzPerClick += upgrade.boost;
-          } else {
-            passiveRate += upgrade.boost;
-          }
-          upgrade.purchased = true;
-          updateDisplay();
-          saveProgress();
-          showWarning(`Purchased ${upgrade.name}!`);
-        }
-      });
-    });
-
     resetButton.addEventListener('click', () => {
-      resetProgress();
-      showWarning("Progress reset, start fresh!");
+      if (confirm('Are you sure you want to reset all progress?')) {
+        resetProgress();
+        showWarning("Progress reset, start fresh!");
+      }
     });
 
     darkModeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark');
+      // Update 3D scene background if dark mode
+      if (scene) {
+        scene.background = document.body.classList.contains('dark') ? new THREE.Color(0x191970) : new THREE.Color(0x87CEEB);
+      }
       updateAchievements();
       saveProgress();
     });
 
     shareButton.addEventListener('click', () => {
-      const text = `My Brainrot Score: ${rizzPoints} Rizz Points with ${clickCount} Clicks!`;
+      const text = `My 3D Brainrot Score: ${rizzPoints} Rizz Points with ${clickCount} Clicks!`;
       navigator.clipboard.writeText(text).then(() => showWarning('Score copied to clipboard!'));
     });
 
@@ -367,17 +672,28 @@
         showWarning('Custom Phrase Added!');
         updateAchievements();
         saveProgress();
+      } else {
+        showWarning('Please enter a valid phrase!');
       }
       customPhraseInput.value = '';
     });
 
     prestigeButton.addEventListener('click', () => {
       if (clickCount >= 1000) {
-        prestigeLevel++;
-        resetProgress();
-        showWarning(`Prestiged! Now at level ${prestigeLevel} with ${rizzPerClick} per click.`);
-        updateAchievements();
+        if (confirm('Prestige will reset your progress but increase Rizz per click. Continue?')) {
+          prestigeLevel++;
+          resetProgress();
+          showWarning(`Prestiged! Now at level ${prestigeLevel} with ${rizzPerClick} per click.`);
+          updateAchievements();
+        }
       }
+    });
+
+    buttonColorPicker.addEventListener('input', () => {
+      customButtonColor = buttonColorPicker.value;
+      button.style.backgroundColor = customButtonColor;
+      updateLevel();
+      saveProgress();
     });
 
     // Passive income interval
@@ -395,6 +711,7 @@
     setInterval(saveProgress, 30000);
 
     // Initialize
+    init3D(); // Initialize 3D scene first
     createUpgrades();
     loadProgress();
     updateDisplay();
