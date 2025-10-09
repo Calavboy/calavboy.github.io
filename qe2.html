@@ -58,13 +58,17 @@
       border: 2px solid #22c55e;
       animation: pulse 1s infinite;
     }
+    #upgrades {
+      max-height: 60vh; /* Fixed height */
+      overflow-y: auto; /* Scroll if needed */
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
   <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">3D Brainrot Rizzler Game</h1>
     
-    <!-- 3D Canvas for the uploaded model -->
+    <!-- 3D Canvas for the dancing model -->
     <div id="three-canvas"></div>
     
     <button id="brainrotButton" class="w-full py-4 text-xl font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-transform duration-200">Click for Brainrot!</button>
@@ -83,7 +87,7 @@
     
     <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-800">Upgrades</h2>
-      <div id="upgrades" class="mt-2 space-y-2 max-h-60 overflow-y-auto"></div>
+      <div id="upgrades" class="mt-2 space-y-2"></div>
     </div>
     
     <div class="mt-6">
@@ -151,8 +155,7 @@
       directionalLight.castShadow = true;
       scene.add(directionalLight);
 
-      // Create a simple 3D model representing the uploaded image (abstract wooden/brainrot figure)
-      // Since we can't load the actual image as 3D, we create a procedural model: a wooden-like figure with eyes and orbs
+      // Create a dancing 3D model
       const group = new THREE.Group();
 
       // Main body (wooden torso)
@@ -171,7 +174,7 @@
       head.castShadow = true;
       group.add(head);
 
-      // Eyes (based on the image description)
+      // Eyes
       const eyeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
       const leftEye = new THREE.Mesh(eyeGeometry, new THREE.MeshLambertMaterial({ color: 0x000000 }));
       leftEye.position.set(-0.4, 2.8, 1.1);
@@ -181,7 +184,7 @@
       rightEye.position.set(0.4, 2.8, 1.1);
       group.add(rightEye);
 
-      // Floating orbs (sun-like and black orb from image)
+      // Floating orbs
       const orbGeometry = new THREE.SphereGeometry(0.5, 16, 16);
       const sunOrbMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.2 });
       const sunOrb = new THREE.Mesh(orbGeometry, sunOrbMaterial);
@@ -193,7 +196,7 @@
       blackOrb.position.set(-3, 0, 0);
       group.add(blackOrb);
 
-      // Legs (simple)
+      // Legs
       const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 8);
       const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
       const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
@@ -208,12 +211,10 @@
       const armGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
       const leftArm = new THREE.Mesh(armGeometry, legMaterial);
       leftArm.position.set(-1.5, 0.5, 0);
-      leftArm.rotation.z = Math.PI / 4;
       group.add(leftArm);
 
       const rightArm = new THREE.Mesh(armGeometry, legMaterial);
       rightArm.position.set(1.5, 0.5, 0);
-      rightArm.rotation.z = -Math.PI / 4;
       group.add(rightArm);
 
       model = group;
@@ -221,19 +222,24 @@
 
       camera.position.z = 6;
 
-      // Animation mixer for rotation
+      // Animation mixer for dancing
       mixer = new THREE.AnimationMixer(model);
-      // Simple rotation animation
-      const rotationClip = new THREE.AnimationClip('rotate', -1, [
-        new THREE.VectorKeyframeTrack('.rotation[y]', [0, 6.28], [0, Math.PI * 2])
+      const danceClip = new THREE.AnimationClip('dance', -1, [
+        new THREE.VectorKeyframeTrack('.rotation[y]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 4, 0, -Math.PI / 4, 0]),
+        new THREE.VectorKeyframeTrack('.rotation[x]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 8, 0, -Math.PI / 8, 0]),
+        new THREE.VectorKeyframeTrack('leftArm.rotation[z]', [0, 0.5, 1, 1.5, 2], [Math.PI / 4, 0, Math.PI / 4, 0, Math.PI / 4]),
+        new THREE.VectorKeyframeTrack('rightArm.rotation[z]', [0, 0.5, 1, 1.5, 2], [-Math.PI / 4, 0, -Math.PI / 4, 0, -Math.PI / 4]),
+        new THREE.VectorKeyframeTrack('leftLeg.rotation[z]', [0, 0.5, 1, 1.5, 2], [0, -Math.PI / 6, 0, Math.PI / 6, 0]),
+        new THREE.VectorKeyframeTrack('rightLeg.rotation[z]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 6, 0, -Math.PI / 6, 0])
       ]);
-      const rotationAction = mixer.clipAction(rotationClip);
-      rotationAction.play();
+      const danceAction = mixer.clipAction(danceClip);
+      danceAction.setLoop(THREE.LoopRepeat);
+      danceAction.play();
 
       // Render loop
       function animate() {
-        requestAnimationFrame(animate);
-        mixer.update(0.01); // Slow rotation
+        animationId = requestAnimationFrame(animate);
+        mixer.update(0.02); // Dance speed
         renderer.render(scene, camera);
       }
       animate();
@@ -246,7 +252,7 @@
       });
     }
 
-    // Game Logic (same as before)
+    // Game Logic
     const brainrotPhrases = [
       "Skibidi toilet got me acting unwise 😭",
       "Ohio energy only 🚫",
@@ -351,7 +357,7 @@
       upgradeButtons = [];
       upgradeData.forEach((data, index) => {
         const upgradeDiv = document.createElement('div');
-        upgradeDiv.classList.add('flex', 'justify-between', 'items-center');
+        upgradeDiv.classList.add('flex', 'justify-between', 'items-center', 'py-2'); // Fixed height with padding
         const span = document.createElement('span');
         span.innerText = `${data.name} (+${data.boost} per ${data.type === 'click' ? 'click' : 'sec'})`;
         span.classList.add('tooltip');
@@ -617,8 +623,8 @@
       button.classList.add('pulse');
       setTimeout(() => button.classList.remove('pulse'), 300);
       
-      // Animate the 3D model on click
-      if (model) {
+      // Dance reaction
+      if (model && mixer) {
         model.rotation.y += Math.PI / 8; // Quick spin
         model.scale.set(1.1, 1.1, 1.1);
         setTimeout(() => model.scale.set(1, 1, 1), 200);
@@ -638,7 +644,6 @@
 
     darkModeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark');
-      // Update 3D scene background if dark mode
       if (scene) {
         scene.background = document.body.classList.contains('dark') ? new THREE.Color(0x191970) : new THREE.Color(0x87CEEB);
       }
@@ -711,7 +716,7 @@
     setInterval(saveProgress, 30000);
 
     // Initialize
-    init3D(); // Initialize 3D scene first
+    init3D();
     createUpgrades();
     loadProgress();
     updateDisplay();
