@@ -1,725 +1,1504 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Brainrot Rizzler Game</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <style>
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .pulse { animation: pulse 0.3s ease-in-out; }
-    .fade-in { animation: fadeIn 0.5s ease-in-out; }
-    .dark body {
-      background: linear-gradient(to bottom right, #4b0082, #8b0000, #191970);
-    }
-    .dark .bg-white\/90 {
-      background-color: rgba(30, 30, 30, 0.9);
-    }
-    .dark h1, .dark #output, .dark #level, .dark #clickCount, .dark #rizzPoints, .dark h2, .dark span, .dark label {
-      color: #f0f0f0;
-    }
-    .dark #warning {
-      color: #ffcccb;
-    }
-    #three-canvas {
-      position: relative;
-      width: 100%;
-      height: 300px;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
-    .tooltip {
-      position: relative;
-    }
-    .tooltip:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #333;
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 4px;
-      white-space: nowrap;
-      z-index: 10;
-    }
-    .upgrade-available {
-      border: 2px solid #22c55e;
-      animation: pulse 1s infinite;
-    }
-    #upgrades {
-      max-height: 60vh; /* Fixed height */
-      overflow-y: auto; /* Scroll if needed */
-    }
-  </style>
-</head>
-<body class="bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
-  <div class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md">
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">3D Brainrot Rizzler Game</h1>
-    
-    <!-- 3D Canvas for the dancing model -->
-    <div id="three-canvas"></div>
-    
-    <button id="brainrotButton" class="w-full py-4 text-xl font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-transform duration-200">Click for Brainrot!</button>
-    <div id="output" class="mt-4 text-2xl text-center text-gray-800">What's your brainrot level?</div>
-    <div id="warning" class="mt-2 text-lg text-center text-red-600 hidden"></div>
-    <div id="level" class="mt-2 text-xl font-bold text-center text-red-500">Level: None</div>
-    <div id="clickCount" class="mt-2 text-lg text-center text-gray-600">Clicks: 0</div>
-    <div id="rizzPoints" class="mt-2 text-lg text-center text-gray-600">Rizz Points: 0</div>
-    <div id="cps" class="mt-2 text-lg text-center text-gray-600">CPS: 0</div>
-    <div id="passiveRate" class="mt-2 text-lg text-center text-gray-600">Passive Rizz/sec: 0</div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Daily Challenge</h2>
-      <div id="dailyChallenge" class="mt-2 text-sm text-gray-600"></div>
-    </div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Upgrades</h2>
-      <div id="upgrades" class="mt-2 space-y-2"></div>
-    </div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Purchase History</h2>
-      <div id="purchaseHistory" class="mt-2 text-sm text-gray-600 max-h-40 overflow-y-auto"></div>
-    </div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Achievements</h2>
-      <div id="achievements" class="mt-2 space-y-2"></div>
-    </div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Leaderboard</h2>
-      <div id="leaderboard" class="mt-2 space-y-2"></div>
-    </div>
-    
-    <div class="mt-6">
-      <h2 class="text-lg font-semibold text-gray-800">Customize Button</h2>
-      <input type="color" id="buttonColorPicker" class="mt-2 w-full h-10 rounded-lg">
-    </div>
-    
-    <div class="mt-4 flex space-x-2">
-      <button id="darkModeToggle" class="py-2 px-4 text-lg font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600">Toggle Dark Mode</button>
-      <button id="shareButton" class="py-2 px-4 text-lg font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600">Share Score</button>
-    </div>
-    
-    <div class="mt-4 flex space-x-2">
-      <input id="adminCodeInput" type="text" placeholder="Enter Admin Code" class="py-2 px-4 rounded-lg border border-gray-300">
-      <button id="adminSubmit" class="py-2 px-4 text-lg font-semibold text-white bg-purple-500 rounded-lg hover:bg-purple-600">Submit</button>
-    </div>
-    
-    <div class="mt-4 flex space-x-2">
-      <input id="customPhraseInput" type="text" placeholder="Add Custom Phrase" class="py-2 px-4 rounded-lg border border-gray-300">
-      <button id="addPhraseButton" class="py-2 px-4 text-lg font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">Add</button>
-    </div>
-    
-    <button id="prestigeButton" class="mt-4 w-full py-2 text-lg font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-gray-400" disabled>Prestige (Requires 1000 Clicks)</button>
-    <button id="resetButton" class="mt-4 w-full py-2 text-lg font-semibold text-white bg-gray-500 rounded-lg hover:bg-gray-600">Reset Brainrot</button>
-  </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little India - Authentic Indian Cuisine</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <script>
-    // 3D Scene Setup
-    let scene, camera, renderer, model, mixer;
-    let animationId;
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
 
-    function init3D() {
-      const canvasContainer = document.getElementById('three-canvas');
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+        /* Loading Animation */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #d97408, #b8860b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
 
-      camera = new THREE.PerspectiveCamera(75, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      canvasContainer.appendChild(renderer.domElement);
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambientLight);
+        .loader[style*="display: none"] {
+            display: none !important;
+        }
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(10, 10, 5);
-      directionalLight.castShadow = true;
-      scene.add(directionalLight);
+        .spice-loader {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-      // Create a dancing 3D model
-      const group = new THREE.Group();
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-      // Main body (wooden torso)
-      const bodyGeometry = new THREE.CylinderGeometry(1, 1.5, 3, 8);
-      const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Brown wood color
-      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-      body.castShadow = true;
-      body.receiveShadow = true;
-      group.add(body);
 
-      // Head
-      const headGeometry = new THREE.SphereGeometry(1.2, 16, 16);
-      const headMaterial = new THREE.MeshLambertMaterial({ color: 0xD2691E }); // Lighter wood
-      const head = new THREE.Mesh(headGeometry, headMaterial);
-      head.position.y = 2.5;
-      head.castShadow = true;
-      group.add(head);
+        /* Shopping Cart */
+        .cart-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
 
-      // Eyes
-      const eyeGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-      const leftEye = new THREE.Mesh(eyeGeometry, new THREE.MeshLambertMaterial({ color: 0x000000 }));
-      leftEye.position.set(-0.4, 2.8, 1.1);
-      group.add(leftEye);
+        .cart-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
 
-      const rightEye = new THREE.Mesh(eyeGeometry, new THREE.MeshLambertMaterial({ color: 0x000000 }));
-      rightEye.position.set(0.4, 2.8, 1.1);
-      group.add(rightEye);
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff0000;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
 
-      // Floating orbs
-      const orbGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-      const sunOrbMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.2 });
-      const sunOrb = new THREE.Mesh(orbGeometry, sunOrbMaterial);
-      sunOrb.position.set(3, 3, 0);
-      group.add(sunOrb);
+        .cart-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+            transition: right 0.3s ease;
+            z-index: 1002;
+            overflow-y: auto;
+        }
 
-      const blackOrbMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
-      const blackOrb = new THREE.Mesh(orbGeometry, blackOrbMaterial);
-      blackOrb.position.set(-3, 0, 0);
-      group.add(blackOrb);
+        .cart-panel.open {
+            right: 0;
+        }
 
-      // Legs
-      const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 8);
-      const legMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
-      const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-      leftLeg.position.set(-0.5, -2, 0);
-      group.add(leftLeg);
+        .cart-header {
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-      const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-      rightLeg.position.set(0.5, -2, 0);
-      group.add(rightLeg);
+        .cart-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
 
-      // Arms
-      const armGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2, 8);
-      const leftArm = new THREE.Mesh(armGeometry, legMaterial);
-      leftArm.position.set(-1.5, 0.5, 0);
-      group.add(leftArm);
+        .cart-items {
+            padding: 20px;
+        }
 
-      const rightArm = new THREE.Mesh(armGeometry, legMaterial);
-      rightArm.position.set(1.5, 0.5, 0);
-      group.add(rightArm);
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
 
-      model = group;
-      scene.add(model);
+        .cart-item-info h4 {
+            margin: 0;
+            color: #333;
+        }
 
-      camera.position.z = 6;
+        .cart-item-price {
+            color: #d97408;
+            font-weight: bold;
+        }
 
-      // Animation mixer for dancing
-      mixer = new THREE.AnimationMixer(model);
-      const danceClip = new THREE.AnimationClip('dance', -1, [
-        new THREE.VectorKeyframeTrack('.rotation[y]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 4, 0, -Math.PI / 4, 0]),
-        new THREE.VectorKeyframeTrack('.rotation[x]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 8, 0, -Math.PI / 8, 0]),
-        new THREE.VectorKeyframeTrack('leftArm.rotation[z]', [0, 0.5, 1, 1.5, 2], [Math.PI / 4, 0, Math.PI / 4, 0, Math.PI / 4]),
-        new THREE.VectorKeyframeTrack('rightArm.rotation[z]', [0, 0.5, 1, 1.5, 2], [-Math.PI / 4, 0, -Math.PI / 4, 0, -Math.PI / 4]),
-        new THREE.VectorKeyframeTrack('leftLeg.rotation[z]', [0, 0.5, 1, 1.5, 2], [0, -Math.PI / 6, 0, Math.PI / 6, 0]),
-        new THREE.VectorKeyframeTrack('rightLeg.rotation[z]', [0, 0.5, 1, 1.5, 2], [0, Math.PI / 6, 0, -Math.PI / 6, 0])
-      ]);
-      const danceAction = mixer.clipAction(danceClip);
-      danceAction.setLoop(THREE.LoopRepeat);
-      danceAction.play();
+        .cart-remove {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
 
-      // Render loop
-      function animate() {
-        animationId = requestAnimationFrame(animate);
-        mixer.update(0.02); // Dance speed
-        renderer.render(scene, camera);
-      }
-      animate();
+        .cart-total {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #d97408;
+        }
 
-      // Handle resize
-      window.addEventListener('resize', () => {
-        camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-      });
-    }
+        .cart-total h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
 
-    // Game Logic
-    const brainrotPhrases = [
-      "Skibidi toilet got me acting unwise 😭",
-      "Ohio energy only 🚫",
-      "Karen alert in Ohio 🚔",
-      "Rizzler vibes hittin' different fr 💯",
-      "Tralalero Tralala, Goddamn God and goddamn Allah! 💥",
-      "Bombardiro Crocodilo bombs the pizza factory! 🍕💣",
-      "Ballerina Cappuccina dances with espresso fury! ☕🩰",
-      "Trippi Troppi, too many trips to the gelato shop! 🍦",
-      "Tung Tung Tung Sahur hits with the bat at dawn! 🥁⚾",
-      "Brr Brr Patapim freezes the entire pasta party! ❄️🍝",
-      "Chimpanzini Bananini swings through the banana republic! 🍌🐒",
-      "Hipocactus, the spikiest hippo in the savanna! 🦛🌵",
-      "Blueberrinni Octopussini, eight arms of blueberry doom! 🐙🫐",
-      "Burbaloni Luliloli bubbles up the chaos! 🫧",
-      "Tracotocutulo Lirilì Larilà rhymes with disaster! 🎤",
-      "Bombombini Gusini, the explosive goose squad! 🪿💥",
-      "Capuccino Asashino sips and slices! ☕⚔️",
-      "Boneca Amvalabu dances the forbidden tango! 💃",
-      "Frullì Frullà blends the enemies into smoothies! 🥤",
-      "Protestatarii Brainrot protests the very existence! ✊",
-      "Assassino Boneca, the doll that kills quietly! 🪆🔪"
-    ];
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    const button = document.getElementById('brainrotButton');
-    const output = document.getElementById('output');
-    const warning = document.getElementById('warning');
-    const levelDisplay = document.getElementById('level');
-    const clickCountDisplay = document.getElementById('clickCount');
-    const rizzPointsDisplay = document.getElementById('rizzPoints');
-    const cpsDisplay = document.getElementById('cps');
-    const passiveRateDisplay = document.getElementById('passiveRate');
-    const resetButton = document.getElementById('resetButton');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const shareButton = document.getElementById('shareButton');
-    const adminCodeInput = document.getElementById('adminCodeInput');
-    const adminSubmit = document.getElementById('adminSubmit');
-    const customPhraseInput = document.getElementById('customPhraseInput');
-    const addPhraseButton = document.getElementById('addPhraseButton');
-    const prestigeButton = document.getElementById('prestigeButton');
-    const upgradesContainer = document.getElementById('upgrades');
-    const achievementsContainer = document.getElementById('achievements');
-    const leaderboardContainer = document.getElementById('leaderboard');
-    const dailyChallengeDisplay = document.getElementById('dailyChallenge');
-    const buttonColorPicker = document.getElementById('buttonColorPicker');
-    const purchaseHistoryContainer = document.getElementById('purchaseHistory');
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
+        }
 
-    let clickCount = 0;
-    let rizzPoints = 0;
-    let rizzPerClick = 1;
-    let passiveRate = 0;
-    let prestigeLevel = 0;
-    let lastClickTime = 0;
-    let fastClickCount = 0;
-    let isAdmin = false;
-    let clickHistory = [];
-    let dailyChallengeProgress = 0;
-    let dailyChallengeGoal = 0;
-    let dailyChallengeReward = 0;
-    let customButtonColor = '#ef4444';
-    let purchaseHistory = [];
-    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        /* About Section */
+        .about-section {
+            padding: 80px 20px;
+            background: #1a1a1a;
+        }
 
-    const achievements = [
-      { name: 'First Click', unlocked: false, condition: () => clickCount >= 1 },
-      { name: 'Brainrot Beginner', unlocked: false, condition: () => clickCount >= 10 },
-      { name: 'Rizz Collector', unlocked: false, condition: () => rizzPoints >= 100 },
-      { name: 'Upgrade Master', unlocked: false, condition: () => upgradeButtons.filter(u => u.purchased).length >= 5 },
-      { name: 'Passive Pro', unlocked: false, condition: () => passiveRate >= 1 },
-      { name: 'Fast Clicker', unlocked: false, condition: () => calculateCPS() >= 5 },
-      { name: 'Prestige Pioneer', unlocked: false, condition: () => prestigeLevel >= 1 },
-      { name: 'Infinite Rizz', unlocked: false, condition: () => rizzPoints >= 10000 },
-      { name: 'Custom Creator', unlocked: false, condition: () => brainrotPhrases.length > 50 },
-      { name: 'Dark Mode Dabbler', unlocked: false, condition: () => document.body.classList.contains('dark') },
-      { name: 'Daily Challenger', unlocked: false, condition: () => dailyChallengeProgress >= dailyChallengeGoal && dailyChallengeGoal > 0 },
-      { name: 'Italian Brainrot Master', unlocked: false, condition: () => brainrotPhrases.length >= 25 },
-      { name: '3D Visionary', unlocked: false, condition: () => clickCount >= 50 }
-    ];
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    const upgradeData = [
-      { name: 'Mega Rizz Boost', cost: 50, boost: 1, type: 'click', description: 'Increases Rizz per click by 1' },
-      { name: 'Sigma Drip', cost: 100, boost: 2, type: 'click', description: 'Boosts Rizz per click by 2' },
-      { name: 'Skibidi Aura', cost: 200, boost: 5, type: 'click', description: 'Amplifies Rizz per click by 5' },
-      { name: 'Gyatt Amplifier', cost: 500, boost: 10, type: 'click', description: 'Massive Rizz boost per click' },
-      { name: 'Mewing Master', cost: 1000, boost: 20, type: 'click', description: 'Elite Rizz gain per click' },
-      { name: 'Fanum Tax Evader', cost: 2000, boost: 50, type: 'click', description: 'Avoid taxes, gain big Rizz' },
-      { name: 'Ohio Overlord', cost: 5000, boost: 100, type: 'click', description: 'Rule Ohio with huge Rizz' },
-      { name: 'Rizz God', cost: 10000, boost: 200, type: 'click', description: 'God-tier Rizz per click' },
-      { name: 'Passive Sigma', cost: 300, boost: 1, type: 'passive', description: 'Earn 1 Rizz per second' },
-      { name: 'Aura Farmer', cost: 600, boost: 2, type: 'passive', description: 'Farm 2 Rizz per second' },
-      { name: 'Delulu Dreamer', cost: 1200, boost: 5, type: 'passive', description: 'Dreamy passive Rizz gain' },
-      { name: 'Vibe Checker', cost: 2500, boost: 10, type: 'passive', description: 'Check vibes, earn Rizz' },
-      { name: 'Sus Booster', cost: 5000, boost: 20, type: 'passive', description: 'Suspiciously high passive Rizz' }
-    ];
+        .about-content {
+            text-align: center;
+        }
 
-    let upgradeButtons = [];
-    let leaderboard = [];
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #ccc;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-    function createUpgrades() {
-      console.log('Creating upgrades...');
-      upgradesContainer.innerHTML = '';
-      upgradeButtons = [];
-      upgradeData.forEach((data, index) => {
-        const upgradeDiv = document.createElement('div');
-        upgradeDiv.classList.add('flex', 'justify-between', 'items-center', 'py-2'); // Fixed height with padding
-        const span = document.createElement('span');
-        span.innerText = `${data.name} (+${data.boost} per ${data.type === 'click' ? 'click' : 'sec'})`;
-        span.classList.add('tooltip');
-        span.setAttribute('data-tooltip', data.description);
-        const btn = document.createElement('button');
-        btn.id = `upgrade${index + 1}`;
-        btn.classList.add('py-1', 'px-3', 'bg-blue-500', 'text-white', 'rounded', 'hover:bg-blue-600', 'disabled:bg-gray-400');
-        btn.disabled = true;
-        btn.innerText = `Cost: ${data.cost} Rizz`;
-        upgradeDiv.appendChild(span);
-        upgradeDiv.appendChild(btn);
-        upgradesContainer.appendChild(upgradeDiv);
-        const upgradeObj = { button: btn, ...data, purchased: false };
-        upgradeButtons.push(upgradeObj);
+        .about-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
 
-        (function(idx) {
-          btn.addEventListener('click', () => {
-            console.log(`Upgrade button ${data.name} clicked. Rizz Points: ${rizzPoints}, Cost: ${data.cost}, Purchased: ${upgradeButtons[idx].purchased}`);
-            if (rizzPoints >= data.cost && !upgradeButtons[idx].purchased) {
-              if (confirm(`Purchase ${data.name} for ${data.cost} Rizz Points?`)) {
-                rizzPoints -= data.cost;
-                if (data.type === 'click') {
-                  rizzPerClick += data.boost;
-                  console.log(`Applied click upgrade: ${data.name}, New rizzPerClick: ${rizzPerClick}`);
-                } else {
-                  passiveRate += data.boost;
-                  console.log(`Applied passive upgrade: ${data.name}, New passiveRate: ${passiveRate}`);
-                }
-                upgradeButtons[idx].purchased = true;
-                purchaseHistory.push(`${new Date().toLocaleTimeString()}: Purchased ${data.name} for ${data.cost} Rizz`);
-                playBeep(660, 150);
-                updateDisplay();
-                saveProgress();
-                showWarning(`Purchased ${data.name}! +${data.boost} ${data.type} boost!`);
-              }
-            } else {
-              showWarning(`Cannot purchase ${data.name}: ${upgradeButtons[idx].purchased ? 'Already purchased' : 'Not enough Rizz Points'}`);
+        .feature {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature h3 {
+            color: #d97408;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature p {
+            color: #ccc;
+        }
+
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            padding: 15px 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .navbar.scrolled {
+            background: rgba(217, 116, 8, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: logoGlow 2s ease-in-out infinite alternate;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes logoGlow {
+            from {
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,215,0,0.3);
             }
-          });
-        })(index);
-      });
-      console.log(`Upgrades created: ${upgradeButtons.length} buttons`);
-      updateUpgrades();
-    }
-
-    function updatePurchaseHistory() {
-      purchaseHistoryContainer.innerHTML = purchaseHistory.length
-        ? purchaseHistory.map(entry => `<div class="text-sm text-gray-600">${entry}</div>`).join('')
-        : '<div class="text-sm text-gray-600">No purchases yet</div>';
-    }
-
-    function playBeep(frequency = 440, duration = 100) {
-      const oscillator = audioCtx.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-      oscillator.connect(audioCtx.destination);
-      oscillator.start();
-      setTimeout(() => oscillator.stop(), duration);
-    }
-
-    function calculateCPS() {
-      const now = Date.now();
-      clickHistory = clickHistory.filter(time => now - time < 1000);
-      return clickHistory.length;
-    }
-
-    function updateAchievements() {
-      achievements.forEach(ach => {
-        if (!ach.unlocked && ach.condition()) {
-          ach.unlocked = true;
-          showWarning(`Achievement Unlocked: ${ach.name}!`);
-          playBeep(880, 200);
+            to {
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.6);
+            }
         }
-      });
-      achievementsContainer.innerHTML = achievements
-        .filter(ach => ach.unlocked)
-        .map(ach => `<div class="text-sm text-gray-600">${ach.name}</div>`)
-        .join('');
-    }
 
-    function updateLeaderboard() {
-      const playerScore = { name: 'You', score: rizzPoints, date: new Date().toISOString() };
-      leaderboard = [...leaderboard.filter(s => s.name !== 'You'), playerScore]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
-      leaderboardContainer.innerHTML = leaderboard
-        .map((entry, index) => `<div class="text-sm text-gray-600">${index + 1}. ${entry.name}: ${entry.score} Rizz Points</div>`)
-        .join('');
-      localStorage.setItem('brainrotLeaderboard', JSON.stringify(leaderboard));
-    }
-
-    function generateDailyChallenge() {
-      const today = new Date().toDateString();
-      const savedDate = localStorage.getItem('dailyChallengeDate');
-      if (savedDate !== today) {
-        dailyChallengeGoal = Math.floor(Math.random() * 50) + 50;
-        dailyChallengeReward = dailyChallengeGoal * 10;
-        dailyChallengeProgress = 0;
-        localStorage.setItem('dailyChallengeDate', today);
-        localStorage.setItem('dailyChallengeGoal', dailyChallengeGoal);
-        localStorage.setItem('dailyChallengeReward', dailyChallengeReward);
-        localStorage.setItem('dailyChallengeProgress', dailyChallengeProgress);
-      } else {
-        dailyChallengeGoal = parseInt(localStorage.getItem('dailyChallengeGoal')) || 50;
-        dailyChallengeReward = parseInt(localStorage.getItem('dailyChallengeReward')) || 500;
-        dailyChallengeProgress = parseInt(localStorage.getItem('dailyChallengeProgress')) || 0;
-      }
-      updateDailyChallenge();
-    }
-
-    function updateDailyChallenge() {
-      dailyChallengeDisplay.innerText = dailyChallengeProgress >= dailyChallengeGoal
-        ? `Challenge Completed! Reward: ${dailyChallengeReward} Rizz Points`
-        : `Daily Challenge: Click ${dailyChallengeGoal} times (Progress: ${dailyChallengeProgress}/${dailyChallengeGoal})`;
-    }
-
-    function saveProgress() {
-      const saveData = {
-        clickCount,
-        rizzPoints,
-        rizzPerClick,
-        passiveRate,
-        prestigeLevel,
-        purchasedUpgrades: upgradeButtons.map(u => u.purchased),
-        brainrotPhrases,
-        isDark: document.body.classList.contains('dark'),
-        customButtonColor,
-        dailyChallengeProgress,
-        purchaseHistory
-      };
-      localStorage.setItem('brainrotSave', JSON.stringify(saveData));
-      updateLeaderboard();
-    }
-
-    function loadProgress() {
-      const saveData = JSON.parse(localStorage.getItem('brainrotSave'));
-      if (saveData) {
-        clickCount = saveData.clickCount || 0;
-        rizzPoints = saveData.rizzPoints || 0;
-        rizzPerClick = saveData.rizzPerClick || 1;
-        passiveRate = saveData.passiveRate || 0;
-        prestigeLevel = saveData.prestigeLevel || 0;
-        customButtonColor = saveData.customButtonColor || '#ef4444';
-        dailyChallengeProgress = saveData.dailyChallengeProgress || 0;
-        purchaseHistory = saveData.purchaseHistory || [];
-        if (saveData.purchasedUpgrades && upgradeButtons.length === saveData.purchasedUpgrades.length) {
-          saveData.purchasedUpgrades.forEach((p, i) => {
-            if (upgradeButtons[i]) upgradeButtons[i].purchased = p;
-          });
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
         }
-        if (saveData.brainrotPhrases) brainrotPhrases.splice(0, brainrotPhrases.length, ...saveData.brainrotPhrases);
-        if (saveData.isDark) document.body.classList.add('dark');
-        button.style.backgroundColor = customButtonColor;
-        buttonColorPicker.value = customButtonColor;
-      }
-      const savedLeaderboard = JSON.parse(localStorage.getItem('brainrotLeaderboard'));
-      if (savedLeaderboard) leaderboard = savedLeaderboard;
-      generateDailyChallenge();
-      updateDisplay();
-    }
 
-    function updateDisplay() {
-      clickCountDisplay.innerText = `Clicks: ${clickCount}`;
-      rizzPointsDisplay.innerText = `Rizz Points: ${rizzPoints}`;
-      passiveRateDisplay.innerText = `Passive Rizz/sec: ${passiveRate}`;
-      cpsDisplay.innerText = `CPS: ${calculateCPS()}`;
-      updateLevel();
-      updateUpgrades();
-      updateAchievements();
-      updateLeaderboard();
-      updateDailyChallenge();
-      updatePurchaseHistory();
-      prestigeButton.disabled = clickCount < 1000;
-    }
-
-    function updateLevel() {
-      let level = 'None';
-      let color = customButtonColor;
-      if (clickCount > 0 && clickCount <= 5) {
-        level = 'Mild Brainrot';
-      } else if (clickCount <= 10) {
-        level = 'Moderate Brainrot';
-      } else if (clickCount <= 20) {
-        level = 'Severe Brainrot';
-      } else {
-        level = 'Terminal Brainrot';
-      }
-      levelDisplay.innerText = `Level: ${level}`;
-      button.style.backgroundColor = color;
-      button.style.setProperty('--tw-bg-opacity', '1');
-      button.classList.add('hover:bg-opacity-90');
-    }
-
-    function updateUpgrades() {
-      upgradeButtons.forEach((upgrade, idx) => {
-        upgrade.button.disabled = rizzPoints < upgrade.cost || upgrade.purchased;
-        upgrade.button.innerText = upgrade.purchased ? 'Purchased!' : `Cost: ${upgrade.cost} Rizz`;
-        if (rizzPoints >= upgrade.cost && !upgrade.purchased) {
-          upgrade.button.parentElement.classList.add('upgrade-available');
-        } else {
-          upgrade.button.parentElement.classList.remove('upgrade-available');
+        .nav-menu li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 5px;
+            position: relative;
         }
-      });
-    }
 
-    function showWarning(message) {
-      warning.innerText = message;
-      warning.classList.remove('hidden');
-      setTimeout(() => warning.classList.add('hidden'), 3000);
-      console.log('Warning:', message);
-    }
-
-    function detectAutoclicker(now) {
-      if (isAdmin) return false;
-      const timeDiff = now - lastClickTime;
-      lastClickTime = now;
-      if (timeDiff < 50) {
-        fastClickCount++;
-      } else {
-        fastClickCount = 0;
-      }
-      if (fastClickCount >= 3) {
-        resetProgress(true);
-        showWarning("Autoclicker detected! Progress reset.");
-        return true;
-      }
-      return false;
-    }
-
-    function resetProgress(isCheat = false) {
-      clickCount = 0;
-      rizzPoints = 0;
-      rizzPerClick = 1 + prestigeLevel * 0.5;
-      passiveRate = 0;
-      fastClickCount = 0;
-      clickHistory = [];
-      dailyChallengeProgress = 0;
-      purchaseHistory = [];
-      upgradeButtons.forEach(upgrade => upgrade.purchased = false);
-      output.innerText = isCheat ? "Cheater! Reset." : "What's your brainrot level?";
-      updateDisplay();
-      saveProgress();
-    }
-
-    button.addEventListener('click', () => {
-      const now = Date.now();
-      if (detectAutoclicker(now)) return;
-      clickCount++;
-      rizzPoints += rizzPerClick;
-      if (dailyChallengeProgress < dailyChallengeGoal) {
-        dailyChallengeProgress++;
-        if (dailyChallengeProgress >= dailyChallengeGoal) {
-          rizzPoints += dailyChallengeReward;
-          showWarning(`Daily Challenge Completed! +${dailyChallengeReward} Rizz Points`);
+        .nav-menu li a:hover {
+            color: #ffd700;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-1px);
         }
-      }
-      clickHistory.push(now);
-      const randomPhrase = brainrotPhrases[Math.floor(Math.random() * brainrotPhrases.length)];
-      output.innerText = randomPhrase;
-      output.classList.remove('fade-in');
-      void output.offsetWidth;
-      output.classList.add('fade-in');
-      button.classList.add('pulse');
-      setTimeout(() => button.classList.remove('pulse'), 300);
-      
-      // Dance reaction
-      if (model && mixer) {
-        model.rotation.y += Math.PI / 8; // Quick spin
-        model.scale.set(1.1, 1.1, 1.1);
-        setTimeout(() => model.scale.set(1, 1, 1), 200);
-      }
-      
-      playBeep();
-      updateDisplay();
-      saveProgress();
-    });
 
-    resetButton.addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all progress?')) {
-        resetProgress();
-        showWarning("Progress reset, start fresh!");
-      }
-    });
-
-    darkModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark');
-      if (scene) {
-        scene.background = document.body.classList.contains('dark') ? new THREE.Color(0x191970) : new THREE.Color(0x87CEEB);
-      }
-      updateAchievements();
-      saveProgress();
-    });
-
-    shareButton.addEventListener('click', () => {
-      const text = `My 3D Brainrot Score: ${rizzPoints} Rizz Points with ${clickCount} Clicks!`;
-      navigator.clipboard.writeText(text).then(() => showWarning('Score copied to clipboard!'));
-    });
-
-    adminSubmit.addEventListener('click', () => {
-      if (adminCodeInput.value === '5555') {
-        rizzPoints = 999999999;
-        clickCount = 999999;
-        isAdmin = true;
-        showWarning('Admin Mode Activated: Unlimited Rizz!');
-        updateDisplay();
-        saveProgress();
-      } else {
-        showWarning('Invalid Admin Code!');
-      }
-      adminCodeInput.value = '';
-    });
-
-    addPhraseButton.addEventListener('click', () => {
-      const phrase = customPhraseInput.value.trim();
-      if (phrase) {
-        brainrotPhrases.push(phrase);
-        showWarning('Custom Phrase Added!');
-        updateAchievements();
-        saveProgress();
-      } else {
-        showWarning('Please enter a valid phrase!');
-      }
-      customPhraseInput.value = '';
-    });
-
-    prestigeButton.addEventListener('click', () => {
-      if (clickCount >= 1000) {
-        if (confirm('Prestige will reset your progress but increase Rizz per click. Continue?')) {
-          prestigeLevel++;
-          resetProgress();
-          showWarning(`Prestiged! Now at level ${prestigeLevel} with ${rizzPerClick} per click.`);
-          updateAchievements();
+        .menu-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
         }
-      }
-    });
 
-    buttonColorPicker.addEventListener('input', () => {
-      customButtonColor = buttonColorPicker.value;
-      button.style.backgroundColor = customButtonColor;
-      updateLevel();
-      saveProgress();
-    });
+        .menu-button img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
 
-    // Passive income interval
-    setInterval(() => {
-      rizzPoints += passiveRate;
-      updateDisplay();
-    }, 1000);
+        .menu-button:hover img {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255,215,0,0.4);
+        }
 
-    // CPS update interval
-    setInterval(() => {
-      cpsDisplay.innerText = `CPS: ${calculateCPS()}`;
-    }, 500);
+        /* Home Section */
+        .home-section {
+            background-image: url('ash.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
 
-    // Auto-save every 30 seconds
-    setInterval(saveProgress, 30000);
+        @keyframes backgroundShift {
+            0%, 100% {
+                background-position: center center;
+            }
+            50% {
+                background-position: center 20%;
+            }
+        }
 
-    // Initialize
-    init3D();
-    createUpgrades();
-    loadProgress();
-    updateDisplay();
-  </script>
+        .home-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .welcome-content {
+            text-align: center;
+            color: white;
+            z-index: 2;
+            position: relative;
+            max-width: 800px;
+            padding: 0 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .welcome-title {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            color: #ffd700;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .welcome-title:hover {
+            transform: translateY(-5px);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes titleGlow {
+            from {
+                text-shadow: 3px 3px 6px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.5);
+            }
+            to {
+                text-shadow: 3px 3px 6px rgba(0,0,0,0.7), 0 0 40px rgba(255,215,0,0.8);
+            }
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #d97408, #000000);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(217, 116, 8, 0.3);
+            background: linear-gradient(135deg, #000000, #d97408);
+        }
+
+        /* Menu Section - Clean Black Design */
+        .menu-section {
+            padding: 80px 20px;
+            background: #1a1a1a;
+        }
+
+        .menu-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .menu-subtitle {
+            text-align: center;
+            color: #ccc;
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+            font-style: italic;
+        }
+
+        .menu-category-clean {
+            margin-bottom: 60px;
+            background: #2a2a2a;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .category-title-clean {
+            font-size: 2rem;
+            color: #d97408;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #d97408;
+            padding-bottom: 15px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .menu-items-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .menu-item-clean {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid #444;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item-clean:hover {
+            background: #3a3a3a;
+            border-radius: 10px;
+        }
+
+        .menu-item-clean:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .item-name-clean {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+        }
+
+        .item-description-clean {
+            color: #ccc;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .item-price-clean {
+            font-size: 1.3rem;
+            color: #d97408;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .order-btn-clean {
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .order-btn-clean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            color: #d97408;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: slideInDown 1s ease-out;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .menu-category {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .menu-category:nth-child(1) { animation-delay: 0.1s; }
+        .menu-category:nth-child(2) { animation-delay: 0.2s; }
+        .menu-category:nth-child(3) { animation-delay: 0.3s; }
+        .menu-category:nth-child(4) { animation-delay: 0.4s; }
+
+        .menu-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(217, 116, 8, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .menu-category:hover::before {
+            left: 100%;
+        }
+
+        .menu-category:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(217, 116, 8, 0.2);
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            color: #d97408;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 3px solid #ffd700;
+            padding-bottom: 10px;
+        }
+
+        .menu-item {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(217, 116, 8, 0.05);
+            padding-left: 10px;
+            border-radius: 5px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .menu-item:hover .item-name {
+            color: #d97408;
+        }
+
+        .item-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            transition: color 0.3s ease;
+        }
+
+        .menu-item:hover .item-description {
+            color: #555;
+        }
+
+        .item-price {
+            color: #d97408;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover .item-price {
+            transform: scale(1.1);
+            text-shadow: 0 0 5px rgba(217, 116, 8, 0.3);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #d97408, #000000);
+            color: white;
+        }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .contact-form-container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 10px rgba(217, 116, 8, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #d97408, #ff8c00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
+        }
+
+        .contact-info {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .contact-details {
+            margin-bottom: 20px;
+        }
+
+        .contact-details h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .contact-details p {
+            margin-bottom: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Clean Menu Cards */
+        .menu-category {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(217, 116, 8, 0.15);
+        }
+
+        /* Professional Order Buttons */
+        .order-button {
+            background: linear-gradient(135deg, #d97408, #000000);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #000000, #d97408);
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 80px 20px;
+            background: #1a1a1a;
+        }
+
+        .reviews-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .review-card {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .review-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d97408, #000000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+
+        .review-info h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .review-rating {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+
+        .review-text {
+            color: #ccc;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .review-date {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .welcome-title {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .weather-widget, .social-feed, .spice-mixer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loader" id="loader">
+        <div class="spice-loader"></div>
+        <button onclick="hideLoader()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Skip Loading</button>
+    </div>
+
+    <!-- Shopping Cart -->
+    <button class="cart-icon" id="cartIcon" onclick="toggleCart()">
+        🛒
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p style="text-align: center; color: #666; padding: 20px;">Your cart is empty</p>
+        </div>
+        <div class="cart-total" id="cartTotal" style="display: none;">
+            <h3>Total: $<span id="totalAmount">0.00</span></h3>
+            <button class="checkout-btn" onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Little India</div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="menu-button" onclick="toggleMenu()">
+                <img src="Butter.png" alt="Menu">
+            </button>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="home-section">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Welcome to Little India</h1>
+            <p class="welcome-subtitle">Authentic Indian Flavors in Every Bite</p>
+            <a href="#menu" class="cta-button">View Our Menu</a>
+            <a href="#contact" class="cta-button">Contact Us</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="about-container">
+            <div class="about-content">
+                <h2 class="section-title">About Little India</h2>
+                <p class="about-text">
+                    Welcome to Little India, where authentic Indian flavors meet warm hospitality. 
+                    Our family-owned restaurant has been serving the community for over 15 years, 
+                    bringing you the true taste of India with traditional recipes passed down through generations.
+                </p>
+                <p class="about-text">
+                    Our chefs use only the freshest ingredients and authentic spices imported directly from India. 
+                    Every dish is prepared with love and care, ensuring an unforgettable dining experience 
+                    that will transport you to the streets of Mumbai, Delhi, and beyond.
+                </p>
+                <div class="about-features">
+                    <div class="feature">
+                        <h3>🍛 Authentic Recipes</h3>
+                        <p>Traditional family recipes from across India</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🌶️ Fresh Spices</h3>
+                        <p>Imported spices for authentic flavors</p>
+                    </div>
+                    <div class="feature">
+                        <h3>👨‍🍳 Expert Chefs</h3>
+                        <p>Experienced chefs with years of expertise</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Menu Section -->
+    <section id="menu" class="menu-section">
+        <div class="menu-container">
+            <h2 class="section-title">Our Menu</h2>
+            <p class="menu-subtitle">Authentic Indian Cuisine Made with Love</p>
+            
+            <!-- Appetizers -->
+            <div class="menu-category-clean">
+                <h3 class="category-title-clean">Appetizers</h3>
+                <div class="menu-items-grid">
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Samosas (2 pieces)</h4>
+                            <p class="item-description-clean">Crispy pastries filled with spiced potatoes and peas</p>
+                        </div>
+                        <div class="item-price-clean">$4.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Samosas', 4.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Chicken Pakoras</h4>
+                            <p class="item-description-clean">Tender chicken pieces in spiced batter, deep fried</p>
+                        </div>
+                        <div class="item-price-clean">$6.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Chicken Pakoras', 6.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Chicken Tikka</h4>
+                            <p class="item-description-clean">Tender chicken marinated in yogurt and spices</p>
+                        </div>
+                        <div class="item-price-clean">$8.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Chicken Tikka', 8.99)">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Curries -->
+            <div class="menu-category-clean">
+                <h3 class="category-title-clean">Curries</h3>
+                <div class="menu-items-grid">
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Butter Chicken</h4>
+                            <p class="item-description-clean">Creamy tomato curry with tender chicken pieces</p>
+                        </div>
+                        <div class="item-price-clean">$14.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Butter Chicken', 14.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Lamb Vindaloo</h4>
+                            <p class="item-description-clean">Spicy Goan curry with tender lamb pieces</p>
+                        </div>
+                        <div class="item-price-clean">$16.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Lamb Vindaloo', 16.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Chana Masala</h4>
+                            <p class="item-description-clean">Chickpeas in aromatic tomato and onion sauce</p>
+                        </div>
+                        <div class="item-price-clean">$12.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Chana Masala', 12.99)">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rice & Breads -->
+            <div class="menu-category-clean">
+                <h3 class="category-title-clean">Rice & Breads</h3>
+                <div class="menu-items-grid">
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Chicken Biryani</h4>
+                            <p class="item-description-clean">Fragrant basmati rice with spiced chicken</p>
+                        </div>
+                        <div class="item-price-clean">$15.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Chicken Biryani', 15.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Garlic Naan</h4>
+                            <p class="item-description-clean">Soft bread topped with garlic and herbs</p>
+                        </div>
+                        <div class="item-price-clean">$3.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Garlic Naan', 3.99)">Add</button>
+                    </div>
+                    
+                    <div class="menu-item-clean">
+                        <div class="item-info">
+                            <h4 class="item-name-clean">Plain Naan</h4>
+                            <p class="item-description-clean">Soft leavened bread baked in tandoor</p>
+                        </div>
+                        <div class="item-price-clean">$2.99</div>
+                        <button class="order-btn-clean" onclick="addToCart('Plain Naan', 2.99)">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="reviews-section">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">SM</div>
+                    <div class="review-info">
+                        <h4>Sarah Mitchell</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "Absolutely incredible! The butter chicken was the best I've ever had. The spices were perfectly balanced and the naan was fresh and warm. The service was excellent and the atmosphere was cozy and authentic."
+                </div>
+                <div class="review-date">2 days ago</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">RJ</div>
+                    <div class="review-info">
+                        <h4>Raj Patel</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "As someone from India, I can say this is the most authentic Indian food I've found in the city. The biryani reminded me of home. The chef clearly knows traditional cooking techniques."
+                </div>
+                <div class="review-date">1 week ago</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">MJ</div>
+                    <div class="review-info">
+                        <h4>Michael Johnson</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "First time trying Indian food and I'm hooked! The staff was so helpful in explaining the dishes. The lamb vindaloo had the perfect amount of heat. Will definitely be back!"
+                </div>
+                <div class="review-date">3 days ago</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">AL</div>
+                    <div class="review-info">
+                        <h4>Anna Lee</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "The vegetarian options are amazing! The chana masala and vegetable biryani were both delicious. Great place for vegetarians and the prices are very reasonable for the quality."
+                </div>
+                <div class="review-date">5 days ago</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">DC</div>
+                    <div class="review-info">
+                        <h4>David Chen</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "Outstanding food and service! The samosas were crispy and flavorful, and the garlic naan was perfect. The restaurant has a great ambiance and the staff is very friendly and knowledgeable."
+                </div>
+                <div class="review-date">1 week ago</div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">ES</div>
+                    <div class="review-info">
+                        <h4>Emily Smith</h4>
+                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div class="review-text">
+                    "Perfect for a date night! The restaurant has a romantic atmosphere and the food was exceptional. The chicken tikka was tender and well-seasoned. Highly recommend for special occasions."
+                </div>
+                <div class="review-date">4 days ago</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="contact-container">
+            <div class="contact-info">
+                <h2 class="contact-title">Visit Us</h2>
+                <div class="contact-details">
+                    <h3>Address</h3>
+                    <p>123 Spice Street<br>
+                    Little India District<br>
+                    New York, NY 10001</p>
+                </div>
+                <div class="contact-details">
+                    <h3>Hours</h3>
+                    <p>Monday - Thursday: 11:00 AM - 10:00 PM<br>
+                    Friday - Saturday: 11:00 AM - 11:00 PM<br>
+                    Sunday: 12:00 PM - 9:00 PM</p>
+                </div>
+                <div class="contact-details">
+                    <h3>Phone</h3>
+                    <p>(555) 123-4567</p>
+                </div>
+            </div>
+            
+            <div class="contact-form-container">
+                <h2 class="contact-title">Send us a Message</h2>
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="subject" name="subject" placeholder="Subject" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Little India. All rights reserved. | Authentic Indian Cuisine</p>
+    </footer>
+
+    <script>
+        // Global variables
+        let cart = [];
+        let cartOpen = false;
+
+        // Loading Animation - Simplified
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        }
+
+        // Hide loader when page loads
+        window.addEventListener('load', hideLoader);
+        
+        // Fallback - hide loader after 2 seconds regardless
+        setTimeout(hideLoader, 2000);
+
+        function addToCart(itemName, price) {
+            const existingItem = cart.find(item => item.name === itemName);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name: itemName, price: price, quantity: 1 });
+            }
+            
+            updateCartDisplay();
+            showNotification(`${itemName} added to cart!`);
+        }
+
+        function toggleCart() {
+            const cartPanel = document.getElementById('cartPanel');
+            cartOpen = !cartOpen;
+            cartPanel.classList.toggle('open', cartOpen);
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartBadge = document.getElementById('cartBadge');
+            const cartTotal = document.getElementById('cartTotal');
+            const totalAmount = document.getElementById('totalAmount');
+            
+            cartBadge.textContent = cart.length;
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Your cart is empty</p>';
+                cartTotal.style.display = 'none';
+            } else {
+                let total = 0;
+                cartItems.innerHTML = cart.map(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    return `
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <h4>${item.name}</h4>
+                                <p>Qty: ${item.quantity} × $${item.price.toFixed(2)}</p>
+                            </div>
+                            <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
+                            <button class="cart-remove" onclick="removeFromCart('${item.name}')">Remove</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                totalAmount.textContent = total.toFixed(2);
+                cartTotal.style.display = 'block';
+            }
+        }
+
+        function removeFromCart(itemName) {
+            cart = cart.filter(item => item.name !== itemName);
+            updateCartDisplay();
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            alert(`Thank you for your order! Total: $${total.toFixed(2)}\n\nThis is a demo. In a real restaurant, this would process your payment.`);
+            
+            cart = [];
+            updateCartDisplay();
+            toggleCart();
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.background = 'linear-gradient(135deg, #d97408, #b8860b)';
+            notification.style.color = 'white';
+            notification.style.padding = '15px 20px';
+            notification.style.borderRadius = '10px';
+            notification.style.zIndex = '9999';
+            notification.style.animation = 'slideInRight 0.3s ease';
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+
+        // Contact Form
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            
+            // Create email content
+            const emailBody = `
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+
+Message:
+${message}
+
+---
+This message was sent from the Little India website contact form.
+            `;
+            
+            // Create mailto link
+            const mailtoLink = `mailto:calavriaslouie@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            // Show success message
+            showNotification('Email client opened! Please send the message to complete your inquiry.');
+            
+            // Reset form
+            document.getElementById('contactForm').reset();
+        });
+
+        // Menu toggle with animation
+        function toggleMenu() {
+            const navMenu = document.querySelector('.nav-menu');
+            const isVisible = navMenu.style.display === 'flex';
+            
+            if (isVisible) {
+                navMenu.style.animation = 'slideOutUp 0.3s ease forwards';
+                setTimeout(() => {
+                    navMenu.style.display = 'none';
+                }, 300);
+            } else {
+                navMenu.style.display = 'flex';
+                navMenu.style.animation = 'slideInDown 0.3s ease forwards';
+            }
+        }
+
+        // Smooth scrolling with offset for fixed navbar
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.offsetTop - 80;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Enhanced scroll effects
+        let lastScrollTop = 0;
+        let ticking = false;
+
+        function updateNavbar() {
+            const navbar = document.querySelector('.navbar');
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                navbar.style.transform = 'translateY(-100%)';
+            } else {
+                navbar.style.transform = 'translateY(0)';
+            }
+            lastScrollTop = scrollTop;
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', requestTick);
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.menu-category, .review-card').forEach(element => {
+            observer.observe(element);
+        });
+
+        // Parallax effect for home section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const homeSection = document.querySelector('.home-section');
+            if (homeSection) {
+                const rate = scrolled * -0.5;
+                homeSection.style.transform = `translateY(${rate}px)`;
+            }
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
