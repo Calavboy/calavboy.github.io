@@ -496,6 +496,20 @@
         skip30Btn.addEventListener('click', () => { closeSkipChoices(); skipToLast30(); });
         skipCancelBtn.addEventListener('click', () => closeSkipChoices());
 
+        function restartCurrentStage() {
+          if (idx >= durations.length) return;
+          stopTimer();
+          remaining = durations[idx];
+          updateUI();
+          startTimer();
+        }
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            restartCurrentStage();
+          }
+        });
+
         // Music: simple ambient "ah" pad using Web Audio API
         let audioCtx = null, masterGain = null, voiceGain = null, osc1 = null, osc2 = null, lfo = null, lfoGain = null, musicTick = null, ahTick = null, musicOn = false;
 
@@ -968,3 +982,4 @@
     </script>
   </body>
 </html>
+
