@@ -1,1504 +1,970 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Little India - Authentic Indian Cuisine</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Countdown</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            overflow-x: hidden;
-        }
-
-        /* Loading Animation */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #d97408, #b8860b);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loader[style*="display: none"] {
-            display: none !important;
-        }
-
-        .spice-loader {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid #ffd700;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-
-        /* Shopping Cart */
-        .cart-icon {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            cursor: pointer;
-            font-size: 24px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 1001;
-        }
-
-        .cart-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .cart-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff0000;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .cart-panel {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: white;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
-            transition: right 0.3s ease;
-            z-index: 1002;
-            overflow-y: auto;
-        }
-
-        .cart-panel.open {
-            right: 0;
-        }
-
-        .cart-header {
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cart-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .cart-items {
-            padding: 20px;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .cart-item-info h4 {
-            margin: 0;
-            color: #333;
-        }
-
-        .cart-item-price {
-            color: #d97408;
-            font-weight: bold;
-        }
-
-        .cart-remove {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .cart-total {
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 2px solid #d97408;
-        }
-
-        .cart-total h3 {
-            color: #333;
-            margin: 0 0 10px 0;
-        }
-
-        .checkout-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
-        }
-
-        /* About Section */
-        .about-section {
-            padding: 80px 20px;
-            background: #1a1a1a;
-        }
-
-        .about-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .about-content {
-            text-align: center;
-        }
-
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #ccc;
-            margin-bottom: 30px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .about-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .feature {
-            background: #2a2a2a;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .feature:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature h3 {
-            color: #d97408;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .feature p {
-            color: #ccc;
-        }
-
-
-        /* Navigation */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            padding: 15px 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            transform: translateY(0);
-        }
-
-        .navbar.scrolled {
-            background: rgba(217, 116, 8, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: logoGlow 2s ease-in-out infinite alternate;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        @keyframes logoGlow {
-            from {
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,215,0,0.3);
-            }
-            to {
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.6);
-            }
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-
-        .nav-menu li a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 10px 15px;
-            border-radius: 5px;
-            position: relative;
-        }
-
-        .nav-menu li a:hover {
-            color: #ffd700;
-            background-color: rgba(255,255,255,0.1);
-            transform: translateY(-1px);
-        }
-
-        .menu-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .menu-button img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        .menu-button:hover img {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(255,215,0,0.4);
-        }
-
-        /* Home Section */
-        .home-section {
-            background-image: url('ash.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            animation: backgroundShift 20s ease-in-out infinite;
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% {
-                background-position: center center;
-            }
-            50% {
-                background-position: center 20%;
-            }
-        }
-
-        .home-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.4);
-        }
-
-        .welcome-content {
-            text-align: center;
-            color: white;
-            z-index: 2;
-            position: relative;
-            max-width: 800px;
-            padding: 0 20px;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .welcome-title {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            color: #ffd700;
-            animation: titleGlow 3s ease-in-out infinite alternate;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .welcome-title:hover {
-            transform: translateY(-5px);
-        }
-
-        .welcome-subtitle {
-            font-size: 1.5rem;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes titleGlow {
-            from {
-                text-shadow: 3px 3px 6px rgba(0,0,0,0.7), 0 0 20px rgba(255,215,0,0.5);
-            }
-            to {
-                text-shadow: 3px 3px 6px rgba(0,0,0,0.7), 0 0 40px rgba(255,215,0,0.8);
-            }
-        }
-
-        .cta-button {
-            background: linear-gradient(135deg, #d97408, #000000);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            margin: 10px;
-            animation: fadeInUp 1s ease-out 0.6s both;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(217, 116, 8, 0.3);
-            background: linear-gradient(135deg, #000000, #d97408);
-        }
-
-        /* Menu Section - Clean Black Design */
-        .menu-section {
-            padding: 80px 20px;
-            background: #1a1a1a;
-        }
-
-        .menu-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .menu-subtitle {
-            text-align: center;
-            color: #ccc;
-            font-size: 1.1rem;
-            margin-bottom: 50px;
-            font-style: italic;
-        }
-
-        .menu-category-clean {
-            margin-bottom: 60px;
-            background: #2a2a2a;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        .category-title-clean {
-            font-size: 2rem;
-            color: #d97408;
-            margin-bottom: 30px;
-            text-align: center;
-            border-bottom: 3px solid #d97408;
-            padding-bottom: 15px;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .menu-items-grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .menu-item-clean {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            border-bottom: 1px solid #444;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item-clean:hover {
-            background: #3a3a3a;
-            border-radius: 10px;
-        }
-
-        .menu-item-clean:last-child {
-            border-bottom: none;
-        }
-
-        .item-info {
-            flex: 1;
-            margin-right: 20px;
-        }
-
-        .item-name-clean {
-            font-size: 1.2rem;
-            color: #fff;
-            margin: 0 0 8px 0;
-            font-weight: 600;
-        }
-
-        .item-description-clean {
-            color: #ccc;
-            margin: 0;
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-
-        .item-price-clean {
-            font-size: 1.3rem;
-            color: #d97408;
-            font-weight: bold;
-            margin-right: 15px;
-            min-width: 60px;
-            text-align: right;
-        }
-
-        .order-btn-clean {
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 80px;
-        }
-
-        .order-btn-clean:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 3rem;
-            color: #d97408;
-            margin-bottom: 50px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: slideInDown 1s ease-out;
-            position: relative;
-            z-index: 2;
-        }
-
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .menu-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .menu-category {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.8s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .menu-category:nth-child(1) { animation-delay: 0.1s; }
-        .menu-category:nth-child(2) { animation-delay: 0.2s; }
-        .menu-category:nth-child(3) { animation-delay: 0.3s; }
-        .menu-category:nth-child(4) { animation-delay: 0.4s; }
-
-        .menu-category::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(217, 116, 8, 0.1), transparent);
-            transition: left 0.6s ease;
-        }
-
-        .menu-category:hover::before {
-            left: 100%;
-        }
-
-        .menu-category:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(217, 116, 8, 0.2);
-        }
-
-        .category-title {
-            font-size: 1.8rem;
-            color: #d97408;
-            margin-bottom: 20px;
-            text-align: center;
-            border-bottom: 3px solid #ffd700;
-            padding-bottom: 10px;
-        }
-
-        .menu-item {
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .menu-item:hover {
-            background: rgba(217, 116, 8, 0.05);
-            padding-left: 10px;
-            border-radius: 5px;
-        }
-
-        .item-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 1.1rem;
-            transition: color 0.3s ease;
-        }
-
-        .menu-item:hover .item-name {
-            color: #d97408;
-        }
-
-        .item-description {
-            color: #666;
-            font-size: 0.9rem;
-            margin: 5px 0;
-            transition: color 0.3s ease;
-        }
-
-        .menu-item:hover .item-description {
-            color: #555;
-        }
-
-        .item-price {
-            color: #d97408;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item:hover .item-price {
-            transform: scale(1.1);
-            text-shadow: 0 0 5px rgba(217, 116, 8, 0.3);
-        }
-
-        /* Contact Section */
-        .contact-section {
-            padding: 80px 20px;
-            background: linear-gradient(135deg, #d97408, #000000);
-            color: white;
-        }
-
-        .contact-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .contact-form-container {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            background: white;
-            box-shadow: 0 0 10px rgba(217, 116, 8, 0.3);
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #d97408, #ff8c00);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(217, 116, 8, 0.3);
-        }
-
-        .contact-info {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .contact-title {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #ffd700;
-        }
-
-        .contact-details {
-            margin-bottom: 20px;
-        }
-
-        .contact-details h3 {
-            color: #ffd700;
-            margin-bottom: 10px;
-        }
-
-        .contact-details p {
-            margin-bottom: 5px;
-        }
-
-        /* Footer */
-        .footer {
-            background: #333;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        /* Clean Menu Cards */
-        .menu-category {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-category:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(217, 116, 8, 0.15);
-        }
-
-        /* Professional Order Buttons */
-        .order-button {
-            background: linear-gradient(135deg, #d97408, #000000);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .order-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #000000, #d97408);
-        }
-
-        /* Reviews Section */
-        .reviews-section {
-            padding: 80px 20px;
-            background: #1a1a1a;
-        }
-
-        .reviews-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-
-        .review-card {
-            background: #2a2a2a;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .review-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .review-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .review-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #d97408, #000000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-            margin-right: 15px;
-        }
-
-        .review-info h4 {
-            margin: 0;
-            color: #fff;
-            font-size: 1.1rem;
-        }
-
-        .review-rating {
-            color: #ffd700;
-            font-size: 1.2rem;
-            margin-top: 5px;
-        }
-
-        .review-text {
-            color: #ccc;
-            line-height: 1.6;
-            font-style: italic;
-        }
-
-        .review-date {
-            color: #999;
-            font-size: 0.9rem;
-            margin-top: 15px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-            }
-            
-            .welcome-title {
-                font-size: 2.5rem;
-            }
-            
-            .welcome-subtitle {
-                font-size: 1.2rem;
-            }
-            
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .weather-widget, .social-feed, .spice-mixer {
-                display: none;
-            }
-        }
+      :root {
+        --bg: #0b0f1a;
+        --bg-2: #0f1324;
+        --text: #e6f0ff;
+        --muted: #9db1d1;
+        --accent: #6ea8ff;
+        --danger: #ff4d4d;
+        --flash: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: radial-gradient(1200px 800px at 50% 30%, var(--bg-2), var(--bg));
+        overflow: hidden;
+      }
+
+      .wrap {
+        position: relative;
+        display: grid;
+        grid-template-rows: 1fr auto 1fr;
+        place-items: center;
+        min-height: 100vh;
+        padding: clamp(16px, 3vw, 32px);
+        isolation: isolate;
+      }
+
+      .center {
+        display: grid;
+        place-items: center;
+        gap: 20px;
+        text-align: center;
+        transform: translateZ(0);
+      }
+
+      .headline {
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-size: clamp(12px, 1.4vw, 16px);
+      }
+
+      .countdown {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1, "ss01" 1;
+        line-height: 1;
+        font-weight: 700;
+        font-size: clamp(56px, 14vw, 160px);
+        letter-spacing: .02em;
+        padding: 0 .1em;
+        text-shadow: 0 2px 24px rgba(110,168,255,.25), 0 0 1px rgba(255,255,255,.4);
+        transition: color .2s ease, transform .2s ease;
+      }
+
+      .stage {
+        color: var(--muted);
+        font-size: clamp(12px, 1.6vw, 18px);
+      }
+
+      .footer {
+        position: absolute;
+        bottom: 16px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        opacity: .7;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid rgba(255,255,255,.12);
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        letter-spacing: .02em;
+        cursor: pointer;
+        transition: transform .12s ease, border-color .2s ease, background .2s ease;
+      }
+      .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.28); }
+      .btn:active { transform: translateY(0); }
+      .btn.wrong { animation: shake .5s; }
+
+      /* Simple modal for skip options */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        display: none;
+        place-items: center;
+        z-index: 60;
+      }
+      .modal-backdrop.show { display: grid; animation: fadeIn .18s ease; }
+      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+      .modal {
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+        border: 1px solid rgba(255,255,255,.12);
+        color: var(--text);
+        padding: 18px;
+        border-radius: 14px;
+        width: min(94vw, 420px);
+        box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      }
+      .modal h3 { margin: 0 0 12px; font-size: 18px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+      .modal .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+      .btn.primary { border-color: rgba(110,168,255,.5); background: linear-gradient(180deg, rgba(110,168,255,.25), rgba(110,168,255,.12)); }
+
+      .ring {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(500px 500px at 50% 50%, rgba(110,168,255,.08), transparent 60%);
+        filter: blur(20px);
+        pointer-events: none;
+        opacity: .7;
+      }
+
+      /* Final 10 seconds effect */
+      .final-ten .countdown {
+        color: var(--danger);
+        animation: pulse .6s steps(2, jump-none) infinite, shake .9s ease-in-out infinite;
+        text-shadow: 0 0 30px rgba(255,77,77,.6), 0 0 4px rgba(255,255,255,.6);
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.035); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20% { transform: translateX(-2px); }
+        40% { transform: translateX(2px); }
+        60% { transform: translateX(-1px); }
+        80% { transform: translateX(1px); }
+      }
+
+      /* Bright flash overlay at zero */
+      #flash {
+        position: fixed;
+        inset: 0;
+        background: var(--flash);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 50;
+      }
+      #flash.show { animation: whiteout .9s ease; }
+      @keyframes whiteout {
+        0% { opacity: 0; }
+        30% { opacity: 1; }
+        90% { opacity: .0; }
+        100% { opacity: 0; }
+      }
+
+      /* Page fade between stages */
+      .fade {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity .4s ease, transform .4s ease;
+      }
+      .fade.in {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Final message */
+      .final-message {
+        display: none;
+        text-align: center;
+        gap: 16px;
+      }
+      .final-message.show { display: grid; }
+      .final-title {
+        font-size: clamp(40px, 10vw, 120px);
+        font-weight: 800;
+        line-height: .95;
+        letter-spacing: .01em;
+        background: linear-gradient(90deg, #8ab6ff, #fff, #8ab6ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 6px 40px rgba(110,168,255,.35);
+        background-size: 200% auto;
+        animation: pop .6s ease both, shine 3.5s linear infinite;
+      }
+      .final-sub { color: var(--muted); font-size: clamp(12px, 1.6vw, 18px); }
+
+      /* Subtle celebratory sparkles overlay when finished */
+      .wrap::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .6s ease;
+        background:
+          radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.24), transparent 60%),
+          radial-gradient(2px 2px at 70% 40%, rgba(255,255,255,.18), transparent 60%),
+          radial-gradient(2px 2px at 40% 70%, rgba(110,168,255,.24), transparent 60%),
+          radial-gradient(2px 2px at 80% 75%, rgba(255,255,255,.20), transparent 60%),
+          radial-gradient(2px 2px at 30% 85%, rgba(110,168,255,.2), transparent 60%);
+        mix-blend-mode: screen;
+        animation: twinkle 4s ease-in-out infinite alternate;
+      }
+      body.finished .wrap::after { opacity: .35; }
+
+      @keyframes twinkle {
+        0% { opacity: .18; }
+        100% { opacity: .42; }
+      }
+
+      @keyframes shine {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+      }
+      @keyframes pop {
+        0% { transform: scale(.94); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      @media (max-width: 480px) {
+        .footer { bottom: 10px; }
+      }
+
+      /* Mini-game widget (Clash-style inspired, not a replica) */
+      #toggleMiniGame {
+        position: fixed;
+        right: 14px;
+        bottom: 14px;
+        z-index: 70;
+      }
+      .mini-game {
+        position: fixed;
+        right: 14px;
+        bottom: 60px;
+        width: 340px;
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.2));
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 16px;
+        box-shadow: 0 12px 40px rgba(0,0,0,.45);
+        overflow: hidden;
+        z-index: 69;
+        display: none;
+        backdrop-filter: blur(8px);
+      }
+      .mini-game.show { display: grid; grid-template-rows: auto auto 1fr auto; }
+      .mg-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .mg-title { font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+      .mg-elixir { font-size: 12px; color: var(--muted); }
+      .mg-timer { font-size: 12px; color: var(--muted); margin-left: auto; margin-right: 10px; }
+      .elixirbar { position: relative; height: 8px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin: 6px 10px 8px; }
+      .elixirbar > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #a86bff, #7d3cff); }
+      .mg-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .card { display: grid; place-items: center; gap: 4px; padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)); color: var(--text); font-size: 11px; cursor: grab; user-select: none; }
+      .card.cost3 { box-shadow: inset 0 0 0 1px rgba(120,200,255,.18); }
+      .card.cost4 { box-shadow: inset 0 0 0 1px rgba(180,160,255,.18); }
+      .card.cost5 { box-shadow: inset 0 0 0 1px rgba(255,200,120,.18); }
+      .card.disabled { opacity: .5; cursor: not-allowed; }
+      .drag-hint { font-size: 10px; color: var(--muted); text-align: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .mg-canvas { display: block; width: 100%; height: 220px; background: linear-gradient(180deg, #0c1224, #0b1020); }
+      .mg-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; font-size: 12px; color: var(--muted); border-top: 1px solid rgba(255,255,255,.08); }
+      .hpbar { height: 6px; background: rgba(255,255,255,.08); border-radius: 6px; overflow: hidden; }
+      .hpbar > i { display: block; height: 100%; background: linear-gradient(90deg, #7bf, #4d9cff); }
+      .close-x { border-radius: 8px; padding: 4px 8px; }
     </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loader" id="loader">
-        <div class="spice-loader"></div>
-        <button onclick="hideLoader()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Skip Loading</button>
+  </head>
+  <body>
+    <div id="flash"></div>
+    <div class="wrap">
+      <div class="ring" aria-hidden="true"></div>
+
+      <div id="screen" class="center fade in">
+        <div class="headline" id="headline">Get ready</div>
+        <div class="countdown" id="clock">00:00</div>
+        <div class="stage" id="stage">Stage 1 of 4</div>
+      </div>
+
+      <div id="final" class="final-message">
+        <div class="final-title">Come See Louie</div>
+        <div class="final-sub">We’re ready.</div>
+      </div>
+
+      <div class="footer">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn" id="skipBtn">Skip</button>
+        <button class="btn" id="musicBtn">Music</button>
+        <button class="btn" id="fsBtn">Full screen</button>
+      </div>
     </div>
 
-    <!-- Shopping Cart -->
-    <button class="cart-icon" id="cartIcon" onclick="toggleCart()">
-        🛒
-        <span class="cart-badge" id="cartBadge">0</span>
-    </button>
-
-    <div class="cart-panel" id="cartPanel">
-        <div class="cart-header">
-            <h3>Shopping Cart</h3>
-            <button class="cart-close" onclick="toggleCart()">×</button>
+    <!-- Skip options modal -->
+    <div id="skipModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="skipTitle">
+      <div class="modal">
+        <h3 id="skipTitle">Skip Options</h3>
+        <div style="color: var(--muted); font-size: 14px; margin-bottom: 10px;">Choose how you want to skip.</div>
+        <div class="row">
+          <button class="btn" id="skipCancelBtn">Cancel</button>
+          <button class="btn" id="skip30Btn">Skip to last 30s</button>
+          <button class="btn primary" id="skipAllBtn">Skip all</button>
         </div>
-        <div class="cart-items" id="cartItems">
-            <p style="text-align: center; color: #666; padding: 20px;">Your cart is empty</p>
-        </div>
-        <div class="cart-total" id="cartTotal" style="display: none;">
-            <h3>Total: $<span id="totalAmount">0.00</span></h3>
-            <button class="checkout-btn" onclick="checkout()">Checkout</button>
-        </div>
+      </div>
     </div>
-
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">Little India</div>
-            <ul class="nav-menu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#menu">Menu</a></li>
-                <li><a href="#reviews">Reviews</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <button class="menu-button" onclick="toggleMenu()">
-                <img src="Butter.png" alt="Menu">
-            </button>
-        </div>
-    </nav>
-
-    <!-- Home Section -->
-    <section id="home" class="home-section">
-        <div class="welcome-content">
-            <h1 class="welcome-title">Welcome to Little India</h1>
-            <p class="welcome-subtitle">Authentic Indian Flavors in Every Bite</p>
-            <a href="#menu" class="cta-button">View Our Menu</a>
-            <a href="#contact" class="cta-button">Contact Us</a>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="about-container">
-            <div class="about-content">
-                <h2 class="section-title">About Little India</h2>
-                <p class="about-text">
-                    Welcome to Little India, where authentic Indian flavors meet warm hospitality. 
-                    Our family-owned restaurant has been serving the community for over 15 years, 
-                    bringing you the true taste of India with traditional recipes passed down through generations.
-                </p>
-                <p class="about-text">
-                    Our chefs use only the freshest ingredients and authentic spices imported directly from India. 
-                    Every dish is prepared with love and care, ensuring an unforgettable dining experience 
-                    that will transport you to the streets of Mumbai, Delhi, and beyond.
-                </p>
-                <div class="about-features">
-                    <div class="feature">
-                        <h3>🍛 Authentic Recipes</h3>
-                        <p>Traditional family recipes from across India</p>
-                    </div>
-                    <div class="feature">
-                        <h3>🌶️ Fresh Spices</h3>
-                        <p>Imported spices for authentic flavors</p>
-                    </div>
-                    <div class="feature">
-                        <h3>👨‍🍳 Expert Chefs</h3>
-                        <p>Experienced chefs with years of expertise</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Menu Section -->
-    <section id="menu" class="menu-section">
-        <div class="menu-container">
-            <h2 class="section-title">Our Menu</h2>
-            <p class="menu-subtitle">Authentic Indian Cuisine Made with Love</p>
-            
-            <!-- Appetizers -->
-            <div class="menu-category-clean">
-                <h3 class="category-title-clean">Appetizers</h3>
-                <div class="menu-items-grid">
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Samosas (2 pieces)</h4>
-                            <p class="item-description-clean">Crispy pastries filled with spiced potatoes and peas</p>
-                        </div>
-                        <div class="item-price-clean">$4.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Samosas', 4.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Chicken Pakoras</h4>
-                            <p class="item-description-clean">Tender chicken pieces in spiced batter, deep fried</p>
-                        </div>
-                        <div class="item-price-clean">$6.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Chicken Pakoras', 6.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Chicken Tikka</h4>
-                            <p class="item-description-clean">Tender chicken marinated in yogurt and spices</p>
-                        </div>
-                        <div class="item-price-clean">$8.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Chicken Tikka', 8.99)">Add</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Curries -->
-            <div class="menu-category-clean">
-                <h3 class="category-title-clean">Curries</h3>
-                <div class="menu-items-grid">
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Butter Chicken</h4>
-                            <p class="item-description-clean">Creamy tomato curry with tender chicken pieces</p>
-                        </div>
-                        <div class="item-price-clean">$14.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Butter Chicken', 14.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Lamb Vindaloo</h4>
-                            <p class="item-description-clean">Spicy Goan curry with tender lamb pieces</p>
-                        </div>
-                        <div class="item-price-clean">$16.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Lamb Vindaloo', 16.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Chana Masala</h4>
-                            <p class="item-description-clean">Chickpeas in aromatic tomato and onion sauce</p>
-                        </div>
-                        <div class="item-price-clean">$12.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Chana Masala', 12.99)">Add</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rice & Breads -->
-            <div class="menu-category-clean">
-                <h3 class="category-title-clean">Rice & Breads</h3>
-                <div class="menu-items-grid">
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Chicken Biryani</h4>
-                            <p class="item-description-clean">Fragrant basmati rice with spiced chicken</p>
-                        </div>
-                        <div class="item-price-clean">$15.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Chicken Biryani', 15.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Garlic Naan</h4>
-                            <p class="item-description-clean">Soft bread topped with garlic and herbs</p>
-                        </div>
-                        <div class="item-price-clean">$3.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Garlic Naan', 3.99)">Add</button>
-                    </div>
-                    
-                    <div class="menu-item-clean">
-                        <div class="item-info">
-                            <h4 class="item-name-clean">Plain Naan</h4>
-                            <p class="item-description-clean">Soft leavened bread baked in tandoor</p>
-                        </div>
-                        <div class="item-price-clean">$2.99</div>
-                        <button class="order-btn-clean" onclick="addToCart('Plain Naan', 2.99)">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Reviews Section -->
-    <section id="reviews" class="reviews-section">
-        <h2 class="section-title">What Our Customers Say</h2>
-        <div class="reviews-grid">
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">SM</div>
-                    <div class="review-info">
-                        <h4>Sarah Mitchell</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "Absolutely incredible! The butter chicken was the best I've ever had. The spices were perfectly balanced and the naan was fresh and warm. The service was excellent and the atmosphere was cozy and authentic."
-                </div>
-                <div class="review-date">2 days ago</div>
-            </div>
-
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">RJ</div>
-                    <div class="review-info">
-                        <h4>Raj Patel</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "As someone from India, I can say this is the most authentic Indian food I've found in the city. The biryani reminded me of home. The chef clearly knows traditional cooking techniques."
-                </div>
-                <div class="review-date">1 week ago</div>
-            </div>
-
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">MJ</div>
-                    <div class="review-info">
-                        <h4>Michael Johnson</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "First time trying Indian food and I'm hooked! The staff was so helpful in explaining the dishes. The lamb vindaloo had the perfect amount of heat. Will definitely be back!"
-                </div>
-                <div class="review-date">3 days ago</div>
-            </div>
-
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">AL</div>
-                    <div class="review-info">
-                        <h4>Anna Lee</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "The vegetarian options are amazing! The chana masala and vegetable biryani were both delicious. Great place for vegetarians and the prices are very reasonable for the quality."
-                </div>
-                <div class="review-date">5 days ago</div>
-            </div>
-
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">DC</div>
-                    <div class="review-info">
-                        <h4>David Chen</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "Outstanding food and service! The samosas were crispy and flavorful, and the garlic naan was perfect. The restaurant has a great ambiance and the staff is very friendly and knowledgeable."
-                </div>
-                <div class="review-date">1 week ago</div>
-            </div>
-
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">ES</div>
-                    <div class="review-info">
-                        <h4>Emily Smith</h4>
-                        <div class="review-rating">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                <div class="review-text">
-                    "Perfect for a date night! The restaurant has a romantic atmosphere and the food was exceptional. The chicken tikka was tender and well-seasoned. Highly recommend for special occasions."
-                </div>
-                <div class="review-date">4 days ago</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section">
-        <div class="contact-container">
-            <div class="contact-info">
-                <h2 class="contact-title">Visit Us</h2>
-                <div class="contact-details">
-                    <h3>Address</h3>
-                    <p>123 Spice Street<br>
-                    Little India District<br>
-                    New York, NY 10001</p>
-                </div>
-                <div class="contact-details">
-                    <h3>Hours</h3>
-                    <p>Monday - Thursday: 11:00 AM - 10:00 PM<br>
-                    Friday - Saturday: 11:00 AM - 11:00 PM<br>
-                    Sunday: 12:00 PM - 9:00 PM</p>
-                </div>
-                <div class="contact-details">
-                    <h3>Phone</h3>
-                    <p>(555) 123-4567</p>
-                </div>
-            </div>
-            
-            <div class="contact-form-container">
-                <h2 class="contact-title">Send us a Message</h2>
-                <form class="contact-form" id="contactForm">
-                    <div class="form-group">
-                        <input type="text" id="name" name="name" placeholder="Your Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="email" name="email" placeholder="Your Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="subject" name="subject" placeholder="Subject" required>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Send Message</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2024 Little India. All rights reserved. | Authentic Indian Cuisine</p>
-    </footer>
 
     <script>
-        // Global variables
-        let cart = [];
-        let cartOpen = false;
+      (function(){
+        const durations = [20*60, 30*60, 20*60, 67*60]; // seconds
+        const labels = ["Countdown 1", "Countdown 2", "Countdown 3", "Final Countdown"]; 
+        const headline = document.getElementById('headline');
+        const clock = document.getElementById('clock');
+        const stage = document.getElementById('stage');
+        const screen = document.getElementById('screen');
+        const flash = document.getElementById('flash');
+        const startBtn = document.getElementById('startBtn');
+        const fsBtn = document.getElementById('fsBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const musicBtn = document.getElementById('musicBtn');
+        const final = document.getElementById('final');
 
-        // Loading Animation - Simplified
-        function hideLoader() {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.display = 'none';
-            }
+        const skipModal = document.getElementById('skipModal');
+        const skipAllBtn = document.getElementById('skipAllBtn');
+        const skip30Btn = document.getElementById('skip30Btn');
+        const skipCancelBtn = document.getElementById('skipCancelBtn');
+
+        let idx = 0;
+        let remaining = durations[0];
+        let timer = null;
+        let running = false;
+
+        function fmt(total) {
+          const sign = total < 0 ? '-' : '';
+          total = Math.max(0, Math.abs(total));
+          const h = Math.floor(total / 3600);
+          const m = Math.floor((total % 3600) / 60);
+          const s = total % 60;
+          const pad = n => String(n).padStart(2, '0');
+          return h > 0 ? `${sign}${pad(h)}:${pad(m)}:${pad(s)}` : `${sign}${pad(m)}:${pad(s)}`;
         }
 
-        // Hide loader when page loads
-        window.addEventListener('load', hideLoader);
+        function setFinalTen(on) {
+          screen.classList.toggle('final-ten', !!on);
+        }
+
+        function showFlash() {
+          flash.classList.remove('show');
+          // next frame
+          requestAnimationFrame(() => {
+            flash.classList.add('show');
+          });
+        }
+
+        function fadeOutIn(cb) {
+          screen.classList.remove('in');
+          setTimeout(() => {
+            cb && cb();
+            requestAnimationFrame(() => screen.classList.add('in'));
+          }, 300);
+        }
+
+        function updateUI() {
+          clock.textContent = fmt(remaining);
+          headline.textContent = labels[idx];
+          stage.textContent = `Stage ${idx+1} of ${durations.length}`;
+          setFinalTen(remaining <= 10);
+        }
+
+        function tick() {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(timer);
+            timer = null;
+            running = false;
+            setFinalTen(false);
+            clock.textContent = '00:00';
+            // Bright flash, then move to next stage
+            showFlash();
+            setTimeout(nextStage, 500);
+            return;
+          }
+          updateUI();
+        }
+
+        function startTimer() {
+          if (running) return;
+          running = true;
+          updateUI();
+          timer = setInterval(tick, 1000);
+        }
+
+        function stopTimer() {
+          if (timer) clearInterval(timer);
+          timer = null;
+          running = false;
+        }
+
+        function openSkipChoices() { skipModal.classList.add('show'); }
+        function closeSkipChoices() { skipModal.classList.remove('show'); }
+
+        function completeAll() {
+          stopTimer();
+          showFlash();
+          setTimeout(() => {
+            idx = durations.length; // mark as finished
+            document.title = 'Finished';
+            screen.style.display = 'none';
+            final.classList.add('show');
+            document.body.classList.add('finished');
+          }, 300);
+        }
+
+        function skipToLast30() {
+          stopTimer();
+          idx = durations.length - 1;
+          remaining = 30;
+          setFinalTen(remaining <= 10);
+          fadeOutIn(() => { updateUI(); startTimer(); });
+        }
+
+        function nextStage() {
+          idx += 1;
+          if (idx >= durations.length) {
+            // Done, show final message
+            document.title = 'Finished';
+            screen.style.display = 'none';
+            final.classList.add('show');
+            document.body.classList.add('finished');
+            return;
+          }
+          remaining = durations[idx];
+          fadeOutIn(() => {
+            updateUI();
+          });
+        }
+
+        function resetAll() {
+          stopTimer();
+          idx = 0;
+          remaining = durations[0];
+          final.classList.remove('show');
+          screen.style.display = '';
+          updateUI();
+        }
+
+        startBtn.addEventListener('click', () => {
+          if (!running && idx === 0 && remaining === durations[0]) {
+            // first time start animation cue
+            screen.classList.add('in');
+          }
+          startTimer();
+        });
+
+        fsBtn.addEventListener('click', async () => {
+          try {
+            if (!document.fullscreenElement) {
+              await document.documentElement.requestFullscreen();
+              fsBtn.textContent = 'Exit full screen';
+            } else {
+              await document.exitFullscreen();
+              fsBtn.textContent = 'Full screen';
+            }
+          } catch (e) { /* ignore */ }
+        });
+
+        skipBtn.addEventListener('click', () => {
+          const code = prompt('Enter code');
+          if (code === '6776') {
+            openSkipChoices();
+          } else {
+            skipBtn.classList.add('wrong');
+            setTimeout(() => skipBtn.classList.remove('wrong'), 500);
+          }
+        });
+
+        skipAllBtn.addEventListener('click', () => { closeSkipChoices(); completeAll(); });
+        skip30Btn.addEventListener('click', () => { closeSkipChoices(); skipToLast30(); });
+        skipCancelBtn.addEventListener('click', () => closeSkipChoices());
+
+        // Music: simple ambient "ah" pad using Web Audio API
+        let audioCtx = null, masterGain = null, voiceGain = null, osc1 = null, osc2 = null, lfo = null, lfoGain = null, musicTick = null, ahTick = null, musicOn = false;
+
+        function createAudio() {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          masterGain = audioCtx.createGain();
+          masterGain.gain.value = 0.8;
+          masterGain.connect(audioCtx.destination);
+
+          voiceGain = audioCtx.createGain();
+          voiceGain.gain.value = 0.0;
+          voiceGain.connect(masterGain);
+
+          osc1 = audioCtx.createOscillator();
+          osc1.type = 'triangle';
+          osc2 = audioCtx.createOscillator();
+          osc2.type = 'sine';
+
+          lfo = audioCtx.createOscillator();
+          lfo.type = 'sine';
+          lfo.frequency.value = 5; // vibrato
+          lfoGain = audioCtx.createGain();
+          lfoGain.gain.value = 8; // cents
+          lfo.connect(lfoGain);
+          lfoGain.connect(osc1.detune);
+          lfoGain.connect(osc2.detune);
+
+          osc1.connect(voiceGain);
+          osc2.connect(voiceGain);
+
+          // start nodes
+          osc1.start();
+          osc2.start();
+          lfo.start();
+        }
+
+        function scheduleAh() {
+          if (!audioCtx) return;
+          const now = audioCtx.currentTime + 0.02;
+          voiceGain.gain.cancelScheduledValues(now);
+          voiceGain.gain.setValueAtTime(0.0, now);
+          voiceGain.gain.linearRampToValueAtTime(0.18, now + 1.2); // swell in
+          voiceGain.gain.linearRampToValueAtTime(0.02, now + 2.4); // breathe out
+        }
+
+        function setChord(base) {
+          if (!audioCtx) return;
+          // base plus a perfect fifth
+          osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.2);
+          osc2.frequency.setTargetAtTime(base * 1.5, audioCtx.currentTime, 0.2);
+        }
+
+        function startMusic() {
+          if (!audioCtx) createAudio();
+          const scale = [196.00, 220.00, 246.94, 261.63, 293.66, 329.63]; // G to E
+          setChord(scale[Math.floor(Math.random()*scale.length)]);
+          scheduleAh();
+          ahTick = setInterval(scheduleAh, 2400);
+          musicTick = setInterval(() => {
+            setChord(scale[Math.floor(Math.random()*scale.length)]);
+          }, 4000);
+          musicOn = true;
+          musicBtn.textContent = 'Music: On';
+        }
+
+        function stopMusic() {
+          musicOn = false;
+          musicBtn.textContent = 'Music';
+          if (ahTick) clearInterval(ahTick);
+          if (musicTick) clearInterval(musicTick);
+          ahTick = musicTick = null;
+          if (audioCtx) {
+            try { audioCtx.close(); } catch(e) {}
+          }
+          audioCtx = masterGain = voiceGain = osc1 = osc2 = lfo = lfoGain = null;
+        }
+
+        musicBtn.addEventListener('click', async () => {
+          try {
+            if (!musicOn) {
+              await (audioCtx?.resume?.() ?? Promise.resolve());
+              startMusic();
+            } else {
+              stopMusic();
+            }
+          } catch (e) { /* ignore */ }
+        });
+
+        // Initialize UI
+        updateUI();
+      })();
+    </script>
+    
+    <!-- Mini-game toggle and container -->
+    <button class="btn" id="toggleMiniGame">Mini-game</button>
+    <div id="miniGame" class="mini-game" aria-label="Mini game">
+      <div class="mg-header">
+        <div class="mg-title">Arena</div>
+        <div class="mg-timer" id="mgTimer">2:00</div>
+        <div class="mg-elixir" id="mgElixir">Elixir: 0/10</div>
+        <button class="btn close-x" id="mgClose">Hide</button>
+      </div>
+      <div class="elixirbar"><i id="mgElixirFill"></i></div>
+      <div class="mg-controls" id="deck">
+        <div class="card cost3" id="card1" draggable="true">Knight<div style="opacity:.7">3</div></div>
+        <div class="card cost4" id="card2" draggable="true">Archer<div style="opacity:.7">4</div></div>
+        <div class="card cost5" id="card3" draggable="true">Tank<div style="opacity:.7">5</div></div>
+        <div class="card cost4" id="card4" draggable="true">Splash<div style="opacity:.7">4</div></div>
+      </div>
+      <div class="drag-hint">Drag a card into your half to place (top/bottom lane).</div>
+      <canvas class="mg-canvas" id="mgCanvas" width="340" height="220"></canvas>
+      <div class="mg-footer">
+        <div style="flex:1">
+          <div>Your Tower</div>
+          <div class="hpbar"><i id="hpYou" style="width:100%"></i></div>
+        </div>
+        <div style="flex:1; text-align:right">
+          <div>Enemy Tower</div>
+          <div class="hpbar"><i id="hpEnemy" style="width:100%"></i></div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      (function(){
+        // Mini-game (Clash-inspired, simplified)
+        const toggleBtn = document.getElementById('toggleMiniGame');
+        const mg = document.getElementById('miniGame');
+        const mgClose = document.getElementById('mgClose');
+        const elixirText = document.getElementById('mgElixir');
+        const elixirFill = document.getElementById('mgElixirFill');
+        const canvas = document.getElementById('mgCanvas');
+        const ctx = canvas.getContext('2d');
+        const hpYouEl = document.getElementById('hpYou');
+        const hpEnemyEl = document.getElementById('hpEnemy');
+        const deckEl = document.getElementById('deck');
+        const timerEl = document.getElementById('mgTimer');
+
+        // Card deck
+        const deck = [
+          { id:'card1', type:'knight', cost:3 },
+          { id:'card2', type:'archer', cost:4 },
+          { id:'card3', type:'tank', cost:5 },
+          { id:'card4', type:'splash', cost:4 },
+        ];
+
+        let running = false;
+        let rafId = null;
+        const DPR = Math.max(1, window.devicePixelRatio || 1);
+        function resize() {
+          const w = 340, h = 220;
+          canvas.width = Math.floor(w * DPR);
+          canvas.height = Math.floor(h * DPR);
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        }
+        resize();
         
-        // Fallback - hide loader after 2 seconds regardless
-        setTimeout(hideLoader, 2000);
-
-        function addToCart(itemName, price) {
-            const existingItem = cart.find(item => item.name === itemName);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name: itemName, price: price, quantity: 1 });
-            }
-            
-            updateCartDisplay();
-            showNotification(`${itemName} added to cart!`);
-        }
-
-        function toggleCart() {
-            const cartPanel = document.getElementById('cartPanel');
-            cartOpen = !cartOpen;
-            cartPanel.classList.toggle('open', cartOpen);
-        }
-
-        function updateCartDisplay() {
-            const cartItems = document.getElementById('cartItems');
-            const cartBadge = document.getElementById('cartBadge');
-            const cartTotal = document.getElementById('cartTotal');
-            const totalAmount = document.getElementById('totalAmount');
-            
-            cartBadge.textContent = cart.length;
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Your cart is empty</p>';
-                cartTotal.style.display = 'none';
-            } else {
-                let total = 0;
-                cartItems.innerHTML = cart.map(item => {
-                    const itemTotal = item.price * item.quantity;
-                    total += itemTotal;
-                    return `
-                        <div class="cart-item">
-                            <div class="cart-item-info">
-                                <h4>${item.name}</h4>
-                                <p>Qty: ${item.quantity} × $${item.price.toFixed(2)}</p>
-                            </div>
-                            <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
-                            <button class="cart-remove" onclick="removeFromCart('${item.name}')">Remove</button>
-                        </div>
-                    `;
-                }).join('');
-                
-                totalAmount.textContent = total.toFixed(2);
-                cartTotal.style.display = 'block';
-            }
-        }
-
-        function removeFromCart(itemName) {
-            cart = cart.filter(item => item.name !== itemName);
-            updateCartDisplay();
-        }
-
-        function checkout() {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert(`Thank you for your order! Total: $${total.toFixed(2)}\n\nThis is a demo. In a real restaurant, this would process your payment.`);
-            
-            cart = [];
-            updateCartDisplay();
-            toggleCart();
-        }
-
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.style.position = 'fixed';
-            notification.style.top = '20px';
-            notification.style.right = '20px';
-            notification.style.background = 'linear-gradient(135deg, #d97408, #b8860b)';
-            notification.style.color = 'white';
-            notification.style.padding = '15px 20px';
-            notification.style.borderRadius = '10px';
-            notification.style.zIndex = '9999';
-            notification.style.animation = 'slideInRight 0.3s ease';
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }
-
-
-        // Contact Form
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-            
-            // Create email content
-            const emailBody = `
-Name: ${name}
-Email: ${email}
-Subject: ${subject}
-
-Message:
-${message}
-
----
-This message was sent from the Little India website contact form.
-            `;
-            
-            // Create mailto link
-            const mailtoLink = `mailto:calavriaslouie@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-            
-            // Open email client
-            window.location.href = mailtoLink;
-            
-            // Show success message
-            showNotification('Email client opened! Please send the message to complete your inquiry.');
-            
-            // Reset form
-            document.getElementById('contactForm').reset();
-        });
-
-        // Menu toggle with animation
-        function toggleMenu() {
-            const navMenu = document.querySelector('.nav-menu');
-            const isVisible = navMenu.style.display === 'flex';
-            
-            if (isVisible) {
-                navMenu.style.animation = 'slideOutUp 0.3s ease forwards';
-                setTimeout(() => {
-                    navMenu.style.display = 'none';
-                }, 300);
-            } else {
-                navMenu.style.display = 'flex';
-                navMenu.style.animation = 'slideInDown 0.3s ease forwards';
-            }
-        }
-
-        // Smooth scrolling with offset for fixed navbar
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const offsetTop = target.offsetTop - 80;
-                    window.scrollTo({
-                        top: offsetTop,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // Enhanced scroll effects
-        let lastScrollTop = 0;
-        let ticking = false;
-
-        function updateNavbar() {
-            const navbar = document.querySelector('.navbar');
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                navbar.style.transform = 'translateY(-100%)';
-            } else {
-                navbar.style.transform = 'translateY(0)';
-            }
-            lastScrollTop = scrollTop;
-            ticking = false;
-        }
-
-        function requestTick() {
-            if (!ticking) {
-                requestAnimationFrame(updateNavbar);
-                ticking = true;
-            }
-        }
-
-        window.addEventListener('scroll', requestTick);
-
-        // Intersection Observer for scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+        // Game state
+        const lanes = [90, 150]; // y positions
+        const state = {
+          elixir: 5, maxElixir: 10, lastElixir: performance.now(),
+          youHP: 100, enemyHP: 100,
+          ents: [], // {x,y,dir,spd,hp,range,dmg,rate,lastAtk,color,type}
+          shots: [], // {x,y,vx,vy,dmg,color}
+          lastBotSpawn: 0,
+          // match
+          matchMs: 120000,
+          sudden: false,
+          elixirRateMs: 1200,
+          botElixir: 5,
         };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animationPlayState = 'running';
+        function updateElixirUI() {
+          elixirText.textContent = `Elixir: ${Math.floor(state.elixir)}/${state.maxElixir}`;
+          elixirFill.style.width = `${(state.elixir/state.maxElixir)*100}%`;
+          for (const c of deck) {
+            const el = document.getElementById(c.id);
+            const can = state.elixir >= c.cost;
+            el.classList.toggle('disabled', !can);
+          }
+        }
+
+        function fmtTimer(ms) {
+          const s = Math.max(0, Math.ceil(ms/1000));
+          const m = Math.floor(s/60); const r = s%60;
+          return `${m}:${String(r).padStart(2,'0')}${state.sudden?' SD':''}`;
+        }
+
+        function spawn(type, laneIndex, isPlayer=true) {
+          const laneY = lanes[laneIndex];
+          const dir = isPlayer ? 1 : -1;
+          const x = isPlayer ? 40 : 300;
+          let unit;
+          if (type === 'knight') {
+            unit = {x, y: laneY, dir, spd: 0.6, hp: 22, range: 8, dmg: 5, rate: 600, lastAtk: 0, color: isPlayer?'#7bf':'#f77', type};
+          } else if (type === 'archer') {
+            unit = {x, y: laneY, dir, spd: 0.55, hp: 14, range: 70, dmg: 3, rate: 650, lastAtk: 0, color: isPlayer?'#9f7bff':'#ff9f7b', type};
+          } else if (type === 'tank') {
+            unit = {x, y: laneY, dir, spd: 0.4, hp: 60, range: 8, dmg: 7, rate: 900, lastAtk: 0, color: isPlayer?'#5bd4a4':'#d45b7b', type};
+          } else { // splash
+            unit = {x, y: laneY, dir, spd: 0.5, hp: 16, range: 20, dmg: 2, rate: 700, lastAtk: 0, color: isPlayer?'#ffd27b':'#ff9f3b', type};
+          }
+          state.ents.push(unit);
+        }
+
+        function costFor(type){ return type==='knight'?3 : type==='archer'?4 : type==='tank'?5 : 4; }
+        function trySpawnPlayer(type, lane) {
+          const cost = costFor(type);
+          if (state.elixir >= cost) {
+            state.elixir -= cost;
+            spawn(type, lane, true);
+            updateElixirUI();
+            sfx(440, 0.06);
+          }
+        }
+
+        // Simple bot AI
+        function botAI(t) {
+          // bot elixir regen
+          if (!state._lastBotElixir) state._lastBotElixir = t;
+          if (t - state._lastBotElixir > state.elixirRateMs) {
+            state._lastBotElixir = t;
+            state.botElixir = Math.min(10, state.botElixir + 1);
+          }
+          if (t - state.lastBotSpawn < 900 + Math.random()*1100) return;
+          // choose lane with fewer enemy units near its tower
+          const near = [0,0];
+          for (const e of state.ents) if (e.dir>0) near[e.y===lanes[0]?0:1]++;
+          const lane = (near[0] > near[1]) ? 1 : 0;
+          // choose type we can afford
+          const choices = ['tank','knight','archer','splash'];
+          for (const type of choices) {
+            const c = costFor(type);
+            if (state.botElixir >= c) {
+              state.botElixir -= c;
+              spawn(type, lane, false);
+              state.lastBotSpawn = t;
+              break;
+            }
+          }
+        }
+
+        function step(dt, t) {
+          // elixir regen
+          if (t - state.lastElixir > state.elixirRateMs) {
+            state.lastElixir = t;
+            state.elixir = Math.min(state.maxElixir, state.elixir + 1);
+            updateElixirUI();
+          }
+          // match timer
+          state.matchMs -= dt;
+          if (!state.sudden && state.matchMs <= 0) {
+            state.sudden = true; state.matchMs = 60000; // 1 min overtime
+            state.elixirRateMs = 700; // faster elixir
+          }
+          timerEl.textContent = fmtTimer(state.matchMs);
+
+          // entities movement and combat
+          for (const e of state.ents) {
+            // find nearest enemy in range
+            let target = null, targetDist = Infinity;
+            for (const f of state.ents) {
+              if (f === e) continue;
+              if (Math.sign(f.dir) === Math.sign(e.dir)) continue; // only enemy
+              if (f.y !== e.y) continue;
+              const d = Math.abs(f.x - e.x);
+              if (d < targetDist) { target = f; targetDist = d; }
+            }
+
+            // tower as implicit target
+            if (!target) {
+              const towerX = e.dir > 0 ? 300 : 40;
+              targetDist = Math.abs(towerX - e.x);
+              if (targetDist <= e.range) {
+                // attack tower
+                if (t - e.lastAtk > e.rate) {
+                  e.lastAtk = t;
+                  if (e.dir > 0) state.enemyHP = Math.max(0, state.enemyHP - e.dmg);
+                  else state.youHP = Math.max(0, state.youHP - e.dmg);
                 }
-            });
-        }, observerOptions);
+              } else {
+                e.x += e.spd * e.dir;
+              }
+            } else {
+              // engage unit
+              if (targetDist <= e.range) {
+                if (t - e.lastAtk > e.rate) {
+                  e.lastAtk = t;
+                  if (e.type === 'archer') {
+                    const dir = Math.sign(target.x - e.x);
+                    state.shots.push({ x: e.x, y: e.y, vx: 1.4*dir, vy: 0, dmg: e.dmg, color: e.color });
+                  } else if (e.type === 'splash') {
+                    // splash AoE in small radius
+                    for (const f of state.ents) {
+                      if (Math.sign(f.dir) !== Math.sign(e.dir) && f.y===e.y && Math.abs(f.x - e.x) <= 16) {
+                        f.hp -= e.dmg;
+                      }
+                    }
+                    particles(e.x, e.y, e.color);
+                  } else {
+                    target.hp -= e.dmg;
+                    if (target.hp <= 0) particles(target.x, target.y, target.color);
+                  }
+                }
+              } else {
+                e.x += e.spd * e.dir;
+              }
+            }
+          }
 
-        document.querySelectorAll('.menu-category, .review-card').forEach(element => {
-            observer.observe(element);
+          // cleanup dead units
+          state.ents = state.ents.filter(e => e.hp > 0);
+
+          // tower defensive fire (simple): small periodic damage to nearest enemy in radius
+          function towerFire(isPlayer) {
+            const tx = isPlayer ? 40 : 300, ty = 120, rng = 65;
+            let best=null,bd=1e9;
+            for (const e of state.ents) {
+              if ((isPlayer && e.dir<0) || (!isPlayer && e.dir>0)) {
+                const d = Math.hypot(e.x - tx, e.y - ty);
+                if (d < bd) { bd = d; best = e; }
+              }
+            }
+            if (best && bd <= rng) {
+              best.hp -= 0.6; // chip damage
+              if (best.hp <= 0) particles(best.x, best.y, best.color);
+            }
+          }
+          towerFire(true); towerFire(false);
+
+          // update projectiles
+          for (const s of state.shots) { s.x += s.vx; s.y += s.vy; }
+          // collide projectiles with nearest enemy in same lane vicinity
+          for (const s of state.shots) {
+            let hit=null, hd=6;
+            for (const e of state.ents) {
+              if (Math.abs(e.y - s.y) < 3 && Math.abs(e.x - s.x) <= hd) { hit = e; break; }
+            }
+            if (hit) { hit.hp -= s.dmg; s.x = -9999; particles(hit.x, hit.y, hit.color); sfx(220, 0.03); }
+          }
+          state.shots = state.shots.filter(s => s.x > -100 && s.x < 440);
+
+          // update hp bars
+          hpYouEl.style.width = `${state.youHP}%`;
+          hpEnemyEl.style.width = `${state.enemyHP}%`;
+        }
+
+        // particles
+        const parts = [];
+        function particles(x,y,color){
+          for (let i=0;i<6;i++) parts.push({x,y,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2,life:400,color});
+        }
+
+        function draw() {
+          // background
+          ctx.clearRect(0,0,340,220);
+          // lanes
+          ctx.strokeStyle = 'rgba(255,255,255,.08)';
+          ctx.beginPath();
+          ctx.moveTo(0, 120); ctx.lineTo(340,120); ctx.stroke();
+          // bridges
+          ctx.fillStyle = 'rgba(255,255,255,.10)';
+          ctx.fillRect(120, 116, 20, 8);
+          ctx.fillRect(200, 116, 20, 8);
+          // towers
+          function tower(x, y, color){
+            ctx.fillStyle = color;
+            ctx.fillRect(x-6, y-20, 12, 40);
+            ctx.fillRect(x-10, y-24, 20, 6);
+          }
+          tower(40, 120, '#7bf');
+          tower(300, 120, '#f77');
+
+          // units
+          for (const e of state.ents) {
+            ctx.fillStyle = e.color;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.type==='knight'?5:4, 0, Math.PI*2);
+            ctx.fill();
+          }
+          // projectiles
+          for (const s of state.shots) {
+            ctx.fillStyle = s.color;
+            ctx.fillRect(s.x-1, s.y-1, 2, 2);
+          }
+
+          // particles
+          const now = performance.now();
+          for (const p of parts) {
+            const a = Math.max(0, 1 - (400 - p.life)/400);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = a*0.8;
+            ctx.fillRect(p.x, p.y, 1.5, 1.5);
+            ctx.globalAlpha = 1;
+            p.x += p.vx; p.y += p.vy; p.life -= 16;
+          }
+          for (let i=parts.length-1;i>=0;i--) if (parts[i].life<=0) parts.splice(i,1);
+
+          // score text
+          ctx.fillStyle = 'rgba(255,255,255,.6)';
+          ctx.font = '10px system-ui, -apple-system, sans-serif';
+          ctx.fillText(`Units: ${state.ents.length}`, 8, 12);
+        }
+
+        let last = performance.now();
+        function loop(t){
+          if (!running) return;
+          const dt = Math.min(50, t - last); last = t;
+          step(dt, t);
+          botAI(t);
+          draw();
+          if (state.youHP <= 0 || state.enemyHP <= 0) {
+            // simple end: reset after brief pause
+            setTimeout(resetGame, 1000);
+            running = false;
+            rafId = null; return;
+          }
+          rafId = requestAnimationFrame(loop);
+        }
+
+        function start(){
+          if (running) return;
+          running = true; last = performance.now();
+          rafId = requestAnimationFrame(loop);
+        }
+        function stop(){
+          running = false;
+          if (rafId) cancelAnimationFrame(rafId); rafId = null;
+        }
+        function resetGame(){
+          state.youHP = 100; state.enemyHP = 100; state.ents = []; state.elixir = 5; updateElixirUI(); draw();
+        }
+
+        // UI events
+        toggleBtn.addEventListener('click', () => {
+          mg.classList.toggle('show');
+          if (mg.classList.contains('show')) start(); else stop();
+        });
+        mgClose.addEventListener('click', () => { mg.classList.remove('show'); stop(); });
+        // Drag-and-drop placement
+        let dragging = null;
+        for (const c of deck) {
+          const el = document.getElementById(c.id);
+          el.addEventListener('dragstart', (e) => {
+            if (el.classList.contains('disabled')) { e.preventDefault(); return; }
+            dragging = c; e.dataTransfer.setData('text/plain', c.type);
+          });
+        }
+        canvas.addEventListener('dragover', (e) => { e.preventDefault(); });
+        canvas.addEventListener('drop', (e) => {
+          e.preventDefault(); if (!dragging) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left); const y = (e.clientY - rect.top);
+          // Only allow in player half (left side)
+          if (x > rect.width/2) { dragging=null; return; }
+          const lane = Math.abs(y - lanes[0]) < Math.abs(y - lanes[1]) ? 0 : 1;
+          trySpawnPlayer(dragging.type, lane); dragging = null;
         });
 
-        // Parallax effect for home section
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const homeSection = document.querySelector('.home-section');
-            if (homeSection) {
-                const rate = scrolled * -0.5;
-                homeSection.style.transform = `translateY(${rate}px)`;
-            }
-        });
+        // Initialize
+        updateElixirUI();
+        timerEl.textContent = fmtTimer(state.matchMs);
+        draw();
 
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOutRight {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
+        // Simple SFX
+        let mgAudio = null;
+        function ensureAudio(){ mgAudio = mgAudio || new (window.AudioContext||window.webkitAudioContext)(); }
+        function sfx(freq, dur){ try{ ensureAudio(); const o=mgAudio.createOscillator(); const g=mgAudio.createGain(); o.type='square'; o.frequency.value=freq; g.gain.value=0.05; o.connect(g); g.connect(mgAudio.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, mgAudio.currentTime+dur); o.stop(mgAudio.currentTime+dur); }catch(_){} }
+      })();
     </script>
-</body>
+  </body>
 </html>
