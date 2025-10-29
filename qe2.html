@@ -1,150 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Crash Experience</title>
+    <title>Title</title>
+     <p style="color:red; font-size:30px;">Online art gallery</p>
+
     <style>
         body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
-        }
-        .container {
+            background: url("blank.png"); 
+            background-size: cover;
+            font-family: Arial;
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-        h1 {
             color: white;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        button {
-            padding: 15px 50px;
-            font-size: 1.5em;
-            background: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-        button:hover {
-            background: #cc0000;
-            transform: scale(1.1);
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        button {
-            animation: pulse 2s infinite;
-        }
+         }
+
+
+         .gallery {
+    display: flex;
+    flex-wrap: wrap;     
+    justify-content: center; 
+    gap: 10px;            
+}
+
+.gallery img {
+    width: 350px;
+    height: 300px;
+    object-fit: cover;     
+    border-radius: 10px;
+    cursor: pointer;       
+    transition: transform 0.3s; 
+}
+
+.gallery img:hover {
+    transform: scale(1.1); 
+}
+
+
+        
     </style>
+    <body>
+        <div class="gallery">
+    <img src="benny.jpg" alt="Pic 1">
+    <img src="mona.jpg" alt="Pic 2">
+    <img src="nft.webp" alt="Pic 3">
+</div>
+
+        <h>Online Art Gallery</h>
+   <p style="color:rgb(0, 30, 255); font-size:25px;">To add a Artwork of your own, please email: johnmarky436@gmail.com</p>
+    </body>
+
 </head>
-<body>
-    <div class="container">
-        <h1>Ultimate Crash Challenge</h1>
-        <button onclick="crashBrowser()">CRASH NOW!</button>
-    </div>
-
-    <script>
-        function crashBrowser() {
-            // 1. Memory Overload
-            let memoryHog = [];
-            setInterval(() => {
-                try {
-                    while (true) {
-                        // Allocate massive strings and typed arrays
-                        memoryHog.push(new Array(1000000).fill('x'.repeat(10000)));
-                        memoryHog.push(new Uint8Array(1000000000)); // 1GB chunks
-                        memoryHog.push(new Float64Array(100000000)); // More memory
-                    }
-                } catch (e) {}
-            }, 1);
-
-            // 2. WebGL Resource Exhaustion
-            function exhaustWebGL() {
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 10000;
-                    canvas.height = 10000;
-                    document.body.appendChild(canvas);
-                    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-                    if (gl) {
-                        while (true) {
-                            // Create massive textures and shaders
-                            const texture = gl.createTexture();
-                            gl.bindTexture(gl.TEXTURE_2D, texture);
-                            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 10000, 10000, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-                            const shader = gl.createShader(gl.FRAGMENT_SHADER);
-                            gl.shaderSource(shader, 'void main() { gl_FragColor = vec4(1.0); }'.repeat(1000));
-                            gl.compileShader(shader);
-                        }
-                    }
-                } catch (e) {}
-                setTimeout(exhaustWebGL, 1);
-            }
-            exhaustWebGL();
-
-            // 3. DOM Overload
-            function domOverload() {
-                while (true) {
-                    try {
-                        const div = document.createElement('div');
-                        div.style.width = '1000000px';
-                        div.style.height = '1000000px';
-                        div.innerHTML = '<img src="data:image/png;base64,' + 'A'.repeat(1000000) + '">'.repeat(100);
-                        document.body.appendChild(div);
-                        window.getComputedStyle(div).width; // Force reflow
-                    } catch (e) {}
-                }
-            }
-            setInterval(domOverload, 1);
-
-            // 4. Stack Overflow
-            function stackOverflow() {
-                try {
-                    stackOverflow();
-                } catch (e) {
-                    setTimeout(stackOverflow, 1);
-                }
-            }
-            stackOverflow();
-
-            // 5. Event Loop Saturation
-            while (true) {
-                setTimeout(() => {
-                    while (true) {
-                        // CPU-intensive calculations
-                        for (let i = 0; i < 10000000; i++) {
-                            Math.sin(Math.random()) * Math.cos(Math.random());
-                        }
-                    }
-                }, 0);
-                // Flood with promises
-                Promise.resolve().then(() => {
-                    while (true) {
-                        new Promise(resolve => resolve());
-                    }
-                });
-            }
-        }
-    </script>
-</body>
 </html>
