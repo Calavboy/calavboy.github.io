@@ -5,13 +5,14 @@
      <p style="color:red; font-size:30px;">Online art gallery</p>
 
     <style>
-        body {
-            background: url("blank.png"); 
-            background-size: cover;
-            font-family: Arial;
-            text-align: center;
-            color: white;
-         }
+     body {
+    background-color: #ffffff;  
+    font-family: Arial, sans-serif;  
+    text-align: center; 
+    color: #222222;  
+    margin: 0;
+    padding: 20px;
+}
 
 
          .gallery {
@@ -56,15 +57,30 @@
   margin: 0 auto 5px;
 }
 
+.gallery img{
+    box-shadow:  0 7px 14px rgba(0,0,0,0.2);
+}
 
         
     </style>
     <body>
-        <div class="gallery">
-    <img src="benny.jpg" alt="Pic 1">
-    <img src="mona.jpg" alt="Pic 2">
-    <img src="nft.webp" alt="Pic 3">
-    <img src="queen.png" alt="Pic 4">
+<div class="gallery">
+    <div class="gallery-item">
+        <img src="benny.jpg" alt="Pic 1">
+        <p class="desc">Benny's Picture</p>
+    </div>
+    <div class="gallery-item">
+        <img src="mona.jpg" alt="Pic 2">
+        <p class="desc">Mona's Picture</p>
+    </div>
+    <div class="gallery-item">
+        <img src="nft.webp" alt="Pic 3">
+        <p class="desc">NFT Artwork</p>
+    </div>
+    <div class="gallery-item">
+        <img src="queen.png" alt="Pic 4">
+        <p class="desc">Riley's Picture</p>
+    </div>
 </div>
 
          <div class="winner-box">
@@ -81,7 +97,7 @@
     </body>
 
     <footer>
-          <p style="color: black;"> ©2025 Louie. All rights reserved.</p>
+          <p style="color: black;"> 2025 Louie. All rights reserved.</p>
            <p><a href="terms.html">Terms & Conditions</a> | <a href="privacy.html">Privacy Policy</a></p>
     </footer>
 
