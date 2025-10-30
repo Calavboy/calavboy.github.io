@@ -92,11 +92,12 @@
   <img src="benny.jpg" alt="Last month's winner">
   <p>Last Month's Winner 🏆</p>
 </div>
-        
+
+
   
 
     <p id="countdown"></p>
-    <p style="color:rgb(0, 30, 255); font-size:17px;">The best photo at the end of the month wins tator tots!</p>
+    <p style="color:rgb(0, 30, 255); font-size:17px;">The best photo at the end of the timer wins tator tots!</p>
    <p style="color:rgb(0, 30, 255); font-size:25px;">To add a Artwork of your own, please email: johnmarky436@gmail.com</p>
     </body>
 
@@ -107,7 +108,7 @@
 
 
 <script>
-const target = new Date("Nov 2, 2025 12:00:00 GMT+1300").getTime();
+const target = new Date("Nov 12, 2025 12:00:00 GMT+1300").getTime();
 
 setInterval(function() {
   const now = new Date().getTime();
@@ -126,6 +127,7 @@ setInterval(function() {
   document.getElementById("countdown").textContent =
     `${days}d ${hours}h ${mins}m ${secs}s until next winner`;
 }, 1000);
+
 </script>
 
 
