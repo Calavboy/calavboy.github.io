@@ -3,90 +3,9 @@
 <head>
     <title>Title</title>
      <p style="color:rgb(46, 45, 45); font-size:50px; font-family: montserrat;">Online Art Gallery</p>
+     <link rel="stylesheet" href="styles.css">
+     <script defer src="script.js"></script>
 
-    <style>
-     body {
-    background-image: url("art background.png"); 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-color: rgb(243, 240, 236);
-
-
-    font-family: Arial, sans-serif;  
-    text-align: center; 
-    color: #222222;  
-    margin: 0;
-    padding: 20px;
-}
-
-
-         .gallery {
-    display: flex;
-    flex-wrap: wrap;     
-    justify-content: center; 
-    gap: 10px;            
-}
-
-html, body {
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.gallery img {
-    width: 350px;
-    height: 300px;
-    object-fit: cover;     
-    border-radius: 10px;
-    cursor: pointer;       
-    transition: transform 0.3s; 
-}
-
-.gallery img:hover {
-    transform: scale(1.1); 
-}
-
-.winner-box {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  color: white;
-  font-weight: bold;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
-
-.winner-box img {
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
-  display: block;
-  margin: 0 auto 5px;
-}
-
-.gallery img{
-    box-shadow:  0 7px 14px rgba(0,0,0,0.2);
-}
-#countdown {
-  font-size: 25px;
-  color: red;
-  font-weight: bold;
-}
-
-  #countdown {
-    color: black;
-  }
-
- </style>
-
-        
-    </style>
     <body>
 
 <div class="gallery">
@@ -114,6 +33,12 @@ html, body {
 
 </div>
 
+   <nav class="navbar">
+    <a href="web.html">Home</a>
+    <a href="about.html">About</a>
+   </nav>
+
+
          <div class="winner-box">
   <img src="mona.jpg" alt="Last month's winner">
   <p>This Month's Auction 🏆</p>
@@ -124,7 +49,7 @@ html, body {
 
     <p id="countdown"></p>
     <p style="color:rgb(0, 0, 0); font-size:17px;">When the timer ends there will be a auction held for artwork</p>
-     <p style="color:rgb(0, 0, 0); font-size:17px;">The best Artwork submitted wins a prize, over ten artworks have to be submitted.</p>
+     <p style="color:rgb(0, 0, 0); font-size:17px;">The best artwork submitted wins a prize, over ten artworks have to be submitted for auction to be held.</p>
    <p style="color:rgb(0, 0, 0); font-size:25px;">To add a Artwork of your own, please email: creativeworksnz25@gmail.com</p>
     </body>
 
@@ -132,30 +57,6 @@ html, body {
           <p style="color: black;"> 2025 Louie. All rights reserved.</p>
            <p><a href="terms.html">Terms & Conditions</a> | <a href="privacy.html">Privacy Policy</a> | <a href="about.html">Learn More!!</a></p>
     </footer>
-
-
-<script>
-const target = new Date("Nov 30, 2025 12:00:00 GMT+1300").getTime();
-
-setInterval(function() {
-  const now = new Date().getTime();
-  const diff = target - now;
-
-  if (diff <= 0) {
-    document.getElementById("countdown").textContent = "🎉 It's time!";
-    return;
-  }
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-  document.getElementById("countdown").textContent =
-    `${days}d ${hours}h ${mins}m ${secs}s until next winner`;
-}, 1000);
-
-</script>
 
 
 
