@@ -1,0 +1,109 @@
+body {
+    background-image: url("art background.png"); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-color: rgb(243, 240, 236);
+
+
+    font-family: Arial, sans-serif;  
+    text-align: center; 
+    color: #222222;  
+    margin: 0;
+    padding: 20px;
+}
+
+
+         .gallery {
+    display: flex;
+    flex-wrap: wrap;     
+    justify-content: center; 
+    gap: 10px;            
+}
+
+html, body {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.gallery img {
+    width: 350px;
+    height: 300px;
+    object-fit: cover;     
+    border-radius: 10px;
+    cursor: pointer;       
+    transition: transform 0.3s; 
+}
+
+.gallery img:hover {
+    transform: scale(1.1); 
+}
+
+.winner-box {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.winner-box img {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto 5px;
+}
+
+.gallery img{
+    box-shadow:  0 7px 14px rgba(0,0,0,0.2);
+}
+#countdown {
+  font-size: 25px;
+  color: red;
+  font-weight: bold;
+}
+
+  #countdown {
+    color: black;
+  }
+
+  .navbar {
+    width: 100%;
+    background:rgba(0, 0, 0, 0.6);
+    padding: 15px o;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+
+  }
+
+  .navbar a {
+    color: white;
+    margin: 0 20px;
+    font-size: 20px;
+    font-family: Montserrat, sans-serif;
+    text-decoration: none;
+    transition: 0.3s;
+
+  }
+
+  .navbar a:hover {
+    color: #ddd;
+  }
+
+  body {
+    padding-top: 80px;
+    
+  }
