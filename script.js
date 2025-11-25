@@ -1,4 +1,4 @@
-const target = new Date("Dec, 4 12:00:00 GMT+1300").getTime();
+const target = new Date("Dec 4, 2025 12:00:00 GMT+1300").getTime();
 
 setInterval(function() {
   const now = new Date().getTime();
