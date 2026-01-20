@@ -1,315 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farewell</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
-        
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --text: #2c3e50;
-            --light-bg: #ecf0f1;
-            --card-bg: #ffffff;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: var(--light-bg);
-            color: var(--text);
-            line-height: 1.8;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            transition: all 1s ease;
-        }
-        
-        body.fade-out {
-            background: #000;
-            color: #fff;
-        }
-        
-        .farewell-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 700px;
-            padding: 3rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent);
-            animation: pulse 2s infinite;
-        }
-        
-        h1 {
-            font-family: 'Playfair Display', serif;
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.3;
-        }
-        
-        .goodbye-message {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            color: #555;
-        }
-        
-        .highlight {
-            color: var(--accent);
-            font-weight: 700;
-        }
-        
-        .countdown-container {
-            background: rgba(231, 76, 60, 0.1);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .countdown {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin: 1rem 0;
-            font-family: 'Roboto Mono', monospace;
-        }
-        
-        .signature {
-            margin-top: 2rem;
-            font-style: italic;
-            color: #7f8c8d;
-        }
-        
-        .progress-container {
-            width: 100%;
-            height: 6px;
-            background: #ecf0f1;
-            border-radius: 3px;
-            margin: 2rem 0;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #e67e22);
-            width: 100%;
-            transform-origin: left;
-            transform: scaleX(1);
-            transition: transform 1s linear;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @media (max-width: 768px) {
-            .farewell-card {
-                padding: 2rem;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .goodbye-message {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Website Shutdown</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: #000;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 750px;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .line {
+      width: 90px;
+      height: 3px;
+      background: #fff;
+      margin: 25px auto;
+      opacity: 0.7;
+    }
+
+    p {
+      font-size: 1.15rem;
+      color: #b5b5b5;
+      line-height: 1.6;
+    }
+
+    .countdown {
+      margin-top: 30px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .label {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 <body>
-    <div class="farewell-card">
-        <div class="icon">👋</div>
-        <h1>Thank You for the Beautiful Journey</h1>
-        
-        <div class="goodbye-message">
-            <!-- Message content will be dynamically inserted by JavaScript -->
-        </div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-        
-        <div class="countdown-container">
-            <p>This website will be taken offline in</p>
-            <div class="countdown" id="countdown">10:00</div>
-            <p>Thank you for being part of this journey.</p>
-        </div>
-        
-        <div class="signature">
-            <p>With deepest gratitude,</p>
-            <p><strong>Louie</strong></p>
-        </div>
+  <div class="container">
+    <h1>Website Shut Down</h1>
+    <div class="line"></div>
+
+    <p>
+      This website has been taken offline.<br>
+      No content or services are available.
+    </p>
+
+    <div class="countdown" id="countdown">
+      Loading countdown…
     </div>
+    <div class="label">
+      Time until possible return — November 12, 2030
+    </div>
+  </div>
 
-    <script>
-// Set the countdown time (1 minute and 30 seconds)
-let timeLeft = 90; // 90 seconds (1:30)
-const countdownElement = document.getElementById('countdown');
-const progressBar = document.getElementById('progress-bar');
-const body = document.body;
-const farewellCard = document.querySelector('.farewell-card');
-const messageElement = document.querySelector('.goodbye-message');
+  <script>
+    const targetDate = new Date("November 12, 2030 00:00:00").getTime();
 
-// Extended farewell message
-messageElement.innerHTML = `
-    <p>To all the wonderful souls who have visited this space,</p>
-    <p>It's with both a heavy heart and immense gratitude that I share this final message with you. This digital gallery has been my sanctuary, my canvas, and my connection to kindred spirits across the world.</p>
-    <p>Every piece I've shared here was created with love, often in moments of deep emotion and reflection. Your support, comments, and appreciation have meant more than words can express.</p>
-    <p class="highlight">"Art is the only way to run away without leaving home." - Twyla Tharp</p>
-    <p>As this chapter comes to a close, I want to thank you for being part of this journey. The memories we've created here will forever be etched in my heart.</p>
-    <p>Though this space may be closing, the art lives on - in your memories, in your hearts, and in the way it might have touched your life, even just for a moment.</p>
-    <p>With deepest gratitude and love,</p>
-`;
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = targetDate - now;
 
-function updateCountdown() {
-    const minutes = Math.floor(timeLeft / 60);
-    let seconds = timeLeft % 60;
-    
-    // Add leading zero if seconds is less than 10
-    seconds = seconds < 10 ? '0' + seconds : seconds;
-    
-    countdownElement.textContent = `${minutes}:${seconds}`;
-    
-    // Update progress bar
-    const progress = 1 - (timeLeft / 90); // 0 to 1
-    progressBar.style.transform = `scaleX(${1 - progress})`;
-    
-    // 30 seconds: First dark transition
-    if (timeLeft <= 30 && timeLeft > 10) {
-        body.style.backgroundColor = '#111';
-        body.style.color = '#fff';
-        farewellCard.style.background = '#222';
-        messageElement.style.color = '#ddd';
-    } 
-    // 10 seconds: Light-dark transition
-    else if (timeLeft <= 10 && timeLeft > 0) {
-        body.style.backgroundColor = '#333';
-        farewellCard.style.background = '#444';
-        messageElement.style.color = '#eee';
-        // Add subtle pulse effect
-        if (timeLeft % 2 === 0) {
-            farewellCard.style.boxShadow = '0 0 30px rgba(255, 255, 255, 0.1)';
-        } else {
-            farewellCard.style.boxShadow = '0 0 50px rgba(255, 255, 255, 0.2)';
-        }
-    }
-    
-    // When time's up
-    if (timeLeft <= 0) {
-        clearInterval(countdownInterval);
-        body.classList.add('fade-out');
-        farewellCard.style.opacity = '0';
-        
-        // First show the goodbye message
-        setTimeout(() => {
-            document.body.innerHTML = `
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        background: #000;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        color: #fff;
-                        font-family: 'Playfair Display', serif;
-                        text-align: center;
-                        transition: opacity 3s ease-in-out;
-                    }
-                    .goodbye-container {
-                        opacity: 1;
-                        transition: opacity 5s ease-in-out;
-                    }
-                    h1 {
-                        font-size: 4rem;
-                        margin-bottom: 1.5rem;
-                        letter-spacing: 2px;
-                    }
-                    p {
-                        font-size: 1.8rem;
-                        opacity: 0.9;
-                        margin: 1rem 0;
-                        font-family: 'Roboto', sans-serif;
-                        font-weight: 300;
-                    }
-                </style>
-                <div class="goodbye-container">
-                    <h1>Goodbye</h1>
-                    <p>Thank you for being part of this journey</p>
-                    <p>Your presence here meant the world</p>
-                </div>
-            `;
-            
-            // Then fade to complete black
-            setTimeout(() => {
-                const container = document.querySelector('.goodbye-container');
-                if (container) container.style.opacity = '0';
-                
-                // Finally, set to pure black
-                setTimeout(() => {
-                    document.body.style.backgroundColor = '#000';
-                    document.body.innerHTML = '';
-                    document.body.style.cursor = 'none';
-                }, 5000);
-            }, 5000);
-            
-        }, 1000);
+      if (diff <= 0) {
+        document.getElementById("countdown").innerHTML = "Countdown complete";
         return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown").innerHTML =
+        `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
-    
-    timeLeft--;
-}
 
-// Initial call to display immediately
-updateCountdown();
-
-// Update every second
-const countdownInterval = setInterval(updateCountdown, 1000);
-        // Prevent right-click and other context menus
-        document.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Disable keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Allow F5, F12, Ctrl+R, Ctrl+Shift+R, Ctrl+Shift+I, F1
-            if (
-                e.key === 'F12' || 
-                e.key === 'F5' || 
-                (e.ctrlKey && e.key === 'r') || 
-                (e.ctrlKey && e.shiftKey && e.key === 'R') ||
-                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                e.key === 'F1'
-            ) {
-                return true;
-            }
-            e.preventDefault();
-            return false;
-        });
-    </script>
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
 </body>
 </html>
