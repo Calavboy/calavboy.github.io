@@ -1,109 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Website Shutdown</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      height: 100vh;
-      background: #000;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .container {
-      max-width: 750px;
-      padding: 40px;
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-
-    .line {
-      width: 90px;
-      height: 3px;
-      background: #fff;
-      margin: 25px auto;
-      opacity: 0.7;
-    }
-
-    p {
-      font-size: 1.15rem;
-      color: #b5b5b5;
-      line-height: 1.6;
-    }
-
-    .countdown {
-      margin-top: 30px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .label {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #888;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Login</title>
 </head>
+
+<style>
+      .navbar {
+    width: 100%;
+    background:rgba(0, 0, 0, 0.6);
+    padding: 15px o;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+
+  }
+
+  .navbar a {             
+    color: white;
+    margin: 0 20px;
+    font-size: 20px;
+    font-family: Montserrat, sans-serif;
+    text-decoration: none;
+    transition: 0.3s;
+
+  }
+
+  .navbar a:hover {
+    color: #ddd;
+  }
+
+  body {
+    padding-top: 80px;
+    
+  }
+</style>
 <body>
-  <div class="container">
-    <h1>Website Shut Down</h1>
-    <div class="line"></div>
-
-    <p>
-      This website has been taken offline.<br>
-      No content or services are available.
-    </p>
-
-    <div class="countdown" id="countdown">
-      Loading countdown…
+   <div class="login-box">
+    <div class="login-header">
+        <header>Login</header>
     </div>
-    <div class="label">
-      Time until possible return — November 12, 2030
+    <div class="input-box">
+    <input type="text" class="input-field" id="email" placeholder="Email" autocomplete="off" required>
+</div>
+    <div class="input-box">
+    <input type="text" class="input-field" id="password" placeholder="Password" autocomplete="off" required>
+</div>
+
+
+ 
+
+
+    <div class="input-submit">
+        <button class="submit-btn" id="submit"></button>
+        <label for="submit">Sign In</label>
     </div>
-  </div>
+    <div class="sign-up-link">
+        <p>Don't have a account <a href="#">Sign Up</a></p>
 
-  <script>
-    const targetDate = new Date("November 12, 2030 00:00:00").getTime();
+    </div>
+   
+   </div> 
 
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const diff = targetDate - now;
 
-      if (diff <= 0) {
-        document.getElementById("countdown").innerHTML = "Countdown complete";
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      document.getElementById("countdown").innerHTML =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    }
-
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  </script>
+               <nav class="navbar">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms & Conditions</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="login.html">Login Admin</a>
+   </nav>
+   
 </body>
+<script>
+document.getElementById("submit").addEventListener("click", function () {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+
+  
+    const correctEmail = "calavrias";
+    const correctPass = "theo";
+
+    if (email === correctEmail && pass === correctPass) {
+        window.location.href = "nolancgi.html"; 
+    } else {
+        alert("Wrong email or password.");
+    }
+});
+</script>
+
 </html>
